@@ -2,15 +2,16 @@ import type { AnalysisReport, AnswerCategory, Finding } from '../../api/schema'
 import Warnings from '../../components/Warnings'
 const labels: Record<AnswerCategory, string> = {
   present: 'Evidence present', absent: 'Evidence absent',
-  not_applicable: 'Not applicable', unable_to_assess: 'Unable to assess',
+  not_applicable: 'Not applicable', unable_to_assess: 'Not assessed',
 }
 const percent = (n: number) => `${(n * 100).toFixed(1)}%`
 function FindingCard({ finding: f }: { finding: Finding }) {
   return <article className="finding"><div className="finding-heading"><h3>{f.dimension}</h3>
     <span className={`answer answer--${f.answer}`}>{labels[f.answer]}</span></div>
+    {f.source_text && <blockquote>{f.source_text}</blockquote>}
     <p className="question">{f.question}</p>
     <details><summary>Question & answer details</summary><div className="finding-detail">
-      <p className="field-help">Full-document assessment · <code>{f.question_id}</code></p>
+      <p className="field-help">{f.assessment_level === 'bullet' ? 'Bullet assessment' : 'Document assessment'} · {f.source === 'document_metadata' ? 'Metadata check' : 'Jev'} · <code>{f.question_id}</code></p>
       <h4>Answer criteria</h4><ul>{f.criteria.map((criterion, i) => <li key={i}>{criterion}</li>)}</ul>
       <h4>Provider answer probabilities</h4>
       {f.probabilities ? <dl className="distribution">{Object.entries(f.probabilities).map(([key, value]) =>
@@ -26,7 +27,7 @@ export default function ResultStage({ report: r, fileName, onEdit }: { report: A
   const o = r.overview
   return <section aria-labelledby="report-title"><div className="intro compact"><p className="eyebrow">03 / Report</p>
     <h1 id="report-title">Your CV, examined.</h1><p className="filename">{fileName}</p>
-    <p>Document-level findings, with the criteria and uncertainty in view. No bullet-level claims or generated advice.</p></div>
+    <p>Document and explicit-bullet findings with source passages, criteria and uncertainty. No generated advice.</p></div>
     <div className="overview"><div><p className="eyebrow">Assessment coverage</p><p className="stat">{o.questions_assessable} <span>/ {o.questions_total}</span></p>
       <p>questions assessable</p><p className="field-help">{o.questions_answered} answered · {o.questions_total - o.questions_answered} not returned</p></div>
       <div><p className="eyebrow">Communication rating</p>{o.rating ? <><p className="stat">{o.rating.value} <span>/ {o.rating.scale_max}</span></p>

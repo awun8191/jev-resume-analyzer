@@ -34,6 +34,8 @@ export default function App() {
     pending.current = true; s.setError(null); s.setReport(null); s.setStage('analysing')
     try {
       const result = await runAnalysis({ cv_text: s.cvText.trim(),
+        ...(s.extraction?.document_evidence && s.cvText.trim() === s.extraction.text.trim()
+          ? { document_evidence: s.extraction.document_evidence } : {}),
         ...(s.jobText.trim() ? { job_text: s.jobText.trim() } : {}), mode: 'review' })
       s.setReport(result); s.setStage('result')
     } catch (error) { s.setError(failureFromUnknown(error)); s.setStage('reviewing') }
@@ -71,6 +73,6 @@ export default function App() {
         Clear document & start over</button><span>Clears this page’s memory, not provider records.</span></div>}
     </main>
     <footer className="app-footer app-shell"><p>Localhost demo · No sign-in · No saved history</p>
-      <p>Analysis sends CV text and any job posting to TypeSafe. Provider retention terms have not been verified. This is not an offline tool.</p></footer>
+      <p>Analysis sends CV text and any job posting to TypeSafe. Layout metadata is checked locally. Provider retention terms have not been verified. This is not an offline tool.</p></footer>
   </div>
 }

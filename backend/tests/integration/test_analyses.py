@@ -50,7 +50,7 @@ def harness():
     app.dependency_overrides.clear()
 
 
-@pytest.mark.parametrize("with_job,count", [(False, 6), (True, 8)])
+@pytest.mark.parametrize("with_job,count", [(False, 8), (True, 10)])
 def test_full_document_one_call(harness, with_job, count):
     client, calls, _ = harness
     body = {"mode": "review", "cv_text": "Synthetic CV. Built a useful project."}
@@ -60,9 +60,14 @@ def test_full_document_one_call(harness, with_job, count):
     assert response.status_code == 200
     report = response.json()
     assert len(calls) == 1
-    assert calls[0]["state"] == {k: v for k, v in body.items() if k != "mode"}
+    assert calls[0]["state"]["cv_text"] == body["cv_text"]
+    assert calls[0]["state"]["bullets"] == []
     assert len(calls[0]["questions"]) == count
     for finding in report["findings"]:
+        if finding["source"] == "document_metadata":
+            assert finding["answer"] == "unable_to_assess"
+            assert finding["confidence"] is None
+            continue
         actual = calls[0]["questions"][finding["question_id"]]
         assert actual["type"] == "choice"
         assert set(actual["criteria"]) == set(OPTIONS)
@@ -71,8 +76,8 @@ def test_full_document_one_call(harness, with_job, count):
         assert finding["assessment_level"] == "full_document"
         assert finding["probabilities"] == dict(zip(OPTIONS, [0.7, 0.1, 0.1, 0.1]))
     assert report["overview"] == {
-        "questions_total": count,
-        "questions_answered": count,
+        "questions_total": count + 4,
+        "questions_answered": count + 4,
         "questions_assessable": count,
         "rating": None,
     }

@@ -54,7 +54,7 @@ def test_utf8_budget_rejects_before_call():
         ) as client:
             gateway = TypeSafeGateway(client, Settings(_env_file=None, typesafe_api_key="fake"))
             with pytest.raises(AppError) as error:
-                await gateway.evaluate({"cv_text": "字" * 10000}, {"q": {}})
+                await gateway.evaluate({"cv_text": "字" * 40000}, {"q": {}})
             assert error.value.status == 413
 
     asyncio.run(run())

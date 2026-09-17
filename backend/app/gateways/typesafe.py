@@ -9,9 +9,9 @@ from app.errors import AppError
 from app.models.questions import ProviderResponse
 
 ENDPOINT = "https://api.typesafe.ai/v1/systemone"
-# Live docs say around 32k shared tokens, not an exact account-specific guarantee.
-# Conservatively cap UTF-8 serialized bytes below that token count with headroom.
-MAX_PROVIDER_BYTES = 28000
+# Bound serialized requests independently of the provider token limit.
+# Provider rejects over-context requests; we never truncate or retry them.
+MAX_PROVIDER_BYTES = 100000
 MAX_RESPONSE_BYTES = 262144
 
 

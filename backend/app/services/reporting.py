@@ -4,7 +4,7 @@ from app.rubrics.cv_review_v1 import Question
 
 EXPLANATIONS = {
     "present": "The provider selected evidence present under this question's stated threshold. "
-    "This is a document-level signal, not a claim about every entry or actual ability.",
+    "This concerns only the stated scope, not actual ability.",
     "absent": "The provider selected evidence absent under this question's stated threshold. "
     "Missing written evidence is not evidence of inability.",
     "not_applicable": "This check was judged not applicable under its stated criteria. "
@@ -31,7 +31,7 @@ def build_report(
                 probabilities=answer.probabilities,
                 confidence=answer.confidence,
                 rubric_explanation=RubricExplanation(
-                    template_ref=f"v1.{question.id}.{answer.choice}",
+                    template_ref=f"v2.{question.id}.{answer.choice}",
                     text=EXPLANATIONS[answer.choice],
                 ),
             )

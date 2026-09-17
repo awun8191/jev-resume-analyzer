@@ -1,5 +1,7 @@
 from pydantic import BaseModel, Field
 
+from app.models.evidence import DocumentEvidence
+
 
 class WarningItem(BaseModel):
     model_config = {"extra": "forbid"}
@@ -13,3 +15,4 @@ class ExtractionResponse(BaseModel):
     page_count: int | None = Field(default=None, ge=1)
     source_format: str
     warnings: list[WarningItem]
+    document_evidence: DocumentEvidence | None = None

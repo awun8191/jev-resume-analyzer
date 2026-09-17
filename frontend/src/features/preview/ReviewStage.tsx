@@ -1,5 +1,6 @@
 import type { Extraction } from '../../api/schema'
 import Warnings from '../../components/Warnings'
+import DocumentEvidence from './DocumentEvidence'
 interface Props {
   fileName: string; extraction: Extraction; cvText: string; jobText: string; busy: boolean
   onTextChange: (text: string) => void; onJobChange: (text: string) => void; onAnalyse: () => Promise<void>
@@ -10,6 +11,7 @@ export default function ReviewStage(p: Props) {
       <p>Fix reading order or missing text before analysis. This is the complete document, not reconstructed sections.</p></div>
     <div className="document-meta"><strong className="filename">{p.fileName}</strong><span>{p.extraction.source_format.toUpperCase()} · {p.extraction.page_count === null ? 'Page count unavailable' : `${p.extraction.page_count} page(s)`}</span></div>
     <Warnings warnings={p.extraction.warnings} title="Extraction notes" />
+    <DocumentEvidence extraction={p.extraction} edited={p.cvText.trim() !== p.extraction.text.trim()} />
     <form onSubmit={e => { e.preventDefault(); if (!p.busy) void p.onAnalyse() }}>
       <label className="field-label" htmlFor="cv-text">CV text <span>Editable preview</span></label>
       <textarea id="cv-text" value={p.cvText} disabled={p.busy} rows={14} spellCheck={false} autoComplete="off"

@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { EvidenceSchema } from './evidence'
 
 // Binding frontend contract, documented in docs/frontend-contract.md.
 const text = z.string().min(1)
@@ -11,10 +12,12 @@ export const ErrorEnvelopeSchema = z.object({
   request_id: text.nullable(),
 })
 export const ExtractionSchema = z.object({
+  document_evidence: EvidenceSchema.nullable().optional(),
   text: z.string(), page_count: z.number().int().positive().nullable(),
   warnings: z.array(WarningSchema), source_format: z.enum(['pdf', 'docx']),
 })
 export const AnalysisRequestSchema = z.object({
+  document_evidence: EvidenceSchema.optional(),
   cv_text: z.string().trim().min(1),
   job_text: z.string().trim().min(1).optional(), mode: z.literal('review'),
 }).strict()
@@ -27,7 +30,9 @@ export const DistributionSchema = z.object({
 export const FindingSchema = z.object({
   question_id: text, dimension: text,
   scope: z.enum(['general_review', 'job_alignment']),
-  assessment_level: z.literal('full_document'), question: text,
+  assessment_level: z.enum(['full_document', 'bullet']), question: text,
+  source_text: z.string().nullable().optional(),
+  source: z.enum(['provider', 'document_metadata']).optional(),
   criteria: z.array(text).min(1), answer: AnswerCategorySchema,
   probabilities: DistributionSchema.nullable(), confidence: probability.nullable(),
   rubric_explanation: z.object({ kind: z.literal('rubric'), template_ref: text, text }).nullable(),
@@ -52,6 +57,10 @@ export const AnalysisReportSchema = z.object({
   findings: z.array(FindingSchema), overview: OverviewSchema,
   warnings: z.array(WarningSchema), metrics: MetricsSchema.nullable(),
 }).superRefine((r, ctx) => {
+  for (const f of r.findings) {
+    if (f.assessment_level === 'bullet' && !f.source_text?.trim())
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Bullet findings need source text' })
+  }
   const assessable = r.findings.filter(f => f.answer === 'present' || f.answer === 'absent').length
   if (r.overview.questions_answered !== r.findings.length || r.overview.questions_assessable !== assessable)
     ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Coverage must match returned findings' })

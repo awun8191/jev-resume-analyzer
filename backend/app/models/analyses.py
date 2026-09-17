@@ -3,6 +3,7 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.models.documents import WarningItem
+from app.models.evidence import DocumentEvidence
 from app.models.questions import Answer, Count, Distribution, Probability
 
 Text = Annotated[str, Field(strict=True, min_length=1)]
@@ -10,6 +11,7 @@ Text = Annotated[str, Field(strict=True, min_length=1)]
 
 class AnalysisRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", strict=True)
+    document_evidence: DocumentEvidence | None = None
     cv_text: Text
     job_text: Text = None  # omission allowed; explicit null is not
     mode: Literal["review"]
@@ -33,7 +35,9 @@ class Finding(BaseModel):
     question_id: Text
     dimension: Text
     scope: Literal["general_review", "job_alignment"]
-    assessment_level: Literal["full_document"] = "full_document"
+    assessment_level: Literal["full_document", "bullet"] = "full_document"
+    source_text: str | None = None
+    source: Literal["provider", "document_metadata"] = "provider"
     question: Text
     criteria: list[Text] = Field(min_length=1)
     answer: Answer
@@ -58,7 +62,7 @@ class Metrics(BaseModel):
 
 class AnalysisReport(BaseModel):
     analysis_id: Text
-    rubric_version: Literal["v1"] = "v1"
+    rubric_version: Literal["v1", "v2"] = "v2"
     model: Text
     findings: list[Finding]
     overview: Overview

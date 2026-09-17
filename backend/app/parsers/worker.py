@@ -1,5 +1,6 @@
 """Private subprocess entry point. Only bounded JSON goes to stdout."""
 
+import hashlib
 import json
 import logging
 import resource
@@ -25,6 +26,20 @@ def main():
         result = parser(data, **params)
         if len(result["text"]) > char_limit:
             raise ParseError(413, "Extracted text exceeds the processing limit.")
+        from app.models.evidence import DocumentEvidence
+        from app.parsers.docx_evidence import extract_docx_evidence
+        from app.parsers.pdf_evidence import extract_pdf_evidence
+        evidence_parser = extract_pdf_evidence if sys.argv[1] == "pdf" else extract_docx_evidence
+        try:
+            evidence = evidence_parser(data)
+        except ParseError:
+            raise
+        except Exception:
+            evidence = {"source_format": sys.argv[1], "limitations": [
+                "Metadata extraction failed; layout and hyperlinks: not assessed."]}
+        evidence["source_text_sha256"] = hashlib.sha256(
+            result["text"].strip().encode()).hexdigest()
+        result["document_evidence"] = DocumentEvidence.model_validate(evidence).model_dump()
         output = {"result": result}
     except ParseError as exc:
         output = {"status": exc.status, "message": exc.message}
