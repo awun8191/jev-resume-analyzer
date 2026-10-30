@@ -1,12 +1,15 @@
 import asyncio
 import json
+from uuid import uuid4
 
 import httpx
 from pydantic import ValidationError
 
 from app.config import Settings
 from app.errors import AppError
+from app.models.image_answers import ImageResponse
 from app.models.questions import ProviderResponse
+from app.services.image_request import BuiltImageRequest, parse_image_response
 
 ENDPOINT = "https://api.typesafe.ai/v1/systemone"
 # Bound serialized requests independently of the provider token limit.
@@ -37,9 +40,7 @@ class TypeSafeGateway:
         self.client, self.settings = client, settings
 
     async def evaluate(self, state: dict, questions: dict) -> ProviderResponse:
-        key = self.settings.typesafe_api_key.get_secret_value().strip()
-        if not key:
-            raise AppError(503, "PROVIDER_UNAVAILABLE", "Provider is not configured.", True)
+        key = self._key()
         payload = {"model": self.settings.typesafe_model, "state": state, "questions": questions}
         encoded = json.dumps(payload, ensure_ascii=False).encode("utf-8")
         if len(encoded) > MAX_PROVIDER_BYTES:
@@ -50,13 +51,44 @@ class TypeSafeGateway:
                 "Shorten the submitted text; nothing was truncated or sent.",
             )
         try:
+            parsed = await self._post(
+                encoded,
+                {"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+            )
+            result = ProviderResponse.model_validate(parsed)
+            if set(result.answers) != set(questions) or not result.model.strip():
+                raise invalid_response()
+            return result
+        except (ValidationError, ValueError, TypeError, RecursionError):
+            raise invalid_response() from None
+
+    async def evaluate_image(self, request: BuiltImageRequest) -> ImageResponse:
+        """Send one built image request. The danger zone header travels with it."""
+        key = self._key()
+        kwargs = request.http_kwargs(f"jev-{uuid4().hex}")
+        headers = {"Authorization": f"Bearer {key}", **kwargs["headers"]}
+        try:
+            parsed = await self._post(kwargs["content"], headers)
+            return parse_image_response(parsed, set(request.body["questions"]))
+        except (ValidationError, ValueError, TypeError, RecursionError):
+            raise invalid_response() from None
+
+    def _key(self) -> str:
+        key = self.settings.typesafe_api_key.get_secret_value().strip()
+        if not key:
+            raise AppError(503, "PROVIDER_UNAVAILABLE", "Provider is not configured.", True)
+        return key
+
+    async def _post(self, content: bytes, headers: dict) -> dict:
+        """One billable POST, read with a bounded body. Never replayed."""
+        try:
             async with asyncio.timeout(self.settings.typesafe_timeout_seconds):
                 # httpx transport retries are disabled; never replay a billable POST.
                 async with self.client.stream(
                     "POST",
                     ENDPOINT,
-                    content=encoded,
-                    headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+                    content=content,
+                    headers=headers,
                     timeout=self.settings.typesafe_timeout_seconds,
                 ) as response:
                     self.check_status(response.status_code)
@@ -65,11 +97,6 @@ class TypeSafeGateway:
                         data.extend(chunk)
                         if len(data) > MAX_RESPONSE_BYTES:
                             raise invalid_response()
-            parsed = json.loads(data, object_pairs_hook=unique_object)
-            result = ProviderResponse.model_validate(parsed)
-            if set(result.answers) != set(questions) or not result.model.strip():
-                raise invalid_response()
-            return result
         except (httpx.TimeoutException, TimeoutError):
             raise AppError(
                 504,
@@ -84,8 +111,7 @@ class TypeSafeGateway:
                 "Provider connection failed. No report was created.",
                 True,
             ) from None
-        except (ValidationError, ValueError, TypeError, RecursionError):
-            raise invalid_response() from None
+        return json.loads(data, object_pairs_hook=unique_object)
 
     @staticmethod
     def check_status(status):

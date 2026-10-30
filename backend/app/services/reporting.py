@@ -10,13 +10,13 @@ from app.models.analyses import (
     RubricExplanation,
     Scores,
     StructureFindingItem,
-    StructureScore,
     TotalScore,
 )
 from app.models.documents import WarningItem
 from app.models.questions import ProviderResponse
 from app.rubrics.cv_review_v3 import RatedQuestion
 from app.rubrics.scoring_v3 import ScoreResult
+from app.services.structure_review import StructureOutcome
 
 EXPLANATIONS = {
     "present": "The provider selected evidence present under this question's stated threshold. "
@@ -77,7 +77,7 @@ def content_dimensions(content: ScoreResult) -> list[DimensionRow]:
     ]
 
 
-def assemble_scores(content: ScoreResult, structure: StructureScore) -> Scores:
+def assemble_scores(content: ScoreResult, structure: StructureOutcome) -> Scores:
     assessed = sum(row.assessed_weight for row in content.dimensions)
     content_range = (
         (content.range_low, content.range_high)
@@ -92,7 +92,7 @@ def assemble_scores(content: ScoreResult, structure: StructureScore) -> Scores:
             coverage=content.coverage,
             assessed_weight=assessed,
         ),
-        structure=structure,
+        structure=structure.as_score(),
         total=TotalScore(
             value=content.total_score,
             band=content.total_band,
