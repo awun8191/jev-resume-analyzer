@@ -158,7 +158,7 @@ All fields required when metrics is not null:
 - `input_tokens`, `output_tokens`: nonnegative integer or null, provider-reported.
 - `cost_usd`: finite nonnegative number or null. Supply only from verified pricing or trustworthy provider reporting. UI does not estimate cost.
 
-A structure request reviews at most the first six pages of the PDF, in groups of at most three. When the document is longer, warnings include `structure_page_budget` and the structure score covers the first six pages only. Warnings may also include `structure_unavailable` when the structure score is null, and `partial_response` when the provider answered fewer than fourteen questions.
+A structure request reviews at most the first six pages of the PDF, in groups of at most three. When the document is longer, warnings include `structure_page_budget` and the structure score covers the first six pages only. Warnings may also include `structure_unavailable` when the structure score is null, and `partial_response` when the provider answered fewer questions than the rubric asks.
 
 Timeout: 120 seconds covering both provider calls, response headers and body. There are no automatic retries. Timeout can leave server-side processing running; UI warns a manual retry may incur another charge. No cancellation/deletion guarantee. Reset is disabled while a request is pending to prevent late responses repopulating cleared state.
 

@@ -52,7 +52,7 @@ Status: implemented and verified on this host. Not deployed, not in git (per car
   httpx retries stay disabled and every response is read with a cap. Invalid or
   partial provider JSON is a 502 for the text call and a null structure score with a
   `provider_error` reason for the image call; nothing is fabricated, ever.
-- Review uses rubric v3: fourteen full-document checks, including two alignment
+- Review uses rubric v3.1: twenty full-document checks, including three alignment
   checks that the rubric marks not applicable when no posting exists. The four
   provider options are exactly the contract keys, never remapped.
 - The report adds `scores`, `dimensions` and `structure_findings`. Total is
@@ -67,7 +67,7 @@ Status: implemented and verified on this host. Not deployed, not in git (per car
 - `POST /api/v1/analyses` accepts JSON, or multipart with a `request` part holding
   that JSON and an optional `file` part holding the PDF. Both shapes return one
   report. A malformed or partial multipart body is a 422 envelope.
-- Content: the fourteen v3 questions go in the single text call, state carries
+- Content: the twenty v3.1 questions go in the single text call, state carries
   `cv_text` and optional `job_text`, and the answers go through
   `scoring_v3.score_report`. `not_applicable` and `unable_to_assess` are kept as
   answered and never score zero. A missing answer counts as `unable_to_assess`.

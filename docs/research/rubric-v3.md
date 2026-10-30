@@ -1,5 +1,9 @@
 # Rubric v3: evidence review and content scoring model
 
+Superseded in part: section 16 records rubric v3.1, which adds six prevalence checks and
+replaces the weights in sections 9, 10 and 15. The reasoning in sections 1 to 8 still holds.
+Section 12 rule 7 matches the implemented coverage rule.
+
 Status: proposed. Rubric v3 runs beside v2. No analysis flow or frontend code changes in this
 task. The one contract change is an optional `section` field, documented in section 10.1.
 
@@ -113,7 +117,7 @@ seven, and little further gain beyond seven [8]. A ten-point judgment with no wr
 anchors therefore adds variance, not information.
 
 The design response is not a finer opinion. It is a checklist of binary decisions, each
-with a written threshold, aggregated with fixed weights. Granularity comes from 14 checks
+with a written threshold, aggregated with fixed weights. Granularity comes from the checks
 and their weights. Reproducibility comes from arithmetic, not from model prose.
 
 Missing evidence needs an explicit rule. The RAND SF-36 scoring instructions state that
@@ -319,7 +323,10 @@ Rules:
    `high = 100 * (earned + applicable - assessed) / applicable`, rounded half up. The
    content score always falls inside the range. A wide range means that more evidence was
    unreadable or unreturned.
-7. Coverage is `assessed / prepared weight`. The report shows it next to the score.
+7. Coverage is `assessed / applicable`. A question answered `not_applicable` leaves the
+   coverage denominator together with the score denominator, so an inapplicable check is not
+   reported as missing evidence. `unable_to_assess` stays in `applicable`, so it lowers
+   coverage and widens the range. Section 16.4 states the same rule for v3.1.
 8. Dimension subtotals use the same rule inside the dimension: earned weight over assessed
    weight, null when nothing in the dimension was assessed.
 
@@ -418,8 +425,9 @@ rates by group [13].
 - `cv_review_v3.py` and `scoring_v3.py` sit beside v1 and v2. No router, model, or service
   imports them yet. The HTTP contract does not change.
 - Entry point: `score_report(answers, structure_score=None, prepared=None)`. `answers` maps
-  question id to answer state. `prepared` defaults to all 14 ids; pass 12 ids when no
-  posting exists.
+  question id to answer state. `prepared` defaults to every id in `IDS`. The live flow prepares
+  all of them and lets the relevance questions answer `not_applicable` when no posting exists,
+  which removes their weight from the score denominator and from coverage.
 - `as_dict(result)` returns plain data for report assembly. Each dimension row and each fix
   carries `section`.
 - `SECTIONS` and `section_for(question_id)` in `cv_review_v3.py` are the only definition of
@@ -432,6 +440,138 @@ rates by group [13].
   communication quality. When integration happens, the total takes that field, and the
   label must read document evidence. Do not reuse the phrase communication quality, and do
   not imply a hiring chance. Put the mode and the coverage in the `basis` string.
+
+## 16. Rubric v3.1: prevalence twins
+
+Status: implemented on `feat/rubric-v3.1`. The report version string stays `v3`. Question ids,
+sections and the four answer states are unchanged, so the interface contract does not move.
+Only the question set and the weights change.
+
+### 16.1 Why v3.1 exists
+
+v3 had fourteen checks, and nine of them used an existential threshold: "at least one entry".
+One quantified bullet therefore earned all 25 Impact points and 17.5 points of the final total,
+while eleven vague entries cost nothing. The heaviest dimension had no consistency requirement.
+A candidate could pass the whole rubric with one good line inside an otherwise empty document.
+
+v3.1 adds one prevalence twin to each dimension that had an existential threshold, and moves
+weight from the existence check to the twin. Every weight stays binary. There is no partial
+credit and no new answer state. The existence check still answers "does one entry show this?".
+The twin answers "do at least half of the relevant entries show it?".
+
+### 16.2 Weight table
+
+Twenty checks, 100 points. Dimension totals are unchanged.
+
+| id | Dimension | Weight | Change from v3 |
+| --- | --- | --- | --- |
+| impact_outcome | Impact | 8 | was 15 |
+| impact_prevalence | Impact | 9 | new |
+| impact_magnitude | Impact | 4 | was 10 |
+| impact_magnitude_prevalence | Impact | 4 | new |
+| scope_actors | Scope | 5 | was 8 |
+| scope_prevalence | Scope | 6 | new |
+| scope_size | Scope | 4 | was 7 |
+| ownership_own_action | Ownership | 6 | was 9 |
+| ownership_prevalence | Ownership | 6 | new |
+| ownership_decision | Ownership | 3 | was 6 |
+| relevance_responsibility | Relevance | 5 | was 8 |
+| relevance_prevalence | Relevance | 6 | new |
+| relevance_requirement | Relevance | 4 | was 7 |
+| clarity_concrete | Clarity | 5 | was 8 |
+| clarity_prevalence | Clarity | 5 | new |
+| clarity_self_contained | Clarity | 5 | was 7 |
+| complete_roles | Completeness | 4 | unchanged |
+| complete_education | Completeness | 3 | unchanged |
+| complete_projects | Completeness | 3 | unchanged |
+| skills_evidence | Skills | 5 | unchanged |
+
+| Dimension | v3.1 | v3 |
+| --- | --- | --- |
+| Impact | 25 | 25 |
+| Scope | 15 | 15 |
+| Ownership | 15 | 15 |
+| Relevance | 15 | 15 |
+| Clarity | 15 | 15 |
+| Completeness | 10 | 10 |
+| Skills | 5 | 5 |
+| Total | 100 | 100 |
+
+Completeness keeps its existential weights because each of its checks is already universal:
+"every employment entry" and "every project entry" require all entries, not one. Skills already
+uses an at-least-half rule over the listed items.
+
+### 16.3 The at-least-half rule
+
+Half means half or more of the relevant set, rounded up. One of two entries passes. The
+denominators differ by check:
+
+| Check | Denominator |
+| --- | --- |
+| impact_prevalence | experience, volunteering and project entries |
+| impact_magnitude_prevalence | stated results |
+| scope_prevalence | experience, volunteering and project entries |
+| ownership_prevalence | experience, volunteering and project descriptions |
+| relevance_prevalence | CV work descriptions |
+| clarity_prevalence | experience, volunteering and project descriptions |
+
+Applicability:
+
+- Every prevalence check is not applicable when the document has no experience, volunteering or
+  project entries.
+- `impact_magnitude_prevalence` is also not applicable when the document states no result at
+  all. There is no set of results to compare, and `impact_magnitude` already charges that gap.
+- `relevance_prevalence` is not applicable when `job_text` is absent or the posting states no
+  identifiable responsibility.
+
+The model compares entries inside one document. It is not asked to count words or to remember
+answers to other questions. The prompt still forbids relying on an answer to another check.
+
+### 16.4 Coverage
+
+One rule, implemented once in `score_report` and stated once here:
+
+```
+coverage = assessed / applicable
+```
+
+`not_applicable` leaves the coverage denominator, exactly as it leaves the score denominator.
+The choice matters for documents without a posting. Under the old prepared-weight denominator
+such a document showed coverage 0.85 although nothing was missing. Under this rule it shows 1.0,
+and the range stays 100 to 100. `unable_to_assess` stays in `applicable`, so it still lowers
+coverage and widens the range. That is the distinction the two non-answers are meant to carry:
+one had no application, the other could not be read.
+
+### 16.5 Known limitation
+
+Prevalence still depends on the model's ability to compare entries within the document. The
+score is arithmetic, but the comparison is a judgment. Three residual risks remain.
+
+1. Entry segmentation. The model decides what counts as one entry. A role with four bullets may
+   read as one entry or as four. The prompt names "experience, volunteering and project
+   entries", not bullets, but the document layout decides the reading.
+2. Small denominators. One entry is one of one, and one of two passes. A two-entry document
+   nearly always passes prevalence. The check separates a mixed document from a consistent one
+   only when the document has several entries.
+3. No calibration. The weights and the half threshold are a structured judgment, not a
+   regression estimate. The same 30 to 50 document study described in section 14 applies.
+
+The one-entry failure is accepted. A single-entry CV is not a common case for the target user,
+and the existence checks still have to pass. Tightening the rule to a minimum entry count would
+add a document-length judgment that the research in section 5 does not support.
+
+### 16.6 Test evidence
+
+`tests/unit/test_rubric_profiles.py` scores three fixed answer sets. No model is involved.
+
+| Profile | Content score | Impact | Band |
+| --- | --- | --- | --- |
+| Strong throughout | 100 | 25 of 25 | Very strong evidence |
+| One strong entry, five vague entries | 64 | 12 of 25 | Adequate evidence |
+| Weak throughout | 13 | 0 of 25 | Thin evidence |
+
+The middle profile passes every existence check and no prevalence check. It sits 36 points below
+the strong profile, against a required separation of 15. It no longer reaches 25 of 25 Impact.
 
 ## References
 

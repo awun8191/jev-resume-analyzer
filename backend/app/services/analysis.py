@@ -1,6 +1,6 @@
 """One analysis: content from the text call, structure from the image call.
 
-Two provider calls run here, not one. The text call asks the fourteen rubric v3
+Two provider calls run here, not one. The text call asks the twenty rubric v3.1
 questions. The image call scores layout from up to six rasterised pages, in groups of
 at most three. A missing structure score never blocks the content report.
 """
