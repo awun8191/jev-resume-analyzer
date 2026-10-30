@@ -178,6 +178,222 @@ The following are out of scope by design, with the reason.
 | Resume length penalty | Structural, owned by the structure score [6] |
 | Mandatory summary | Absence is not a defect; the v1 summary check is dropped in section 11 |
 
+## 9. The content model
+
+Seven dimensions. The weights sum to 100.
+
+| Dimension | Weight | What it measures | Why this weight |
+| --- | --- | --- | --- |
+| Impact | 25 | Results the work produced, and whether a result states its size | The largest block. Employer and career-center guidance puts results first [2][5][6], and described outcomes are the most informative content a resume can offer |
+| Scope | 15 | Who the work served and how large the setting was | Impact is not interpretable without context; Yale asks writers to contextualize the result [5] |
+| Ownership | 15 | The author's own action, and whether the author made decisions | Team results without an author action are not evidence about the applicant [5][6] |
+| Relevance | 15 | Link between the document and the posting | Tailoring is standard guidance [6]; the block applies only when a posting exists |
+| Clarity | 15 | Whether a claim names its object and reads without insider context | A claim that a reader cannot parse cannot count as evidence; written communication is an employer priority [2] |
+| Completeness | 10 | Whether the record states roles, education, and projects | A complete record supports the other dimensions; the block stays small because presence alone is weak evidence |
+| Skills | 5 | Whether listed tools appear in described work | Smallest block because a list is the most gameable element; Ladders links keyword stuffing to weak resumes [1] |
+
+The content score does not reward tenure, seniority, employer prestige, page count, or
+document length. Section 3 gives the reasons.
+
+## 10. The question set
+
+Fourteen checks. Each check names one section, states a threshold, and has no adjective
+that a reader must interpret. Answer states stay `present`, `absent`, `not_applicable`,
+`unable_to_assess`.
+
+| id | Dimension | Weight | Section | Full credit (`present`) | Zero credit (`absent`) |
+| --- | --- | --- | --- | --- | --- |
+| impact_outcome | Impact | 15 | experience, projects | One entry states an action and the result, deliverable, or change that followed | Duties are listed with no stated result |
+| impact_magnitude | Impact | 10 | experience, projects | One result states a count, rate, percentage, duration, money amount, or volume with a unit or baseline | Results exist and none gives a quantity with a unit or baseline |
+| scope_actors | Scope | 8 | experience, projects | One entry names the users, customers, team, system, department, or public served | No entry names who the work served |
+| scope_size | Scope | 7 | experience, projects | One entry states a countable feature of the setting: team size, user count, volume, budget, traffic, sites, engagement length | No countable feature of the setting appears |
+| ownership_own_action | Ownership | 9 | experience, projects | One description uses an author-action construction and does not attribute the action only to a team or employer | Every activity is attributed to a team, the employer, or another person |
+| ownership_decision | Ownership | 6 | experience, projects | One entry names a selection, design, or direction-setting action and its object | Every action is support, assistance, or participation |
+| relevance_responsibility | Relevance | 8 | experience, projects, against posting | One CV task is substantively related to a stated responsibility | No CV task relates to a stated responsibility |
+| relevance_requirement | Relevance | 7 | education, skills, experience, against posting | The CV states a requested qualification, or a clear equivalent | No requested qualification and no clear equivalent appears |
+| clarity_concrete | Clarity | 8 | experience, projects | One description names a specific object the work acted on | Descriptions name only duty categories |
+| clarity_self_contained | Clarity | 7 | all sections | Every internal name has a short function phrase, and abbreviations are expanded once | One description depends on an unexplained internal name |
+| complete_roles | Completeness | 4 | experience | Every role states employer, title, and date boundaries | One role omits employer, title, or a date boundary |
+| complete_education | Completeness | 3 | education, certifications | Every entry states institution or issuer, credential, field, and date | One entry omits institution, credential, field, or date |
+| complete_projects | Completeness | 3 | projects | Every project states its purpose and the author's contribution | One project omits purpose or contribution |
+| skills_evidence | Skills | 5 | skills | At least half of the listed tools and methods appear in the work text | Fewer than half appear |
+
+Applicability rules, stated inside each question:
+
+- Seven questions are not applicable when the document has no experience, volunteering, or
+  project entries. They do not become zero.
+- `impact_magnitude` is not applicable when the document states no result at all. This
+  prevents a double charge for one gap.
+- `complete_education` is not applicable when the document has no education or
+  certification section. Omitting education is not a defect for every candidate [12].
+- `complete_projects` is not applicable when the document has no project entries.
+- `skills_evidence` is not applicable when the document has no skills list.
+- The two relevance questions are not applicable when the posting is absent or states no
+  identifiable item.
+
+## 11. What changed from v1 and v2
+
+The earlier rubrics hold 16 document-level checks, plus 3 checks generated for each bullet.
+Rubric v3 holds 14 document-level checks. Four old checks are dropped, 12 feed the new set,
+and 2 are new.
+
+| Old check | Outcome | Reason |
+| --- | --- | --- |
+| work_clarity | Split into impact_outcome and clarity_concrete | One item asked for a "concrete task", which mixed readability with results |
+| personal_contribution | Renamed ownership_own_action | Clear construct, unclear wording |
+| interpretability | Split into clarity_concrete and clarity_self_contained | A single vague item became two decidable ones |
+| outputs_results | Merged into impact_outcome | Kept the result requirement; the number requirement moved to its own item |
+| scope_context | Split into scope_actors and scope_size | "Context for scope" allowed any answer |
+| summary_specificity | Dropped | A summary is optional, and absence is not a defect; the remaining specificity content sits in the clarity checks |
+| header_contact | Dropped from the score | Contact presence is near-universal among readable documents, so it does not discriminate; a missing email or phone is a warning, not a quality point |
+| education | Becomes complete_education at weight 3 | Kept, with a not-applicable rule for candidates who list no education |
+| experience_dates | Merged into complete_roles | The old item also implied format consistency, which is structural |
+| experience_identity | Merged into complete_roles | Two presence checks about the same entries became one |
+| skills_evidence | Kept at weight 5 | The only anti-keyword-stuffing item that reads the work text |
+| skills_organization | Dropped | Grouping is presentation, not evidence; it belongs to structure if it belongs anywhere |
+| project_purpose | Merged into complete_projects | Purpose and contribution describe the same entry |
+| communication | Dropped | "Communication consistency" is not decidable, and it duplicated the clarity checks |
+| responsibility_evidence | Becomes relevance_responsibility | Tightened: a shared tool name with no described work now fails |
+| qualification_evidence | Becomes relevance_requirement | Kept, with the eligibility limit stated in the criteria |
+| Per-bullet checks (3 per bullet) | Dropped from v3 | The count is unbounded, it conflicts with the per-request question budget, and it repeats document-level checks at higher cost. The v2 module stays in place for the running flow |
+
+New items are impact_magnitude and ownership_decision. Each answers a question that the
+research identifies and that no old item measured.
+
+## 12. Scoring rules
+
+The function is `backend/app/rubrics/scoring_v3.py`. It is pure Python. It uses no network,
+no clock, and no randomness.
+
+Definitions:
+
+- `earned` is the sum of weights answered `present`.
+- `assessed` is the sum of weights answered `present` or `absent`.
+- `applicable` is `assessed` plus the weight of prepared questions answered
+  `unable_to_assess` or not answered at all.
+- `prepared` is the set of question ids that the request actually asked. It excludes the
+  two relevance questions when no posting exists.
+
+Rules:
+
+1. `present` earns the full weight. `absent` earns zero.
+2. `not_applicable` leaves the numerator and the denominator. The question had no
+   application, so it carries no points.
+3. `unable_to_assess` leaves the denominator but stays in the reported range. It never
+   becomes zero [9].
+4. A prepared question with no answer counts as `unable_to_assess`, not as `absent`.
+5. If `assessed` is below 50 of 100, the content score is null, with the reason
+   "insufficient assessable evidence". The product shows no number, not a low number.
+6. The range is `low = 100 * earned / applicable` and
+   `high = 100 * (earned + applicable - assessed) / applicable`, rounded half up. The
+   content score always falls inside the range. A wide range means that more evidence was
+   unreadable or unreturned.
+7. Coverage is `assessed / prepared weight`. The report shows it next to the score.
+8. Dimension subtotals use the same rule inside the dimension: earned weight over assessed
+   weight, null when nothing in the dimension was assessed.
+
+Combination with the structure score:
+
+```
+content = round_half_up(100 * earned / assessed)
+total   = round_half_up(0.7 * content + 0.3 * structure)
+band    = 90 or more very strong; 75 strong; 60 adequate; 40 partial; below 40 thin
+```
+
+Content carries 70 percent because it is the part with traceable evidence and the part that
+hiring guidance addresses. Structure carries 30 percent because layout decides whether the
+content is found in a 7.4-second scan [1], but formatting must not outweigh what the
+candidate did. The structure score never changes the content subtotal, and the content
+score never changes the structure subtotal.
+
+Missing score cases:
+
+| Case | Rule | Reported mode |
+| --- | --- | --- |
+| Both scores present | `total = round_half_up(0.7 * content + 0.3 * structure)` | combined |
+| Structure missing (DOCX upload, rendering failure) | `total = content` | content_only |
+| Content missing (fewer than 50 assessable points) | `total = structure` | structure_only |
+| Both missing | `total = null` | unavailable |
+
+A missing score never lowers the total. The mode is displayed as a chip next to the total,
+so a content-only total is not read as a combined total.
+
+Rounding is half up, not half to even. Python's `round()` would make 68.5 depend on parity.
+Identical answers produce identical output, and answer order does not matter.
+
+## 13. Report information hierarchy
+
+Order on the page:
+
+1. Total score, its band label, the mode chip, and the range when the range is wider than
+   five points.
+2. The two subtotals, Structure and Content, each with the same band labels, and the
+   content range and coverage.
+3. Dimension subtotals, grouped under the score that owns them. Content owns Impact, Scope,
+   Ownership, Relevance, Clarity, Completeness, and Skills. Structure owns its own
+   dimension list, supplied by the structure module.
+4. Findings, grouped under their dimension. Each finding carries an owner label, Content or
+   Structure, and shows the question, the criteria, the answer, and the answer distribution
+   when the provider returns one.
+5. The top three content fixes.
+
+Band labels appear once, in a legend. The same five labels apply to the total, the content
+score, and the structure score. A 55 means Partial evidence wherever it appears.
+
+| Range | Label |
+| --- | --- |
+| 90 to 100 | Very strong evidence |
+| 75 to 89 | Strong evidence |
+| 60 to 74 | Adequate evidence |
+| 40 to 59 | Partial evidence |
+| 0 to 39 | Thin evidence |
+
+Top three fixes: rank dimensions by points not earned, `weight * (1 - score / 100)`, then
+by dimension weight, then by the fixed dimension order. Take the three highest. For each,
+name the heaviest question answered `absent` in that dimension. A fix shows the dimension,
+the points at stake, and the rubric question. It never shows a rewrite, a suggestion, or a
+prediction. Dimensions with no assessed weight, such as Relevance without a posting, never
+appear. When the content score is null, the fixes section shows the insufficient-evidence
+state instead.
+
+## 14. Failure modes and limits
+
+| Failure mode | Response in the rubric | Residual risk |
+| --- | --- | --- |
+| Keyword stuffing | Relevance needs described work; skills carry 5 points; tool lists alone earn nothing [1] | A model may still read a dense list as described work |
+| Metric inflation | A magnitude needs a unit or baseline; a number with no referent earns nothing | A false number still earns the points; the tool issues no truthfulness verdict |
+| Verb inflation | ownership_decision requires the object of the action, not the verb alone | The judgment stays with the model |
+| Summary boilerplate | No summary item exists, so generic claims earn nothing | None beyond the clarity checks |
+| Career gaps | No continuity check, no recency weight, no gap question [11] | A model may notice a gap while answering another question; the score does not price it |
+| Non-traditional background | Unpaid and volunteer work count as work [7]; education is not applicable when absent; no degree, title, or prestige points [12] | Employers may still apply their own filters; this score cannot fix that |
+| Identity signal | No name, age, gender, nationality, address, or photo question [10] | Text can reveal traits indirectly; monitor distributions |
+| Layout duplication | Length, font, margins, density, and date format are excluded and belong to structure [6] | None by design |
+| Writing to the rubric | Weights are public, so an applicant can target them | The checks require evidence that an interviewer could probe; the score reports the question, not a verdict |
+| False precision | Integers, five bands, range, coverage | Users may still read 74 as close to 75; the band text is the primary label |
+
+Calibration status: none yet. The weights are a structured judgment based on the sources in
+this review, not regression estimates. The next step is a human-labeled set of 30 to 50
+documents, two independent raters, and a comparison of dimension scores against rater
+agreement. Change a weight only with a recorded reason. Do not publish accuracy claims
+before that work.
+
+Legal note: this product does not select or rank applicants. If any party repurposes the
+score for screening, the four-fifths rule applies and the operator must monitor selection
+rates by group [13].
+
+## 15. Integration notes
+
+- `cv_review_v3.py` and `scoring_v3.py` sit beside v1 and v2. No router, model, or service
+  imports them yet. The HTTP contract does not change.
+- Entry point: `score_report(answers, structure_score=None, prepared=None)`. `answers` maps
+  question id to answer state. `prepared` defaults to all 14 ids; pass 12 ids when no
+  posting exists.
+- `as_dict(result)` returns plain data for report assembly.
+- Unknown ids, answers outside `prepared`, and invalid structure scores raise `ValueError`.
+  These are wiring faults, not user errors.
+- `not_applicable` and `unable_to_assess` keep their existing meanings from the frontend
+  contract. Neither becomes zero.
+
 ## References
 
 1. Ladders. "Ladders updates popular recruiter eye-tracking study." 6 November 2018.
