@@ -5,14 +5,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="color-scheme" content="light" />
     <meta name="theme-color" content="#ffffff" />
+    <title>Resume Analysis and CV Review | JEV Resume Analyzer</title>
     <meta
       name="description"
-      content="Review a CV with optional job posting alignment. CV text is sent to the TypeSafe API for analysis."
+      content="Upload a resume or CV and get a 0-100 content score, layout checks, and job alignment. Every finding shows the evidence behind it. Free demo, no account."
     />
-    <title>JEV Resume Analyzer</title>
+    <link rel="canonical" href="https://jev-web-one.vercel.app/" />
+    <meta name="robots" content="index, follow" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="JEV Resume Analyzer" />
+    <meta property="og:title" content="Resume Analysis and CV Review" />
+    <meta
+      property="og:description"
+      content="A 0-100 content score, layout checks, and job alignment for a resume or CV. Every finding shows the evidence behind it."
+    />
+    <meta property="og:url" content="https://jev-web-one.vercel.app/" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Resume Analysis and CV Review" />
+    <meta
+      name="twitter:description"
+      content="A 0-100 content score, layout checks, and job alignment for a resume or CV."
+    />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "JEV Resume Analyzer",
+        "url": "https://jev-web-one.vercel.app/",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Any",
+        "description": "Resume and CV analysis with a 0-100 content score, layout checks, and optional job alignment.",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      <h1>JEV Resume Analyzer</h1>
+      <p>
+        Resume and CV analysis with a 0-100 content score, layout checks, and optional job
+        alignment. This app needs JavaScript.
+      </p>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

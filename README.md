@@ -1,5 +1,7 @@
 # JEV Resume Analyzer
 
+Resume and CV analysis in the browser: a 0 to 100 content score, layout checks, and optional job alignment. Live demo: https://jev-web-one.vercel.app
+
 Review a CV with fast, structured AI judgments, optionally against a job posting. Upload a PDF or DOCX, check the extracted text, and get a traceable report: every assessment shows the exact question, criteria, answer, and probability distribution behind it.
 
 Built on [TypeSafe](https://typesafe.ai) (System One model, `jev-latest`): structured judgments composed in code, not prompt-and-parse text generation.
