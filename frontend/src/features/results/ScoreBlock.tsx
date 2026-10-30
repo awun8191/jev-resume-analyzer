@@ -36,7 +36,7 @@ export default function ScoreBlock({ scores, overview }: { scores: Scores; overv
         </div>
         <div className="score__flags">
           <p className="chip chip--ink">{MODE_LABEL[scores.total.mode]}</p>
-          {range && <p className="chip">Range {rangeText(range)}</p>}
+          {range && range[0] !== range[1] && <p className="chip">Range {rangeText(range)}</p>}
         </div>
       </div>
 

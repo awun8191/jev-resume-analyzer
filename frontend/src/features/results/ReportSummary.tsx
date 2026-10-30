@@ -39,7 +39,7 @@ function SubScores({ report }: { report: AnalysisReport }) {
           {scores.content.value !== null && (
             <p className="subscore__band">{scores.content.band ?? 'No band reported'}</p>
           )}
-          {scores.content.range && scores.content.value !== null && (
+          {scores.content.range && scores.content.range[0] !== scores.content.range[1] && scores.content.value !== null && (
             <p className="subscore__reason">Range {rangeText(scores.content.range)}</p>
           )}
           {contentReason && <p className="subscore__reason">{contentReason}</p>}
