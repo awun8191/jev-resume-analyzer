@@ -42,7 +42,7 @@ export default function ScoreBlock({ scores, overview }: { scores: Scores; overv
 
       <dl className="score__cov">
         <div>
-          <dt>Content</dt>
+          <dt>Covered</dt>
           <dd>{coveragePercent(scores)}</dd>
         </div>
         <div>

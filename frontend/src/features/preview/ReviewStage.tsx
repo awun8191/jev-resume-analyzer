@@ -20,7 +20,6 @@ export default function ReviewStage(p: Props) {
   return (
     <section aria-labelledby="preview-title">
       <header className="stage__head">
-        <span className="stage__index">02 / Check text</span>
         <h1 className="stage__title" tabIndex={-1} id="preview-title">Check the extracted text.</h1>
         <p className="stage__lead">
           Fix reading order or missing text before analysis. This is the whole document, not

@@ -277,20 +277,10 @@ main:focus {
   margin-bottom: var(--s4);
 }
 
-.stage__index {
-  display: block;
-  margin-bottom: var(--s2);
-  font-size: var(--fs-1);
-  font-weight: 600;
-  letter-spacing: var(--track-label);
-  text-transform: uppercase;
-  color: var(--accent);
-}
-
 .stage__head-row {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
   gap: var(--s2) var(--s3);
 }

@@ -34,7 +34,6 @@ export default function UploadStage({ onFile }: { onFile: (file: File) => Promis
   return (
     <section aria-labelledby="upload-title">
       <header className="stage__head">
-        <span className="stage__index">01 / Upload</span>
         <h1 className="stage__title" tabIndex={-1} id="upload-title">Check what the document actually says.</h1>
         <p className="stage__lead">
           Upload a PDF or DOCX, review the extracted text, then read a report built from the exact
