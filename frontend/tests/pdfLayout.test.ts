@@ -151,6 +151,18 @@ describe('layoutDocument', () => {
     expect(continuation.box.bottom).toBe(1)
     expect(continuation.label).toBe('EXPERIENCE')
   })
+
+  it('does not carry a section onto a blank page', () => {
+    const first = page(
+      item('SKILLS', 48, 100, 15),
+      item('Analysis and notation.', 48, 130, 12),
+    )
+    const sections = layoutDocument([
+      { textContent: first, height: PAGE_HEIGHT, width: PAGE_WIDTH },
+      { textContent: page(), height: PAGE_HEIGHT, width: PAGE_WIDTH },
+    ])
+    expect(sections.map(section => `${section.page}:${section.id}`)).toEqual(['0:skills'])
+  })
 })
 
 describe('sectionKey', () => {

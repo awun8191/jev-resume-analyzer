@@ -301,7 +301,7 @@ export function layoutDocument(pages: PdfPageSource[]): PageSection[] {
   pages.forEach((source, page) => {
     const layout = layoutPage(source.textContent, source.height, source.width)
     const first = layout.sections[0]
-    if (previous && (!first || first.box.top > 0.02)) {
+    if (previous && layout.lines.length && (!first || first.box.top > 0.02)) {
       const bottom = first ? clamp01(first.box.top) : 1
       if (bottom > 0.004) {
         result.push({

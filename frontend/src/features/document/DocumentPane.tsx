@@ -22,7 +22,7 @@ export function resolveBoxes(findings: BoxFinding[], pages: PagePreview[]): Draw
 
   pages.forEach((page, index) => {
     for (const section of page.sections ?? []) {
-      const pageIndex = Number.isInteger(section.page) ? section.page : index
+      const pageIndex = Number.isFinite(section.page) ? section.page : index
       const entry = { page: pageIndex, box: section.box }
       const onPage = byPage.get(pageIndex) ?? new Map<string, { page: number; box: FindingBox }>()
       onPage.set(section.id, entry)

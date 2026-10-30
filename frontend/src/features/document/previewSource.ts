@@ -28,6 +28,7 @@ async function rasterisePdf(file: File): Promise<PagePreview[]> {
   try {
     const pages: PagePreview[] = []
     const sources: PdfPageSource[] = []
+    let aligned = true
 
     for (let number = 1; number <= document.numPages; number += 1) {
       const page = await document.getPage(number)
@@ -45,6 +46,9 @@ async function rasterisePdf(file: File): Promise<PagePreview[]> {
         width: viewport.width,
         height: viewport.height,
       })
+      /* Text item coordinates are unrotated page space. A rotated page would
+       * need a different transform, so the document keeps the reported boxes. */
+      if (base.rotation % 360 !== 0) aligned = false
       sources.push({
         textContent: await page.getTextContent(),
         height: base.height,
@@ -52,11 +56,13 @@ async function rasterisePdf(file: File): Promise<PagePreview[]> {
       })
     }
 
-    for (const section of layoutDocument(sources)) {
-      const target = pages[section.page]
-      if (!target) continue
-      if (!target.sections) target.sections = []
-      target.sections.push(section)
+    if (aligned) {
+      for (const section of layoutDocument(sources)) {
+        const target = pages[section.page]
+        if (!target) continue
+        if (!target.sections) target.sections = []
+        target.sections.push(section)
+      }
     }
 
     return pages
