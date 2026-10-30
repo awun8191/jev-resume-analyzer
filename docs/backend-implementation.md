@@ -14,7 +14,8 @@ Status: implemented and verified on this host. Not deployed, not in git (per car
 ## Current synthetic verification (cleanup card t_fdb62e42, 2026-09-17)
 
 - From the project root, `env -u JEV_RUN_LIVE uv run --directory backend pytest -o addopts='' -q`:
-  69 passed, 0 failed, 1 gated-live skipped, 2 dependency deprecation warnings, exit 0.
+  270 passed, 0 failed, 3 gated-live skipped, exit 0 (review wiring). The 69 test run
+  below belongs to the earlier card.
   The warnings concern Starlette's httpx TestClient and AnyIO BlockingPortal alias.
 - From backend/, `uv run ruff check .`: all checks passed, exit 0.
 - Additional `uv run ruff format --check app tests`: exit 1; two existing files
@@ -46,14 +47,51 @@ Status: implemented and verified on this host. Not deployed, not in git (per car
   request_id is at the envelope root.
 - 415 requires extension plus magic signature; 422 unreadable/scanned/encrypted; 413 for
   byte, decompressed-DOCX, extracted-character and serialized-provider budgets.
-- One Jev POST per analysis (httpx retries disabled; stream read with response cap).
-  Invalid/partial provider JSON is a 502; nothing is fabricated, ever.
-- Review uses six full-document questions; a posting adds two alignment questions.
-  The four provider options are exactly the contract keys, never remapped.
-  Optional summary maps not_applicable, never a penalty.
+- Two Jev POSTs per analysis: one text call and one image call. A PDF longer than
+  three pages adds a second image call, so a four to six page CV costs three calls.
+  httpx retries stay disabled and every response is read with a cap. Invalid or
+  partial provider JSON is a 502 for the text call and a null structure score with a
+  `provider_error` reason for the image call; nothing is fabricated, ever.
+- Review uses rubric v3: fourteen full-document checks, including two alignment
+  checks that the rubric marks not applicable when no posting exists. The four
+  provider options are exactly the contract keys, never remapped.
+- The report adds `scores`, `dimensions` and `structure_findings`. Total is
+  `round(0.7 * content + 0.3 * structure)`; a missing structure score renormalises to
+  content only and sets `mode` to `content_only`.
 - rating and cost_usd are always null; probabilities/confidence are provider-reported or
   null; usage only from provider metrics; duration_ms measured around the gateway call.
-- Deterministic rubric explanations only (kind rubric, template_ref v1.<id>.<answer>).
+- Deterministic rubric explanations only (kind rubric, template_ref v3.<id>.<answer>).
+
+## Review wiring (feat/review-wiring)
+
+- `POST /api/v1/analyses` accepts JSON, or multipart with a `request` part holding
+  that JSON and an optional `file` part holding the PDF. Both shapes return one
+  report. A malformed or partial multipart body is a 422 envelope.
+- Content: the fourteen v3 questions go in the single text call, state carries
+  `cv_text` and optional `job_text`, and the answers go through
+  `scoring_v3.score_report`. `not_applicable` and `unable_to_assess` are kept as
+  answered and never score zero. A missing answer counts as `unable_to_assess`.
+- Structure: pages are rasterised with `page_render`, sent as multipart with
+  `TypeSafe-Danger-Zone-Images: true`, model pinned to `jev-1.14.0`, and scored with
+  `structure_v1`. At most six pages, three per request, and answers merge into one
+  document assessment per check using the worst page.
+- A missing file, a DOCX or other non-PDF upload, a rasterisation failure and a
+  provider failure each give a null structure score with a reason plus a
+  `structure_unavailable` warning. A seventh page or later adds
+  `structure_page_budget`. Zero is only ever a real scored zero.
+- Metrics sum both calls' token counts. `duration_ms` covers both calls.
+- The v1 and v2 rubric modules and `services/layout_checks.py` stay in the tree but
+  the flow does not call them: the v3 rubric owns content and the image route owns
+  layout, so the old "visual placement: not assessed, Jev is text-only" metadata row
+  would now be false.
+
+Live verification of the wiring, one billable analysis of the committed synthetic two
+page fixture through a local API. Both calls ran. Model `jev-1.14.0`, content 90
+(range 90 to 90, coverage 1.0, assessed 100), structure 94 (assessed 94, nine checks
+passed, one major defect, one unassessable), total 91 combined, 18 dimension rows,
+`duration_ms` 869.8, tokens summed from both calls 18,194 in and 2,253 out, cost null.
+The structure score is 94 and not 100 because one check could not be verified and one
+page lost points, which is the honest outcome for that fixture.
 
 ## Operations
 

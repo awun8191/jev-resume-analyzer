@@ -6,12 +6,14 @@ Built on [TypeSafe](https://typesafe.ai) (System One model, `jev-latest`): struc
 
 ## What it does
 
-- **Full-document CV review**: work clarity, personal contribution, interpretability, outputs/results, scope, and optional-summary specificity, each as a typed judgment over the whole document.
+- **Content score**: fourteen typed judgments over the whole document, grouped into seven dimensions (impact, scope, ownership, relevance, clarity, completeness, skills) and weighted to 100.
+- **Structure score**: eleven checks over the page images (margins, hierarchy, spacing, density, columns, tables and more), weighted to 100.
+- **One total**: 70 percent content and 30 percent structure. A missing structure score renormalises to content only and says so; it never becomes zero.
 - **Optional job alignment**: paste a posting; two document-level questions assess how the CV evidences relevant responsibilities and qualifications.
 - **One workspace**: after upload the document pane sits on the left and the text or report on the right. Findings can draw a hairline box on their page, and selecting either side selects the other.
 - **Honest uncertainty**: four answer outcomes (`present`, `absent`, `not_applicable`, `unable_to_assess`) with real probability distributions. "No summary" is not a defect; "unable to assess" is not a zero.
 - **Traceable findings**: expand any finding to see the evaluated question, its criteria, the answer, and per-option probabilities. Explanations are predefined rubric text, clearly labelled: never generated advice.
-- **Local demo**: no accounts, no database, no localStorage. CV text and any report live in this tab's sessionStorage and are cleared when the tab closes or on reset. One Jev request per analysis; failed requests never produce fabricated reports.
+- **Local demo**: no accounts, no database, no localStorage. CV text and any report live in this tab's sessionStorage and are cleared when the tab closes or on reset. Two Jev requests per analysis, one for text and one for page images; failed requests never produce fabricated reports.
 
 ## Stack
 
@@ -19,7 +21,7 @@ Built on [TypeSafe](https://typesafe.ai) (System One model, `jev-latest`): struc
 | --- | --- |
 | Frontend | React 18, Vite, TypeScript, Zod-validated API contract |
 | Backend | FastAPI, Pydantic, pypdf, defusedxml (DOCX XML traversal) |
-| AI | TypeSafe System One API (`jev-latest`), one batched request per analysis |
+| AI | TypeSafe System One API: `jev-latest` for text, `jev-1.14.0` for page images |
 
 ## Quick start
 
@@ -45,7 +47,7 @@ The Vite dev server proxies `/api` to the backend on `127.0.0.1:8017`.
 ## Tests
 
 ```bash
-# Backend: 69 synthetic tests + lint (live test is gated behind JEV_RUN_LIVE=1 and a running API)
+# Backend: 270 synthetic tests + lint (live tests are gated behind JEV_RUN_LIVE=1 and a running API)
 cd backend && uv run pytest -q && uv run ruff check app tests
 
 # Frontend: 50 tests, typecheck, build
@@ -58,6 +60,8 @@ cd frontend && CHROMIUM_PATH=<chromium-binary> npx playwright test
 ## Design boundaries
 
 - Full-document assessments only; no fabricated bullet-level findings.
+- Two provider calls per analysis. The text call asks the rubric questions. The image call reviews at most the first six PDF pages in groups of three, pinned to `jev-1.14.0` because Box questions need it. A fourth to sixth page adds a second image call, so a long CV costs three calls.
+- Structure is scored only from a PDF. A DOCX upload, a missing file or a page that cannot be rendered gives a null structure score with a reason and a warning, never zero.
 - No overall rating is shown yet: scoring maps stay `null` until calibrated on reviewed examples.
 - No hiring predictions, ATS scores, truthfulness verdicts, or generated rewrites.
 - Localhost demo: CV text is sent to TypeSafe for analysis; retention terms should be verified before any public deployment.
@@ -71,4 +75,4 @@ cd frontend && CHROMIUM_PATH=<chromium-binary> npx playwright test
 
 ## Status
 
-Working end-to-end on localhost: upload → editable extraction preview → one batched Jev request → traceable report. Deferred: generated suggestions (phase 2), OCR, accounts, public deployment.
+Working end-to-end on localhost: upload → editable extraction preview → one text and one image request → traceable report with content, structure and total scores. Deferred: generated suggestions (phase 2), OCR, accounts, public deployment.

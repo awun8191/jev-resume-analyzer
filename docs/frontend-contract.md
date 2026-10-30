@@ -1,6 +1,6 @@
 # JEV frontend contract v1
 
-Status: implemented frontend contract, awaiting backend implementation. Binding definition: `frontend/src/api/schema.ts` (Zod runtime validation and inferred TypeScript types). This supersedes the proposed field details in architecture section 5, without changing that document. No actual provider output or live extraction has been verified. Synthetic fixtures live only under `frontend/tests/contract/fixtures`.
+Status: implemented frontend contract. The backend now returns `scores`, `dimensions` and `structure_findings`; rendering them is the pending frontend task. Binding definition: `frontend/src/api/schema.ts` (Zod runtime validation and inferred TypeScript types). This supersedes the proposed field details in architecture section 5, without changing that document. The score fields below are from a verified live analysis of the synthetic two page fixture; the frontend has not rendered them yet. Synthetic fixtures live only under `frontend/tests/contract/fixtures`.
 
 ## Local runtime
 
@@ -48,6 +48,15 @@ Timeout: 60 seconds, covering headers and body consumption. No automatic retries
 
 ## POST /api/v1/analyses
 
+Multipart input, the shape the workspace uses:
+
+| Part | Content |
+| --- | --- |
+| `request` | The JSON body below, as a field or as an uploaded part named `request` |
+| `file` | Optional. The uploaded PDF. Required for a structure score |
+
+A JSON body with no file still works and returns a content only report. An upload that is not a PDF gets no structure score and a `structure_unavailable` warning; the content report is still returned.
+
 JSON input:
 
 ```json
@@ -67,6 +76,44 @@ JSON input:
 | overview | Overview below |
 | warnings | array of `{code: text, message: text}` |
 | metrics | Metrics below, or null |
+| scores | Scores below. Always present |
+| dimensions | array of Dimension below. Always present, possibly empty |
+| structure_findings | array of StructureFinding below. Always present, possibly empty |
+
+### Scores
+
+`scores.content`:
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| value | integer 0..100 or null | Weighted percentage over the checks that could be decided. Null when fewer than 50 of 100 points were decidable |
+| band | text or null | One of the five band labels below |
+| range | `[integer, integer]` or null | Low and high score still consistent with the evidence. Null when no check was applicable |
+| coverage | number 0..1 | Decided weight over prepared weight |
+| assessed_weight | integer 0..100 | Points that could be decided. `unable_to_assess` and `not_applicable` are not decided points |
+
+`scores.structure`:
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| value | integer 0..100 or null | Layout score. Null when the route could not run |
+| band | text or null | Same five labels |
+| reason | text or null | `scored`, `page_not_readable`, `page_empty`, `insufficient_evidence`, `no_file`, `unsupported_format`, `render_failed` or `provider_error` |
+| assessed_weight | integer 0..100 | Structure points that could be assessed |
+
+A null structure score is never zero. Render "Not scored" with the reason, never a number.
+
+`scores.total`: `value` integer or null, `band` text or null, `mode` one of `combined`, `content_only`, `structure_only`, `unavailable`. The rule is `round(0.7 * content + 0.3 * structure)`. A missing structure score renormalises to content only, and the mode says so.
+
+Bands, highest first: `Very strong evidence` at 90, `Strong evidence` at 75, `Adequate evidence` at 60, `Partial evidence` at 40, `Thin evidence` at 0.
+
+### Dimension
+
+`key` text, `label` text, `owner` `content` or `structure`, `weight` integer, `value` integer or null, `section` section key or null. Content rows weigh 100 together, and so do structure rows. Structure rows exist only when the structure report was scored.
+
+### StructureFinding
+
+`id` text, `label` text, `severity` `pass`, `minor`, `major` or `unassessable`, `points_lost` integer 0..100, `page` 0-based integer or null, `box` `{top, bottom, left, right}` fractions or null, `confidence` number 0..1 or null, `evidence` text. A pass row carries no page and no box, because the rubric does not report where a check passed. Below 0.5 box confidence the box is the whole page, and the finding says so in `evidence`.
 
 ### Finding
 
@@ -111,7 +158,9 @@ All fields required when metrics is not null:
 - `input_tokens`, `output_tokens`: nonnegative integer or null, provider-reported.
 - `cost_usd`: finite nonnegative number or null. Supply only from verified pricing or trustworthy provider reporting. UI does not estimate cost.
 
-Timeout: 120 seconds covering response headers and body. There are no automatic retries. Timeout can leave server-side processing running; UI warns a manual retry may incur another charge. No cancellation/deletion guarantee. Reset is disabled while a request is pending to prevent late responses repopulating cleared state.
+A structure request reviews at most the first six pages of the PDF, in groups of at most three. When the document is longer, warnings include `structure_page_budget` and the structure score covers the first six pages only. Warnings may also include `structure_unavailable` when the structure score is null, and `partial_response` when the provider answered fewer than fourteen questions.
+
+Timeout: 120 seconds covering both provider calls, response headers and body. There are no automatic retries. Timeout can leave server-side processing running; UI warns a manual retry may incur another charge. No cancellation/deletion guarantee. Reset is disabled while a request is pending to prevent late responses repopulating cleared state.
 
 ## Error envelope
 
