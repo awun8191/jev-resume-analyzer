@@ -260,12 +260,12 @@ export default function DocumentPane({
           ) : (
             <div className="docpane__empty">
               <p className="docpane__empty-title">
-                {attached ? 'No page preview' : 'Re-attach the file to show the page'}
+                {attached ? 'No page preview' : 'Re-attach the file'}
               </p>
               <p className="help">
                 {attached
-                  ? 'This file has no page preview. PDF pages are drawn in this tab only, and a scanned PDF or a DOCX has no page image.'
-                  : 'The text and this report were restored from this tab. The file itself is not kept, so the page cannot be drawn.'}
+                  ? 'Scanned PDFs and DOCX files have no page image.'
+                  : 'Report restored from this tab. The file is not kept, so the page cannot be drawn.'}
               </p>
               {!attached && (
                 <div className="docpane__attach">

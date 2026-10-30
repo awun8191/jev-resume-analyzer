@@ -199,7 +199,7 @@ export default function App() {
                   s.reset()
                 }}
               >
-                Start over
+                Clear this tab
               </button>
               <button type="button" className="btn btn--quiet" onClick={cancelReset}>
                 Cancel
