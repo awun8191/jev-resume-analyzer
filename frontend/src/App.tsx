@@ -171,7 +171,7 @@ export default function App() {
                   <p className="help stage__file">{s.fileName}</p>
                 </header>
                 <p role="status" className="busy">
-                  Text is being extracted on the local server. No model request has been made.
+                  Text is being extracted on the analysis server. No model request has been made.
                 </p>
               </section>
             </div>

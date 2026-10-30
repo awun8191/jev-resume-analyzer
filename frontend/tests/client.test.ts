@@ -1,5 +1,5 @@
 import { it, expect, vi } from 'vitest'
-import { extractDocument, runAnalysis, checkHealth, analysisForm } from '../src/api/client'
+import { extractDocument, runAnalysis, checkHealth, analysisForm, apiBaseUrl, apiUrl } from '../src/api/client'
 import { extraction, report, providerError } from './contract/fixtures/responses'
 
 const pdf = () => new File(['SYNTHETIC PDF'], 'fixture.pdf', { type: 'application/pdf' })
@@ -103,3 +103,40 @@ it('times out and never retries a POST', async () => {
   await expect(runAnalysis({ cv_text: 'test', mode: 'review' }, null, 5)).rejects.toMatchObject({ kind: 'timeout' })
   expect(fetch).toHaveBeenCalledTimes(1)
 })
+
+it('joins the API base without a double slash', () => {
+  expect(apiBaseUrl(undefined)).toBe('')
+  expect(apiBaseUrl('')).toBe('')
+  expect(apiBaseUrl('   ')).toBe('')
+  expect(apiBaseUrl('https://api.example.com')).toBe('https://api.example.com')
+  expect(apiBaseUrl('https://api.example.com/')).toBe('https://api.example.com')
+  expect(apiBaseUrl('https://api.example.com//')).toBe('https://api.example.com')
+  expect(apiBaseUrl(' https://api.example.com/ ')).toBe('https://api.example.com')
+  expect(`${apiBaseUrl('https://api.example.com/')}/api/v1/health`).toBe('https://api.example.com/api/v1/health')
+})
+
+it('uses a relative URL when no API base is configured', () => {
+  expect(apiUrl('/health')).toBe('/api/v1/health')
+  expect(apiUrl('/analyses')).toBe('/api/v1/analyses')
+})
+
+it('prefixes every request with VITE_API_BASE_URL when it is set', async () => {
+  vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.com/')
+  vi.resetModules()
+  try {
+    const mod = await import('../src/api/client')
+    const fetch = vi.fn<Fetched>((url) => Promise.resolve(
+      Response.json(url.endsWith('/health') ? { status: 'ok' } : extraction)))
+    vi.stubGlobal('fetch', fetch)
+    await mod.checkHealth()
+    await mod.extractDocument(new File(['SYNTHETIC'], 'test.pdf'))
+    expect(fetch.mock.calls.map(([url]) => url)).toEqual([
+      'https://api.example.com/api/v1/health',
+      'https://api.example.com/api/v1/documents/extract',
+    ])
+  } finally {
+    vi.unstubAllEnvs()
+    vi.resetModules()
+  }
+})
+

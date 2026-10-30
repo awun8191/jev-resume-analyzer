@@ -67,7 +67,7 @@ export default function UploadStage({ onFile }: { onFile: (file: File) => Promis
           <p className="help">
             {dragging
               ? 'One document at a time. The file is read locally before anything else happens.'
-              : 'Text is read on the local server. No model request is made at this step.'}
+              : 'Text is read on the analysis server. No model request is made at this step.'}
           </p>
         </div>
 
