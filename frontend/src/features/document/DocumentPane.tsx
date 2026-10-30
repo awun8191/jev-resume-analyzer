@@ -235,7 +235,7 @@ export default function DocumentPane({
               </p>
               <p className="help">
                 {attached
-                  ? 'This build does not draw the document page. The file stays in this tab and is never uploaded for previewing.'
+                  ? 'This file has no page preview. PDF pages are drawn in this tab only, and a scanned PDF or a DOCX has no page image.'
                   : 'The text and this report were restored from this tab. The file itself is not kept, so the page cannot be drawn.'}
               </p>
               {!attached && (
