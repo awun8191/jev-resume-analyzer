@@ -203,7 +203,7 @@ export default function DocumentPane({
           {hasImage ? (
             <div className="docpane__page" style={{ width: `${ZOOMS[zoomIndex] * 100}%` }}>
               <img src={page!.imageUrl} alt={`Page ${pageIndex + 1} of ${fileName}`} />
-              {showBoxes && pageBoxes.filter(box => box.source === 'page').map(box => (
+              {showBoxes && pageBoxes.filter(box => box.source === 'page' && box.id === selectedId).map(box => (
                 /* A check with a page and no box has no exact rectangle. The
                  * whole page is outlined, behind the other boxes, and the row
                  * in the report stays the click target. */
