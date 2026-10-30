@@ -132,6 +132,7 @@ export default function DocumentPane({
               aria-pressed={!showBoxes}
               onClick={() => setShowBoxes(value => !value)}
             >
+              <span className="docpane__toggle-mark" aria-hidden="true" />
               {showBoxes ? 'Hide boxes' : 'Show boxes'}
             </button>
           </div>
@@ -160,6 +161,11 @@ export default function DocumentPane({
                   <span className="box__n" aria-hidden="true">
                     {String(numbers.get(box.id)).padStart(2, '0')}
                   </span>
+                  {box.id === selectedId && (
+                    <span className="box__sel" aria-hidden="true">
+                      {numbers.get(box.id)} {box.label}
+                    </span>
+                  )}
                   <span className="box__tip" aria-hidden="true">
                     <strong>{box.label}</strong>
                     <span>

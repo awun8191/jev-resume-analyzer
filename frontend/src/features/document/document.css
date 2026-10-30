@@ -72,8 +72,9 @@
 }
 
 .docpane__step:disabled {
-  color: var(--ink-3);
+  color: #c2c2bd;
   border-color: var(--rule);
+  background: var(--paper-sunk);
   cursor: not-allowed;
 }
 
@@ -85,20 +86,21 @@
 
 .docpane__count {
   padding-inline: var(--s2);
-  font-size: var(--fs-1);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-size: var(--fs-2);
   color: var(--ink-2);
   white-space: nowrap;
 }
 
 .docpane__count b {
   color: var(--ink);
-  font-size: var(--fs-2);
+  font-size: var(--fs-3);
   font-weight: 600;
 }
 
 .docpane__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
   border: 0;
   background: none;
   padding-inline: var(--s1);
@@ -108,6 +110,18 @@
   text-decoration: underline;
   text-underline-offset: 3px;
   cursor: pointer;
+}
+
+.docpane__toggle-mark {
+  display: block;
+  width: 8px;
+  height: 8px;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+}
+
+.docpane__toggle[aria-pressed='true'] .docpane__toggle-mark {
+  background: var(--paper);
 }
 
 .docpane__toggle[aria-pressed='true'] {
@@ -176,17 +190,38 @@
   position: absolute;
   top: 0;
   left: 0;
-  min-width: 18px;
-  height: 16px;
-  padding-inline: 4px;
+  min-width: 20px;
+  height: 18px;
+  padding-inline: 5px;
   border: 1px solid var(--accent);
   background: var(--paper);
   color: var(--accent);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.02em;
+  text-align: center;
+}
+
+/* The selected box carries its finding name, so selection is never colour alone. */
+.box__sel {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  transform: translateY(100%);
+  z-index: 2;
+  max-width: 100%;
+  padding: 3px 6px;
+  background: var(--accent);
+  color: var(--paper);
   font-size: 10px;
   font-weight: 600;
-  line-height: 14px;
+  line-height: 1.3;
   letter-spacing: 0.04em;
-  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .box__tip {
@@ -238,7 +273,7 @@
 .box[aria-pressed='true'] {
   border-width: 2px;
   outline: 1px solid var(--accent);
-  outline-offset: 1px;
+  outline-offset: 3px;
 }
 
 .box[aria-pressed='true'] .box__n {
