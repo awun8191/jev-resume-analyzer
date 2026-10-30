@@ -128,6 +128,7 @@ export type AnswerCategory = z.infer<typeof AnswerCategorySchema>
 export type Extraction = z.infer<typeof ExtractionSchema>
 export type Health = z.infer<typeof HealthSchema>
 export type Warning = z.infer<typeof WarningSchema>
+export type Overview = z.infer<typeof OverviewSchema>
 export type Scores = z.infer<typeof ScoresSchema>
 export type ContentScore = z.infer<typeof ContentScoreSchema>
 export type StructureScore = z.infer<typeof StructureScoreSchema>

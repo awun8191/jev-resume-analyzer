@@ -3,7 +3,14 @@ import userEvent from '@testing-library/user-event'
 import { expect, it, vi } from 'vitest'
 import ResultStage from '../src/features/results/ResultStage'
 import type { AnalysisReport } from '../src/api/schema'
-import { multiReport, report } from './contract/fixtures/responses'
+import {
+  contentOnlyReport,
+  multiReport,
+  report,
+  structureOnlyReport,
+  structureProviderErrorReport,
+  unavailableReport,
+} from './contract/fixtures/responses'
 
 const noop = () => {}
 
@@ -18,22 +25,69 @@ function show(subject: AnalysisReport = multiReport, selectedId: string | null =
   )
 }
 
-it('states a missing rating in words and never substitutes a number', () => {
+it('shows the total, band, range and coverage for a combined report', () => {
   const { container } = show(report)
   const block = container.querySelector('.score') as HTMLElement
-  expect(within(block).getByText('Not scored yet')).toBeTruthy()
-  expect(container.querySelector('.score__value')).toBeNull()
-  expect(block.textContent).toContain('No scoring map is approved or calibrated')
+  expect(block.getAttribute('data-mode')).toBe('combined')
+  expect(block.querySelector('.score__value')!.textContent).toBe('71/ 100')
+  expect(block.textContent).toContain('Adequate evidence')
+  expect(block.textContent).toContain('Content and layout')
+  expect(block.textContent).toContain('86% of prepared content weight')
+  expect(block.textContent).toContain('Weighted 70% content and 30% layout.')
+  // A combined total has no range of its own, so none is shown.
+  expect(block.querySelector('.score__range')).toBeNull()
 })
 
-it('shows the two sub-score slots as pending, with no value', () => {
-  show()
-  expect(screen.getByRole('heading', { name: 'Sub-scores' })).toBeTruthy()
-  const subscores = document.querySelector('.subscores') as HTMLElement
-  expect(subscores.textContent).toContain('Structure')
-  expect(subscores.textContent).toContain('Content')
-  expect(screen.getAllByText('Pending')).toHaveLength(2)
-  expect(subscores.textContent).not.toMatch(/\d/)
+it('shows structure and then content with their own bands', () => {
+  const { container } = show()
+  const subscores = [...container.querySelectorAll('.subscore')]
+  expect(subscores.map(node => node.getAttribute('data-owner'))).toEqual(['structure', 'content'])
+  expect(subscores[0].textContent).toContain('81')
+  expect(subscores[0].textContent).toContain('Strong evidence')
+  expect(subscores[1].textContent).toContain('58')
+  expect(subscores[1].textContent).toContain('Partial evidence')
+  expect(subscores[1].textContent).toContain('Range 46 to 69')
+})
+
+it('labels a content only total and explains why layout is missing', () => {
+  const { container } = show(contentOnlyReport)
+  const block = container.querySelector('.score') as HTMLElement
+  expect(block.getAttribute('data-mode')).toBe('content_only')
+  expect(block.textContent).toContain('Content only')
+  expect(block.textContent).toContain('Layout is scored for PDF uploads only.')
+  expect(block.textContent).toContain('unsupported_format')
+  // The total is the content value, so its range belongs here.
+  expect(block.textContent).toContain('Range 46 to 69')
+  const structure = container.querySelector('.subscore[data-owner="structure"]') as HTMLElement
+  expect(structure.textContent).toContain('Not scored')
+  expect(structure.querySelector('.score__value')).toBeNull()
+})
+
+it('says a layout check failed without hiding the content review', () => {
+  const { container } = show(structureProviderErrorReport)
+  const block = container.querySelector('.score') as HTMLElement
+  expect(block.textContent).toContain('Layout check failed, content review is complete.')
+  expect(block.textContent).toContain('58')
+})
+
+it('shows a layout only total when content could not be scored', () => {
+  const { container } = show(structureOnlyReport)
+  const block = container.querySelector('.score') as HTMLElement
+  expect(block.getAttribute('data-mode')).toBe('structure_only')
+  expect(block.textContent).toContain('Layout only')
+  expect(block.textContent).toContain('Only 40 of 100 content points could be decided.')
+  expect(block.querySelector('.score__range')).toBeNull()
+})
+
+it('shows no number at all when nothing could be scored', () => {
+  const { container } = show(unavailableReport)
+  const block = container.querySelector('.score') as HTMLElement
+  expect(block.getAttribute('data-mode')).toBe('unavailable')
+  expect(block.querySelector('.score__value')).toBeNull()
+  expect(block.querySelector('.score__none')!.textContent).toBe('Not scored')
+  expect(block.textContent).toContain('Neither content nor layout produced a score.')
+  expect(block.textContent).toContain('The layout check could not read the pages.')
+  expect(block.textContent).not.toMatch(/\b0\/ 100\b/)
 })
 
 it('counts findings per dimension in first-seen order', () => {
@@ -97,7 +151,7 @@ it('keeps a missing distribution and confidence explicit', () => {
 it('shows the partial response count without inventing a score', () => {
   show()
   expect(screen.getByText(/1 question not returned/)).toBeTruthy()
-  expect(screen.getByText('Not scored yet')).toBeTruthy()
+  expect(screen.getByText('Adequate evidence')).toBeTruthy()
   expect(screen.getByRole('heading', { name: 'Analysis limitations' })).toBeTruthy()
 })
 

@@ -6,10 +6,10 @@ import {
   ANSWER_GLYPH,
   ANSWER_ORDER,
   ANSWER_TEXT,
-  SUBSCORES,
   dimensionRows,
   percent,
 } from './summary'
+import ScoreBlock from './ScoreBlock'
 import './report.css'
 
 function FindingRow({
@@ -143,7 +143,6 @@ export default function ResultStage({
 }) {
   const o = r.overview
   const dimensions = dimensionRows(r.findings)
-  const unscored = o.questions_total - o.questions_answered
   const selectedRef = useRef<HTMLElement>(null)
   const firstRun = useRef(true)
 
@@ -167,61 +166,7 @@ export default function ResultStage({
         </p>
       </header>
 
-      <section className="score" aria-labelledby="rating-title">
-        <div className="score__main">
-          <h2 className="label score__label" id="rating-title">Overall rating</h2>
-          {o.rating ? (
-            <>
-              <p className="score__value">
-                <span>{o.rating.value}</span>
-                <small>/ {o.rating.scale_max}</small>
-              </p>
-              <p className="score__caption">{o.rating.label}</p>
-              <p className="help">
-                Scale {o.rating.scale_min} to {o.rating.scale_max}. {o.rating.basis}
-              </p>
-            </>
-          ) : (
-            <>
-              <p className="score__none">Not scored yet</p>
-              <p className="help">
-                No scoring map is approved or calibrated, so this report carries no rating. Nothing
-                here is inferred from the findings below.
-              </p>
-            </>
-          )}
-        </div>
-
-        <div className="score__coverage">
-          <p className="label">Coverage</p>
-          <dl className="cov">
-            <div><dt>Prepared</dt><dd>{o.questions_total}</dd></div>
-            <div><dt>Returned</dt><dd>{o.questions_answered}</dd></div>
-            <div><dt>Assessable</dt><dd>{o.questions_assessable}</dd></div>
-          </dl>
-          <p className="help">
-            Assessable means a present or absent answer.
-            {unscored > 0 ? ` ${unscored} question${unscored === 1 ? '' : 's'} not returned.` : ''}
-          </p>
-        </div>
-      </section>
-
-      <section className="section" aria-labelledby="subscores-title">
-        <div className="section__head">
-          <h2 className="section__title" id="subscores-title">Sub-scores</h2>
-        </div>
-        <ul className="subscores">
-          {SUBSCORES.map(slot => (
-            <li className="subscore" key={slot.key}>
-              <p className="label">{slot.label}</p>
-              <p className="subscore__value">Pending</p>
-              <p className="help">Not sent by the analysis yet. No value is inferred.</p>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <Warnings warnings={r.warnings} title="Analysis limitations" />
+      <ScoreBlock scores={r.scores} overview={o} />
 
       <section className="section" aria-labelledby="dims-title">
         <div className="section__head">
@@ -310,6 +255,8 @@ export default function ResultStage({
           </dl>
         </div>
       </details>
+
+      <Warnings warnings={r.warnings} title="Analysis limitations" />
 
       <div className="actions">
         <p className="actions__note">

@@ -51,6 +51,31 @@
   font-size: var(--fs-4);
 }
 
+/* The mode is part of the total, not a footnote. It says how the number was
+ * derived, or why there is no number. */
+.score__mode {
+  margin-top: var(--s3);
+  font-size: var(--fs-1);
+  font-weight: 600;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.score__range {
+  margin-top: var(--s2);
+  font-size: var(--fs-2);
+  color: var(--ink-2);
+}
+
+.score__reason {
+  margin-top: var(--s3);
+  max-width: 48ch;
+  font-size: var(--fs-2);
+  line-height: 1.5;
+  color: var(--ink);
+}
+
 .score__main .help {
   margin-top: var(--s4);
   max-width: 48ch;
@@ -96,8 +121,8 @@
   margin-top: var(--s3);
 }
 
-/* Sub-score slots. Structure and Content stay pending until the backend sends
- * them; the labels are part of the report hierarchy, not decoration. */
+/* Sub-scores. Structure and Content carry their own value, band and reason.
+ * The two slots stack at narrow widths; the total stays above them. */
 .subscores {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -118,19 +143,81 @@
 
 .subscore__value {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: var(--s2);
   margin-top: var(--s2);
-  font-size: var(--fs-4);
+  font-size: var(--subscore-value);
   font-weight: 600;
-  letter-spacing: -0.01em;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.subscore__value small {
+  font-size: var(--fs-1);
+  font-weight: 400;
+  letter-spacing: 0;
   color: var(--ink-2);
+}
+
+.subscore .score__none {
+  display: block;
+  margin-top: var(--s2);
+  font-size: var(--subscore-value);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.subscore__band {
+  margin-top: var(--s2);
+  font-size: var(--fs-2);
+  font-weight: 600;
+  color: var(--ink);
 }
 
 .subscore .help {
   margin-top: var(--s2);
   font-size: var(--fs-1);
   line-height: 1.45;
+}
+
+/* Coverage reads as label and value rows. Prose does not fit a three column
+ * grid at 375px. */
+.cov--scores {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  margin-top: var(--s2);
+}
+
+.cov--scores > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s1) var(--s4);
+  padding: 6px 0;
+  border-top: 1px solid var(--rule);
+}
+
+.cov--scores dt {
+  font-size: var(--fs-1);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.cov--scores dd {
+  margin-top: 0;
+  font-size: var(--fs-2);
+  font-weight: 400;
+  line-height: 1.4;
+  letter-spacing: 0;
+  text-align: right;
+}
+
+.cov--counts {
+  margin-top: var(--s4);
 }
 
 /* Dimension counts */

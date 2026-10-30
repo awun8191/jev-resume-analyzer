@@ -59,7 +59,7 @@ it('preserves edited text and posting after a failure, reports, edits and resets
 
   await user.click(screen.getByRole('button', { name: 'Analyse CV' }))
   await screen.findByRole('heading', { name: 'The report.' })
-  expect(screen.getByText('Not scored yet')).toBeTruthy()
+  expect(screen.getByText('71')).toBeTruthy()
   await user.click(screen.getByText('Question and answer detail'))
   expect(screen.getByText('70.0%')).toBeTruthy()
 
