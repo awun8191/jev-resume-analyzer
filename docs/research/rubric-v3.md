@@ -326,7 +326,7 @@ Rules:
 7. Coverage is `assessed / applicable`. A question answered `not_applicable` leaves the
    coverage denominator together with the score denominator, so an inapplicable check is not
    reported as missing evidence. `unable_to_assess` stays in `applicable`, so it lowers
-   coverage and widens the range. Section 16.4 states the same rule for v3.1.
+   coverage and widens the range.
 8. Dimension subtotals use the same rule inside the dimension: earned weight over assessed
    weight, null when nothing in the dimension was assessed.
 
@@ -529,13 +529,11 @@ answers to other questions. The prompt still forbids relying on an answer to ano
 
 ### 16.4 Coverage
 
-One rule, implemented once in `score_report` and stated once here:
+Rule 7 in section 12 is the single statement of the coverage rule, and `score_report` is its
+single implementation. v3.1 adds no second formula. It fixes the denominator: coverage divides
+by `applicable`, so `not_applicable` leaves the coverage denominator exactly as it leaves the
+score denominator.
 
-```
-coverage = assessed / applicable
-```
-
-`not_applicable` leaves the coverage denominator, exactly as it leaves the score denominator.
 The choice matters for documents without a posting. Under the old prepared-weight denominator
 such a document showed coverage 0.85 although nothing was missing. Under this rule it shows 1.0,
 and the range stays 100 to 100. `unable_to_assess` stays in `applicable`, so it still lowers
