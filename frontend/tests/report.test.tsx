@@ -225,3 +225,16 @@ it('says a content only report has no structure checks', () => {
   show(contentOnlyReport)
   expect(screen.getByText('No structure checks were returned. A content only report has no layout rows.')).toBeTruthy()
 })
+
+it('renders the report blocks in the contract order', () => {
+  const { container } = show()
+  const headings = [...container.querySelectorAll('h2')].map(node => node.textContent)
+  expect(headings).toEqual([
+    'Total score',
+    'Sub-scores',
+    'Dimensions',
+    'Findings',
+    'Structure findings',
+    'Analysis limitations',
+  ])
+})

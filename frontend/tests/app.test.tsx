@@ -161,3 +161,21 @@ it('keeps a stored report that matches the current shape', async () => {
   expect(screen.queryByText(/older version/)).toBeNull()
   expect(screen.getByText('71')).toBeTruthy()
 })
+
+it('sends the uploaded PDF as a second multipart part', async () => {
+  const fetch = mockApi()
+  const user = userEvent.setup()
+  render(<App />)
+
+  await user.upload(screen.getByLabelText('Choose CV file'), new File(['synthetic'], 'fixture.pdf'))
+  await screen.findByLabelText('CV text')
+  await user.click(screen.getByRole('button', { name: 'Analyse CV' }))
+  await screen.findByRole('heading', { name: 'The report.' })
+
+  const call = fetch.mock.calls.find(([url]) => String(url).endsWith('/analyses'))!
+  const body = call[1].body as FormData
+  expect(body).toBeInstanceOf(FormData)
+  expect(body.has('request')).toBe(true)
+  expect(body.has('file')).toBe(true)
+  expect((body.get('file') as File).name).toBe('fixture.pdf')
+})

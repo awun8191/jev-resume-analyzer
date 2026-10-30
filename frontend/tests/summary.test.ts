@@ -1,5 +1,7 @@
 import { expect, it } from 'vitest'
-import { ANSWER_ORDER, boxFindings, groupDimensions, percent, structureBoxes } from '../src/features/results/summary'
+import {
+  ANSWER_ORDER, boxFindings, groupDimensions, percent, structureBoxes, structureReasonText,
+} from '../src/features/results/summary'
 import { multiReport } from './contract/fixtures/responses'
 
 it('splits API dimension rows by owner without reordering them', () => {
@@ -46,4 +48,18 @@ it('turns only located, non-pass structure checks into boxes', () => {
   // A page with no box stays drawable, with no invented rectangle.
   expect(boxes[1].box).toBeNull()
   expect(boxes.some(box => box.severity === 'pass')).toBe(false)
+})
+
+it('maps each reported structure reason to one plain sentence', () => {
+  const reason = (code: string | null) =>
+    structureReasonText({ value: null, band: null, reason: code, assessed_weight: 0 })
+
+  expect(reason('unsupported_format')).toBe('Layout is scored for PDF uploads only.')
+  expect(reason('provider_error')).toBe('Layout check failed, content review is complete.')
+  expect(reason('render_failed')).toBe('The layout check could not render the pages.')
+  expect(reason('page_not_readable')).toBe('The layout check could not read the pages.')
+  expect(reason(null)).toContain('no reason was reported')
+  expect(reason('something_new')).toBe('Layout was not scored for this document.')
+  expect(structureReasonText({ value: 80, band: 'Strong evidence', reason: 'scored', assessed_weight: 100 }))
+    .toBeNull()
 })
