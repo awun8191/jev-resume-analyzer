@@ -2,13 +2,8 @@ import { useEffect, useRef } from 'react'
 import type { RefObject } from 'react'
 import type { AnalysisReport, Finding } from '../../api/schema'
 import Warnings from '../../components/Warnings'
-import {
-  ANSWER_GLYPH,
-  ANSWER_ORDER,
-  ANSWER_TEXT,
-  dimensionRows,
-  percent,
-} from './summary'
+import { ANSWER_GLYPH, ANSWER_ORDER, ANSWER_TEXT, percent } from './summary'
+import Dimensions from './Dimensions'
 import ScoreBlock from './ScoreBlock'
 import './report.css'
 
@@ -142,7 +137,6 @@ export default function ResultStage({
   onSelect: (id: string) => void
 }) {
   const o = r.overview
-  const dimensions = dimensionRows(r.findings)
   const selectedRef = useRef<HTMLElement>(null)
   const firstRun = useRef(true)
 
@@ -170,29 +164,10 @@ export default function ResultStage({
 
       <section className="section" aria-labelledby="dims-title">
         <div className="section__head">
-          <h2 className="section__title" id="dims-title">Dimension breakdown</h2>
-          <p className="section__note">Counts, not scores</p>
+          <h2 className="section__title" id="dims-title">Dimensions</h2>
+          <p className="section__note">Scored rows by owner</p>
         </div>
-        {dimensions.length ? (
-          <ul className="dims">
-            {dimensions.map(row => (
-              <li className="dim" key={row.dimension}>
-                <p className="dim__name">{row.dimension}</p>
-                <ul className="dim__counts">
-                  {ANSWER_ORDER.map(answer => (
-                    <li key={answer} className={row.counts[answer] === 0 ? 'is-zero' : undefined}>
-                      <span className="dim__glyph" aria-hidden="true">{ANSWER_GLYPH[answer]}</span>
-                      <span className="dim__n">{row.counts[answer]}</span>
-                      <span className="dim__s">{ANSWER_TEXT[answer]}</span>
-                    </li>
-                  ))}
-                </ul>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="help">No findings were returned, so there is nothing to count.</p>
-        )}
+        <Dimensions rows={r.dimensions} />
       </section>
 
       <section className="section" aria-labelledby="findings-title">

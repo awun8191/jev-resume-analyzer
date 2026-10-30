@@ -90,19 +90,33 @@ it('shows no number at all when nothing could be scored', () => {
   expect(block.textContent).not.toMatch(/\b0\/ 100\b/)
 })
 
-it('counts findings per dimension in first-seen order', () => {
+it('groups dimension rows by owner and keeps a null value a word', () => {
   const { container } = show()
-  const rows = [...container.querySelectorAll('.dim')]
-  expect(rows.map(row => row.querySelector('.dim__name')!.textContent)).toEqual([
+  const groups = [...container.querySelectorAll('.dim-group')]
+  expect(groups.map(group => group.getAttribute('data-owner'))).toEqual(['content', 'structure'])
+
+  const content = [...groups[0].querySelectorAll('.dim')]
+  expect(content.map(row => row.querySelector('.dim__name')!.textContent)).toEqual([
     'Work clarity',
     'Scope',
     'Responsibility alignment',
   ])
-  expect(rows.map(row => [...row.querySelectorAll('.dim__n')].map(n => n.textContent))).toEqual([
-    ['1', '1', '0', '0'],
-    ['0', '0', '1', '0'],
-    ['0', '0', '0', '1'],
+  expect(content[0].textContent).toContain('40 of 100 points')
+  expect(content[1].textContent).toContain('Not scored')
+  expect(content[1].querySelector('.dim__value')!.className).toContain('dim__value--none')
+
+  const structure = [...groups[1].querySelectorAll('.dim')]
+  expect(structure.map(row => row.querySelector('.dim__name')!.textContent)).toEqual([
+    'Layout order',
+    'Page budget',
   ])
+  expect(structure[0].querySelector('.dim__value span')!.textContent).toBe('88')
+  expect(structure[1].textContent).toContain('Not scored')
+})
+
+it('says when a report has no dimension rows', () => {
+  show({ ...multiReport, dimensions: [] })
+  expect(screen.getByText('No dimension rows were returned for this report.')).toBeTruthy()
 })
 
 it('shows every answer state as a word plus a shape', () => {

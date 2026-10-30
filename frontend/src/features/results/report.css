@@ -220,7 +220,12 @@
   margin-top: var(--s4);
 }
 
-/* Dimension counts */
+/* Dimension rows from the API, grouped by the score that owns them. The value
+ * is the row's own score, not a count of findings. */
+.dim-group + .dim-group {
+  margin-top: var(--s5);
+}
+
 .dims {
   padding: 0;
   list-style: none;
@@ -229,66 +234,52 @@
 
 .dim {
   display: grid;
-  gap: var(--s2);
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: var(--s1) var(--s4);
   padding-block: var(--s3);
   border-bottom: 1px solid var(--rule);
 }
 
 .dim__name {
+  grid-column: 1;
+  grid-row: 1;
   font-size: var(--fs-3);
   font-weight: 600;
   letter-spacing: -0.01em;
 }
 
-.dim__counts {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--s2) var(--s4);
-  padding: 0;
-  list-style: none;
-}
-
-.dim__counts li {
-  display: grid;
-  grid-template-columns: 12px auto;
-  column-gap: 6px;
-  row-gap: 2px;
-  min-width: 0;
-}
-
-.dim__glyph {
-  grid-row: 1;
-  align-self: center;
-  font-size: 11px;
-  line-height: 1;
-  width: 10px;
-}
-
-.dim__n {
-  grid-row: 1;
-  font-size: var(--fs-3);
-  font-weight: 600;
-  line-height: 1.2;
-}
-
-.dim__s {
-  grid-column: 2;
+.dim__meta {
+  grid-column: 1;
   grid-row: 2;
   font-size: var(--fs-1);
-  line-height: 1.3;
+  letter-spacing: 0.04em;
   color: var(--ink-2);
 }
 
-.dim__counts li.is-zero .dim__n,
-.dim__counts li.is-zero .dim__s {
-  color: var(--ink-3);
+.dim__value {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+  font-size: var(--fs-4);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
 }
 
-@media (min-width: 520px) {
-  .dim__counts {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: var(--s3);
-  }
+.dim__value small {
+  margin-left: var(--s1);
+  font-size: var(--fs-1);
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--ink-2);
+}
+
+.dim__value--none {
+  font-size: var(--fs-2);
+  font-weight: 400;
+  color: var(--ink-2);
 }
 
 @media (max-width: 520px) {

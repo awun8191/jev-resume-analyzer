@@ -1,4 +1,4 @@
-import type { AnswerCategory, Finding, ScoreMode, Scores, StructureScore } from '../../api/schema'
+import type { AnswerCategory, Dimension, Finding, ScoreMode, Scores, StructureScore } from '../../api/schema'
 import type { BoxFinding } from '../document/types'
 
 /* Fixed order so counts and distributions read the same way everywhere. */
@@ -46,29 +46,13 @@ export function boxFindings(findings: Finding[]): BoxFinding[] {
 
 export const percent = (n: number) => `${(n * 100).toFixed(1)}%`
 
-export interface DimensionRow {
-  dimension: string
-  total: number
-  counts: Record<AnswerCategory, number>
-}
-
-/* Temporary count rows, replaced by the API dimension rows in the next commit. */
-export function dimensionRows(findings: Finding[]): DimensionRow[] {
-  const rows = new Map<string, DimensionRow>()
-  for (const finding of findings) {
-    let row = rows.get(finding.dimension)
-    if (!row) {
-      row = {
-        dimension: finding.dimension,
-        total: 0,
-        counts: { present: 0, absent: 0, not_applicable: 0, unable_to_assess: 0 },
-      }
-      rows.set(finding.dimension, row)
-    }
-    row.counts[finding.answer] += 1
-    row.total += 1
+/* API dimension rows, split by the score that owns them. Order is kept as the
+ * server sent it. A row with a null value is shown as not scored. */
+export function groupDimensions(rows: Dimension[]): { content: Dimension[]; structure: Dimension[] } {
+  return {
+    content: rows.filter(row => row.owner === 'content'),
+    structure: rows.filter(row => row.owner === 'structure'),
   }
-  return [...rows.values()]
 }
 
 /* The score block speaks in words when a score is missing. A null is never a

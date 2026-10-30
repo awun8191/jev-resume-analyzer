@@ -1,20 +1,16 @@
 import { expect, it } from 'vitest'
-import { ANSWER_ORDER, boxFindings, dimensionRows, percent } from '../src/features/results/summary'
+import { ANSWER_ORDER, boxFindings, groupDimensions, percent } from '../src/features/results/summary'
 import { multiReport } from './contract/fixtures/responses'
 
-it('returns nothing for no findings', () => {
-  expect(dimensionRows([])).toEqual([])
+it('splits API dimension rows by owner without reordering them', () => {
+  const groups = groupDimensions(multiReport.dimensions)
+  expect(groups.content.map(row => row.key)).toEqual(['work_clarity', 'scope', 'responsibility_alignment'])
+  expect(groups.structure.map(row => row.key)).toEqual(['layout_order', 'page_budget'])
+  expect([...groups.content, ...groups.structure]).toHaveLength(multiReport.dimensions.length)
 })
 
-it('groups findings by dimension and counts each answer once', () => {
-  const rows = dimensionRows(multiReport.findings)
-  expect(rows.map(row => row.dimension)).toEqual(['Work clarity', 'Scope', 'Responsibility alignment'])
-  expect(rows[0]).toEqual({
-    dimension: 'Work clarity',
-    total: 2,
-    counts: { present: 1, absent: 1, not_applicable: 0, unable_to_assess: 0 },
-  })
-  expect(rows.reduce((sum, row) => sum + row.total, 0)).toBe(multiReport.findings.length)
+it('returns empty groups for no rows', () => {
+  expect(groupDimensions([])).toEqual({ content: [], structure: [] })
 })
 
 it('keeps a fixed answer order and formats probabilities to one decimal', () => {
