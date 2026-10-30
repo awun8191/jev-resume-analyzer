@@ -1,5 +1,7 @@
 import pytest
+from pydantic import ValidationError
 
+from app.models.analyses import Finding
 from app.rubrics import cv_review_v3 as rubric
 from app.rubrics import scoring_v3 as scoring
 from app.rubrics.cv_review_v3 import DIMENSION_WEIGHTS, DIMENSIONS, IDS, WEIGHTS
@@ -257,3 +259,104 @@ def test_score_content_reports_raw_weights():
     score, earned, assessed, applicable, rows = score_content(answers("absent"))
     assert (score, earned, assessed, applicable) == (0, 0, 100, 100)
     assert len(rows) == len(DIMENSIONS)
+
+
+# --- Sections: the frontend maps one finding to one resume box by section id. ---
+
+SECTION_BY_ID = {
+    "impact_outcome": "all",
+    "impact_magnitude": "all",
+    "scope_actors": "all",
+    "scope_size": "all",
+    "ownership_own_action": "all",
+    "ownership_decision": "all",
+    "relevance_responsibility": "all",
+    "relevance_requirement": "all",
+    "clarity_concrete": "all",
+    "clarity_self_contained": "all",
+    "complete_roles": "experience",
+    "complete_education": "education",
+    "complete_projects": "projects",
+    "skills_evidence": "skills",
+}
+
+
+def test_section_values_are_the_documented_set():
+    assert rubric.SECTION_VALUES == (
+        "header", "summary", "experience", "education", "skills", "projects", "all"
+    )
+
+
+def test_every_question_has_a_valid_section():
+    assert len(rubric.QUESTIONS) == 14
+    assert all(question.section in rubric.SECTION_VALUES for question in rubric.QUESTIONS)
+
+
+def test_section_map_covers_every_question_id():
+    assert len(rubric.SECTIONS) == len(IDS) == 14
+    assert set(rubric.SECTIONS) == set(IDS)
+    assert all(rubric.section_for(question_id) == rubric.SECTIONS[question_id]
+               for question_id in IDS)
+
+
+def test_section_map_matches_the_expected_contract():
+    assert rubric.SECTIONS == SECTION_BY_ID
+
+
+def test_section_for_unknown_id_raises():
+    with pytest.raises(KeyError):
+        rubric.section_for("not_a_question")
+
+
+def test_single_section_questions_use_that_section_only():
+    # A question that names one section must not fall back to all.
+    assert rubric.section_for("skills_evidence") == "skills"
+    assert rubric.section_for("complete_roles") == "experience"
+    assert rubric.section_for("complete_education") == "education"
+    assert rubric.section_for("complete_projects") == "projects"
+
+
+def test_as_dict_serializes_section_on_fixes():
+    payload = scoring.as_dict(score_report(answers("absent")))
+    assert payload["fixes"]
+    for fix in payload["fixes"]:
+        assert fix["section"] == SECTION_BY_ID[fix["question_id"]]
+
+
+def test_as_dict_serializes_section_on_dimension_rows():
+    payload = scoring.as_dict(score_report(answers()))
+    rows = {row["dimension"]: row for row in payload["dimensions"]}
+    assert all(row["section"] in rubric.SECTION_VALUES for row in rows.values())
+    assert rows["Skills"]["section"] == "skills"
+    # Completeness reads roles, education and projects, so it has no single box.
+    assert rows["Completeness"]["section"] == "all"
+    assert rows["Impact"]["section"] == "all"
+
+
+def test_fix_object_carries_section():
+    result = score_report(answers("absent"))
+    assert all(fix.section == SECTION_BY_ID[fix.question_id] for fix in result.fixes)
+    assert all(row.section in rubric.SECTION_VALUES for row in result.dimensions)
+
+
+def _finding(**overrides):
+    payload = {
+        "question_id": "skills_evidence",
+        "dimension": "Skills",
+        "scope": "general_review",
+        "question": "question text",
+        "criteria": ["present: yes"],
+        "answer": "present",
+        "probabilities": None,
+        "confidence": None,
+        "rubric_explanation": None,
+    }
+    payload.update(overrides)
+    return Finding(**payload)
+
+
+def test_finding_section_is_optional_and_validated():
+    assert _finding().section is None
+    assert _finding(section="skills").model_dump()["section"] == "skills"
+    with pytest.raises(ValidationError):
+        _finding(section="hobbies")
