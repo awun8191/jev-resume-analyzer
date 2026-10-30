@@ -1,7 +1,7 @@
 import { expect, it } from 'vitest'
 import {
   ANSWER_ORDER, boxFindings, countsText, findingLabel, groupDimensions, groupFindings, percent,
-  structureBoxes, structureReasonText, topFixes,
+  rangeText, structureBoxes, structureReasonText, topFixes,
 } from '../src/features/results/summary'
 import { multiReport } from './contract/fixtures/responses'
 
@@ -81,6 +81,11 @@ it('counts prepared, returned and assessable without inventing a total', () => {
     .toBe('5 prepared · 4 returned · 2 assessable · 1 not returned')
   expect(countsText({ questions_total: 3, questions_answered: 3, questions_assessable: 3, rating: null }))
     .toBe('3 prepared · 3 returned · 3 assessable')
+})
+
+it('prints a range as one value when both ends match', () => {
+  expect(rangeText([46, 69])).toBe('46 to 69')
+  expect(rangeText([91, 91])).toBe('91')
 })
 
 it('maps each reported structure reason to one plain sentence', () => {
