@@ -28,7 +28,7 @@ test('unavailable backend: keyboard upload, honest error, no report', async ({ p
 
   await expect(page.getByRole('alert')).toContainText('HTTP 502')
   await expect(page.getByLabel('CV text')).toHaveCount(0)
-  await expect(page.getByRole('heading', { name: 'The report.' })).toHaveCount(0)
+  await expect(page.getByRole('heading', { name: 'Report' })).toHaveCount(0)
   await page.screenshot({ path: 'test-results/real-backend-unavailable.png', fullPage: true })
 })
 
@@ -95,7 +95,7 @@ for (const width of [375, 1280]) {
     await expect(page.getByLabel('Job posting', { exact: true })).toHaveValue('SYNTHETIC job posting')
 
     await page.getByRole('button', { name: 'Analyse CV' }).click()
-    await expect(page.getByRole('heading', { name: 'The report.' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Report' })).toBeVisible()
     await expect(page.locator('.score .score__value')).toContainText('65')
     await expect(page.locator('.score__flags')).toContainText('Content and layout')
     await expect(page.locator('.subscore')).toHaveCount(2)
@@ -146,7 +146,7 @@ for (const width of [375, 1280]) {
     expect(await page.evaluate(jevKeys)).toHaveLength(1)
 
     await page.getByRole('button', { name: 'Edit text and run a new review' }).click()
-    await expect(page.getByRole('heading', { name: 'The report.' })).toHaveCount(0)
+    await expect(page.getByRole('heading', { name: 'Report' })).toHaveCount(0)
     await page.getByRole('button', { name: 'New review' }).click()
     await page.getByRole('button', { name: 'Clear this tab' }).click()
     await expect(page.getByLabel('Choose CV file')).toBeVisible()

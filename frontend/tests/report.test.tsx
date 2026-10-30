@@ -37,7 +37,7 @@ it('shows the total, band, mode and coverage in one compact block', () => {
   expect(block.getAttribute('data-mode')).toBe('combined')
   expect(block.querySelector('.score__value')!.textContent).toBe('65/ 100')
   expect(block.textContent).toContain('Adequate evidence')
-  expect(block.textContent).toContain('Content and layout')
+  expect(block.textContent).not.toContain('Content and layout')
   expect(block.textContent).toContain('80%')
   expect(block.textContent).toContain('5 prepared · 4 returned · 2 assessable · 1 not returned')
   // A combined total has no range of its own, so none is shown.

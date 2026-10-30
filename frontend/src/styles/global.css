@@ -86,37 +86,6 @@ a {
   padding: var(--s4);
 }
 
-.chip {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s1);
-  min-height: 24px;
-  padding: 2px 10px;
-  border: 1px solid var(--rule-2);
-  border-radius: var(--r-pill);
-  font-size: var(--fs-1);
-  font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--ink-2);
-  white-space: nowrap;
-}
-
-.chip--ink {
-  border-color: var(--ink);
-  color: var(--ink);
-}
-
-.chip--accent {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-.chip--quiet {
-  border-color: var(--rule);
-}
-
 .help {
   font-size: var(--fs-2);
   line-height: 1.5;

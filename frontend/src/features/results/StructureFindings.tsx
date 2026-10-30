@@ -28,7 +28,7 @@ export default function StructureFindings({
         const head = (
           <>
             <span className="sfind__label">{finding.label}</span>
-            <span className="sfind__severity chip" data-severity={finding.severity}>
+            <span className="sfind__severity" data-severity={finding.severity}>
               {SEVERITY_TEXT[finding.severity]}
             </span>
             <span className="sfind__page">

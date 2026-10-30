@@ -35,8 +35,12 @@ export default function ScoreBlock({ scores, overview }: { scores: Scores; overv
           {scores.total.band && <p className="score__band">{scores.total.band}</p>}
         </div>
         <div className="score__flags">
-          <p className="chip chip--ink">{MODE_LABEL[scores.total.mode]}</p>
-          {range && range[0] !== range[1] && <p className="chip">Range {rangeText(range)}</p>}
+          {scores.total.mode !== 'combined' && (
+            <p className="label">{MODE_LABEL[scores.total.mode]}</p>
+          )}
+          {range && range[0] !== range[1] && (
+            <p className="subscore__reason">Range {rangeText(range)}</p>
+          )}
         </div>
       </div>
 

@@ -55,10 +55,10 @@ it('preserves edited text and posting after a failure, reports, edits and resets
   await screen.findByRole('alert')
   expect((screen.getByLabelText('CV text') as HTMLTextAreaElement).value).toBe('Edited synthetic CV')
   expect((screen.getByLabelText('Job posting') as HTMLTextAreaElement).value).toBe('Synthetic posting')
-  expect(screen.queryByRole('heading', { name: 'The report.' })).toBeNull()
+  expect(screen.queryByRole('heading', { name: 'Report' })).toBeNull()
 
   await user.click(screen.getByRole('button', { name: 'Analyse CV' }))
-  await screen.findByRole('heading', { name: 'The report.' })
+  await screen.findByRole('heading', { name: 'Report' })
   expect(screen.getByText('71')).toBeTruthy()
   await user.click(screen.getAllByRole('button', { name: /^Work clarity:/ })[0])
   expect(screen.getByText('70.0%')).toBeTruthy()
@@ -70,7 +70,7 @@ it('preserves edited text and posting after a failure, reports, edits and resets
   expect(stored.report.analysis_id).toBe('synthetic-test-request')
 
   await user.click(screen.getByRole('button', { name: 'Edit text and run a new review' }))
-  expect(screen.queryByRole('heading', { name: 'The report.' })).toBeNull()
+  expect(screen.queryByRole('heading', { name: 'Report' })).toBeNull()
   expect((screen.getByLabelText('CV text') as HTMLTextAreaElement).value).toBe('Edited synthetic CV')
 
   await user.click(screen.getByRole('button', { name: 'New review' }))
@@ -89,12 +89,12 @@ it('restores the report and text from this tab after a reload', async () => {
   await user.upload(screen.getByLabelText('Choose CV file'), new File(['synthetic'], 'fixture.pdf'))
   await screen.findByLabelText('CV text')
   await user.click(screen.getByRole('button', { name: 'Analyse CV' }))
-  await screen.findByRole('heading', { name: 'The report.' })
+  await screen.findByRole('heading', { name: 'Report' })
 
   view.unmount()
   render(<App />)
 
-  expect(await screen.findByRole('heading', { name: 'The report.' })).toBeTruthy()
+  expect(await screen.findByRole('heading', { name: 'Report' })).toBeTruthy()
   expect(screen.getByText('Re-attach the file')).toBeTruthy()
   expect(screen.getAllByText('fixture.pdf').length).toBeGreaterThan(0)
 })
@@ -141,7 +141,7 @@ it('drops a stored report from before scores existed and returns to check text',
   render(<App />)
 
   expect(await screen.findByLabelText('CV text')).toBeTruthy()
-  expect(screen.queryByRole('heading', { name: 'The report.' })).toBeNull()
+  expect(screen.queryByRole('heading', { name: 'Report' })).toBeNull()
   expect(screen.getByText(/older version/)).toBeTruthy()
   expect((screen.getByLabelText('CV text') as HTMLTextAreaElement).value).toBe(extraction.text)
 
@@ -160,7 +160,7 @@ it('keeps a stored report that matches the current shape', async () => {
 
   render(<App />)
 
-  expect(await screen.findByRole('heading', { name: 'The report.' })).toBeTruthy()
+  expect(await screen.findByRole('heading', { name: 'Report' })).toBeTruthy()
   expect(screen.queryByText(/older version/)).toBeNull()
   expect(screen.getByText('71')).toBeTruthy()
 })
@@ -173,7 +173,7 @@ it('sends the uploaded PDF as a second multipart part', async () => {
   await user.upload(screen.getByLabelText('Choose CV file'), new File(['synthetic'], 'fixture.pdf'))
   await screen.findByLabelText('CV text')
   await user.click(screen.getByRole('button', { name: 'Analyse CV' }))
-  await screen.findByRole('heading', { name: 'The report.' })
+  await screen.findByRole('heading', { name: 'Report' })
 
   const call = fetch.mock.calls.find(([url]) => String(url).endsWith('/analyses'))!
   const body = call[1].body as FormData
@@ -191,7 +191,7 @@ it('resets the whole tab from the report stage', async () => {
   await user.upload(screen.getByLabelText('Choose CV file'), new File(['synthetic'], 'fixture.pdf'))
   await screen.findByLabelText('CV text')
   await user.click(screen.getByRole('button', { name: 'Analyse CV' }))
-  await screen.findByRole('heading', { name: 'The report.' })
+  await screen.findByRole('heading', { name: 'Report' })
   expect(jevKeys().length).toBeGreaterThan(0)
 
   await user.click(screen.getByRole('button', { name: 'New review' }))
@@ -201,7 +201,7 @@ it('resets the whole tab from the report stage', async () => {
   await user.click(screen.getByRole('button', { name: 'Clear this tab' }))
 
   expect(screen.getByText('Drop a PDF or DOCX here.')).toBeTruthy()
-  expect(screen.queryByRole('heading', { name: 'The report.' })).toBeNull()
+  expect(screen.queryByRole('heading', { name: 'Report' })).toBeNull()
   expect(jevKeys()).toEqual([])
   expect(localStorage.length).toBe(0)
 })
@@ -214,13 +214,13 @@ it('keeps the report when the reset question is cancelled', async () => {
   await user.upload(screen.getByLabelText('Choose CV file'), new File(['synthetic'], 'fixture.pdf'))
   await screen.findByLabelText('CV text')
   await user.click(screen.getByRole('button', { name: 'Analyse CV' }))
-  await screen.findByRole('heading', { name: 'The report.' })
+  await screen.findByRole('heading', { name: 'Report' })
 
   await user.click(screen.getByRole('button', { name: 'New review' }))
   await user.click(screen.getByRole('button', { name: 'Cancel' }))
 
   expect(screen.queryByRole('dialog')).toBeNull()
-  expect(screen.getByRole('heading', { name: 'The report.' })).toBeTruthy()
+  expect(screen.getByRole('heading', { name: 'Report' })).toBeTruthy()
 })
 
 it('offers New review after upload, not on the empty stage', async () => {
@@ -235,7 +235,7 @@ it('offers New review after upload, not on the empty stage', async () => {
   expect(screen.getByRole('button', { name: 'New review' })).toBeTruthy()
 
   await user.click(screen.getByRole('button', { name: 'Analyse CV' }))
-  await screen.findByRole('heading', { name: 'The report.' })
+  await screen.findByRole('heading', { name: 'Report' })
   expect(screen.getByRole('button', { name: 'New review' })).toBeTruthy()
 })
 
@@ -257,20 +257,20 @@ it('runs the extract again when a second file is re-attached', async () => {
   await user.upload(screen.getByLabelText('Choose CV file'), new File(['one'], 'first.pdf'))
   await screen.findByLabelText('CV text')
   await user.click(screen.getByRole('button', { name: 'Analyse CV' }))
-  await screen.findByRole('heading', { name: 'The report.' })
+  await screen.findByRole('heading', { name: 'Report' })
   expect(screen.getByText('71')).toBeTruthy()
 
   // A reload keeps the report but not the file, so the pane asks for it again.
   view.unmount()
   render(<App />)
-  await screen.findByRole('heading', { name: 'The report.' })
+  await screen.findByRole('heading', { name: 'Report' })
 
   await user.upload(screen.getByLabelText('Re-attach the CV file'), new File(['two'], 'second.pdf'))
 
   await waitFor(() =>
     expect((screen.getByLabelText('CV text') as HTMLTextAreaElement).value).toBe('SECOND DOCUMENT TEXT'))
   expect(extracts).toBe(2)
-  expect(screen.queryByRole('heading', { name: 'The report.' })).toBeNull()
+  expect(screen.queryByRole('heading', { name: 'Report' })).toBeNull()
   expect(screen.queryByText('71')).toBeNull()
 
   const stored = JSON.parse(sessionStorage.getItem('jev.state.v1')!)

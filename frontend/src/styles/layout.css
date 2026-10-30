@@ -73,41 +73,11 @@
 }
 
 .health {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s2);
-  min-height: 24px;
-  padding: 2px 10px;
-  border: 1px solid var(--rule);
-  border-radius: var(--r-pill);
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: var(--ink-2);
-}
-
-.health__mark {
-  display: block;
-  width: 8px;
-  height: 8px;
-  border-radius: var(--r-pill);
-  border: 1px solid var(--ink-2);
-}
-
-.health--ok .health__mark {
-  background: var(--ink);
-  border-color: var(--ink);
-}
-
-.health--down .health__mark {
-  border-color: var(--accent);
-  background: var(--paper);
-}
-
-.health--down {
-  color: var(--ink);
-  border-color: var(--rule-2);
+  color: var(--accent);
 }
 
 /* The one persistent escape hatch. It stays 44px tall on every stage. */
@@ -400,30 +370,6 @@ main:focus {
   padding: var(--s3) var(--s4);
   font-size: var(--fs-2);
   line-height: 1.5;
-  color: var(--ink-2);
-}
-
-/* Footer */
-.footer {
-  margin-top: auto;
-  border-top: 1px solid var(--rule);
-  padding-block: var(--s4) calc(var(--s5) + var(--safe-b));
-  color: var(--ink-3);
-  font-size: var(--fs-1);
-  line-height: 1.5;
-}
-
-.footer__grid {
-  display: grid;
-  gap: var(--s2);
-  max-width: 70ch;
-}
-
-.footer p {
-  max-width: 70ch;
-}
-
-.footer .label {
   color: var(--ink-2);
 }
 

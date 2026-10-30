@@ -144,10 +144,9 @@ export default function App() {
         <div className="shell masthead__row">
           <p className="wordmark"><strong>JEV</strong><span>Resume Analyzer</span></p>
           <div className="masthead__tools">
-            <p className={`health health--${health}`} role="status">
-              <span className="health__mark" aria-hidden="true" />
-              {HEALTH_TEXT[health]}
-            </p>
+            {health === 'down' && (
+              <p className="health" role="status">{HEALTH_TEXT.down}</p>
+            )}
             {showNewReview && (
               <button
                 ref={newReviewRef}
@@ -282,14 +281,6 @@ export default function App() {
           </div>
         )}
       </main>
-
-      <footer className="footer">
-        <div className="shell footer__grid">
-          <p className="label">Local demo</p>
-          <p>Stored in this tab only. No accounts, no database. The file is never saved.</p>
-          <p>Analysis sends CV text and any job posting to TypeSafe. Provider retention terms are not verified. Not an offline tool.</p>
-        </div>
-      </footer>
     </div>
   )
 }
