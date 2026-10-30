@@ -127,14 +127,6 @@
   color: var(--ink-2);
 }
 
-.subscore__value::before {
-  content: '';
-  width: 16px;
-  height: 1px;
-  background: var(--ink-2);
-  flex: none;
-}
-
 .subscore .help {
   margin-top: var(--s2);
   font-size: var(--fs-1);

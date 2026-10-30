@@ -209,7 +209,6 @@ export default function ResultStage({
       <section className="section" aria-labelledby="subscores-title">
         <div className="section__head">
           <h2 className="section__title" id="subscores-title">Sub-scores</h2>
-          <p className="section__note">No values yet</p>
         </div>
         <ul className="subscores">
           {SUBSCORES.map(slot => (
