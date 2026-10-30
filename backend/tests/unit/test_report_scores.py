@@ -40,7 +40,7 @@ def every(choice: str) -> dict[str, str]:
 def test_one_finding_per_v3_question_in_rubric_order():
     findings = build_findings(provider(every("present")), QUESTIONS)
     assert [finding.question_id for finding in findings] == list(IDS)
-    assert len(findings) == 14
+    assert len(findings) == len(IDS)
     for finding, question in zip(findings, QUESTIONS, strict=True):
         assert finding.dimension == question.dimension
         assert finding.section == question.section
@@ -72,7 +72,7 @@ def test_a_question_with_no_answer_is_left_out_not_guessed():
     chosen = every("present")
     del chosen["impact_outcome"]
     findings = build_findings(provider(chosen), QUESTIONS)
-    assert len(findings) == 13
+    assert len(findings) == len(IDS) - 1
     assert "impact_outcome" not in {finding.question_id for finding in findings}
 
 
@@ -105,8 +105,8 @@ def test_dimension_sections_follow_the_questions():
 
 def test_warnings_name_the_alignment_scope_only_when_a_posting_exists():
     findings = build_findings(provider(every("present")), QUESTIONS)
-    without = build_warnings(findings, 14, False, ())
-    with_job = build_warnings(findings, 14, True, ())
+    without = build_warnings(findings, len(IDS), False, ())
+    with_job = build_warnings(findings, len(IDS), True, ())
     assert "alignment_scope" not in {warning.code for warning in without}
     assert "alignment_scope" in {warning.code for warning in with_job}
 
@@ -114,7 +114,7 @@ def test_warnings_name_the_alignment_scope_only_when_a_posting_exists():
 def test_unable_to_assess_is_reported_not_hidden():
     chosen = {**every("present"), "impact_outcome": "unable_to_assess"}
     findings = build_findings(provider(chosen), QUESTIONS)
-    warnings = build_warnings(findings, 14, False, ())
+    warnings = build_warnings(findings, len(IDS), False, ())
     assert "unable_to_assess" in {warning.code for warning in warnings}
 
 
@@ -122,7 +122,7 @@ def test_a_short_answer_set_warns_about_a_partial_response():
     chosen = every("present")
     del chosen["skills_evidence"]
     findings = build_findings(provider(chosen), QUESTIONS)
-    warnings = build_warnings(findings, 14, False, ())
+    warnings = build_warnings(findings, len(IDS), False, ())
     assert "partial_response" in {warning.code for warning in warnings}
 
 
@@ -130,7 +130,7 @@ def test_structure_warnings_are_carried_through_unchanged():
     from app.models.documents import WarningItem
 
     warning = WarningItem(code="structure_unavailable", message="No file was supplied.")
-    warnings = build_warnings([], 14, False, (warning,))
+    warnings = build_warnings([], len(IDS), False, (warning,))
     assert warnings[-1] == warning
 
 
@@ -209,6 +209,6 @@ def test_content_coverage_counts_only_the_decided_weight():
 
     answers = every("present") | {"impact_outcome": "unable_to_assess"}
     scores = assemble_scores(score_report(answers), StructureOutcome())
-    assert scores.content.assessed_weight == 85
-    assert scores.content.coverage == 0.85
-    assert scores.content.range == (85, 100)
+    assert scores.content.assessed_weight == 92
+    assert scores.content.coverage == 0.92
+    assert scores.content.range == (92, 100)
