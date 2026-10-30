@@ -1,67 +1,71 @@
-import type { RefObject } from 'react'
 import type { StructureFinding } from '../../api/schema'
-import { SEVERITY_TEXT } from './summary'
+import { SEVERITY_TEXT, bandOf, scoreText, structureScore } from './summary'
 
-/* Layout checks. A check with a page is a click target and moves the document
- * pane to that page. A pass has no location, so it gets no target and no box. */
+/* Structure findings. One row per check: what it is, how bad it is, what it
+ * cost, where it is, and the score that leaves the row with. A check with a
+ * page is a select target and moves the document pane to it. */
 export default function StructureFindings({
   findings,
   selectedId,
   onSelect,
-  nodeRef,
 }: {
   findings: StructureFinding[]
   selectedId: string | null
   onSelect: (id: string) => void
-  nodeRef: RefObject<HTMLLIElement>
 }) {
   if (!findings.length) {
     return <p className="help">No structure checks were returned for this report.</p>
   }
 
   return (
-    <ul className="sfinds">
+    <ul className="srows">
       {findings.map(finding => {
         const id = `structure:${finding.id}`
         const selected = id === selectedId
         const located = finding.severity !== 'pass' && finding.page != null
-        const head = (
+        const score = structureScore(finding)
+
+        const body = (
           <>
-            <span className="sfind__label">{finding.label}</span>
-            <span className="sfind__severity" data-severity={finding.severity}>
-              {SEVERITY_TEXT[finding.severity]}
+            <span className="srow__name">{finding.label}</span>
+            <span className="srow__meta">
+              <span className="srow__severity" data-severity={finding.severity}>
+                {SEVERITY_TEXT[finding.severity]}
+              </span>
+              {finding.severity !== 'unassessable' && (
+                <span>{finding.points_lost === 0 ? 'No points lost' : `${finding.points_lost} points lost`}</span>
+              )}
+              {located && <span>Page {finding.page! + 1}</span>}
             </span>
-            <span className="sfind__page">
-              {located ? `Page ${finding.page! + 1}` : 'No location'}
+            <span className="srow__score" data-band={bandOf(score) ?? undefined}>
+              {scoreText(score)}
             </span>
           </>
         )
+
         return (
           <li
-            className="sfind"
+            className="srow"
             key={finding.id}
             data-severity={finding.severity}
             data-selected={selected}
-            ref={selected ? nodeRef : undefined}
           >
             {located ? (
               <button
                 type="button"
-                className="sfind__select"
+                className="srow__head"
                 aria-pressed={selected}
-                aria-label={`${finding.label}. ${SEVERITY_TEXT[finding.severity]}. Page ${finding.page! + 1}.`}
+                aria-label={`${finding.label}. ${SEVERITY_TEXT[finding.severity]}. ${
+                  finding.points_lost
+                } points lost. Page ${finding.page! + 1}. Score ${scoreText(score)}.`}
                 onClick={() => onSelect(id)}
                 onFocus={() => onSelect(id)}
               >
-                {head}
+                {body}
               </button>
             ) : (
-              <div className="sfind__head">{head}</div>
+              <div className="srow__head">{body}</div>
             )}
-            <p className="sfind__evidence">{finding.evidence}</p>
-            <p className="sfind__meta">
-              {finding.points_lost > 0 ? `${finding.points_lost} points lost` : 'No points lost'}
-            </p>
           </li>
         )
       })}
