@@ -25,9 +25,21 @@ function Value({
   )
 }
 
+const STRUCTURE_NULL: Record<string, string> = {
+  unsupported_format: 'PDF only',
+  provider_error: 'Layout check failed',
+  render_failed: 'Page render failed',
+  page_not_readable: 'Page unreadable',
+  page_empty: 'Page empty',
+  insufficient_evidence: 'Not enough evidence',
+  no_file: 'No file',
+}
+
 /* The whole verdict: one total line, then the two halves it is built from.
  * Nothing else lives here. */
 export default function ScoreBlock({ scores }: { scores: Scores }) {
+  const structureReason =
+    scores.structure.value === null ? STRUCTURE_NULL[scores.structure.reason ?? ''] : null
   return (
     <section className="score" aria-label="Score">
       <p className="score__total">
@@ -39,6 +51,7 @@ export default function ScoreBlock({ scores }: { scores: Scores }) {
           <dt className="label">Structure</dt>
           <dd>
             <Value value={scores.structure.value} band={scores.structure.band} size="split" />
+            {structureReason && <p className="score__note">{structureReason}</p>}
           </dd>
         </div>
         <div className="score__half" data-owner="content">

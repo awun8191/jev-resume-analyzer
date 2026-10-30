@@ -129,6 +129,16 @@
   letter-spacing: -0.01em;
 }
 
+/* Why a half has no score. Three words at most. */
+.score__note {
+  margin-top: 2px;
+  font-family: var(--sans);
+  font-size: var(--fs-1);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
 /* The two halves the total is built from. Two columns, one hairline between. */
 .score__split {
   display: grid;
