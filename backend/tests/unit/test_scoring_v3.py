@@ -17,7 +17,7 @@ def answers(value="present", drop=(), **overrides):
 
 
 def test_rubric_shape_and_weights():
-    assert len(rubric.QUESTIONS) == 14
+    assert len(rubric.QUESTIONS) == 20
     assert len(IDS) == len(set(IDS))
     assert sum(WEIGHTS.values()) == 100
     assert DIMENSIONS == ("Impact", "Scope", "Ownership", "Relevance", "Clarity",
@@ -26,12 +26,54 @@ def test_rubric_shape_and_weights():
         "Impact": 25, "Scope": 15, "Ownership": 15, "Relevance": 15,
         "Clarity": 15, "Completeness": 10, "Skills": 5,
     }
+    assert WEIGHTS == {
+        "impact_outcome": 8,
+        "impact_prevalence": 9,
+        "impact_magnitude": 4,
+        "impact_magnitude_prevalence": 4,
+        "scope_actors": 5,
+        "scope_prevalence": 6,
+        "scope_size": 4,
+        "ownership_own_action": 6,
+        "ownership_prevalence": 6,
+        "ownership_decision": 3,
+        "relevance_responsibility": 5,
+        "relevance_prevalence": 6,
+        "relevance_requirement": 4,
+        "clarity_concrete": 5,
+        "clarity_prevalence": 5,
+        "clarity_self_contained": 5,
+        "complete_roles": 4,
+        "complete_education": 3,
+        "complete_projects": 3,
+        "skills_evidence": 5,
+    }
     assert all(question.weight > 0 for question in rubric.QUESTIONS)
     assert all(set(question.criteria) == {"present", "absent", "not_applicable",
                                           "unable_to_assess"}
                for question in rubric.QUESTIONS)
     assert all(question.criteria["present"].strip() for question in rubric.QUESTIONS)
     assert all(question.prompt.strip() for question in rubric.QUESTIONS)
+
+
+def test_every_existential_dimension_has_a_prevalence_twin():
+    twins = {
+        "impact_outcome": "impact_prevalence",
+        "impact_magnitude": "impact_magnitude_prevalence",
+        "scope_actors": "scope_prevalence",
+        "ownership_own_action": "ownership_prevalence",
+        "relevance_responsibility": "relevance_prevalence",
+        "clarity_concrete": "clarity_prevalence",
+    }
+    for existence, prevalence in twins.items():
+        assert existence in WEIGHTS and prevalence in WEIGHTS
+        assert WEIGHTS[prevalence] > 0
+        question = next(q for q in rubric.QUESTIONS if q.id == prevalence)
+        # The at-least-half rule is written into the question, including the two-entry case.
+        assert "at least half" in question.prompt.lower()
+        assert "rounded up" in question.criteria["present"]
+        assert "in two" in question.criteria["present"]
+
 
 
 def test_all_present_scores_100():
@@ -90,13 +132,15 @@ def test_missing_answer_is_treated_as_unable():
     del missing["impact_magnitude"]
     result = score_report(missing)
     assert result.content_score == 100
-    assert result.coverage == 0.9
-    assert (result.range_low, result.range_high) == (90, 100)
+    assert result.coverage == 0.96
+    assert (result.range_low, result.range_high) == (96, 100)
 
 
 def test_below_half_decidable_weight_withholds_the_score():
     thin = {question_id: "present" for question_id in
-            ("impact_outcome", "impact_magnitude", "scope_actors", "scope_size")}
+            ("impact_outcome", "impact_prevalence", "impact_magnitude",
+             "impact_magnitude_prevalence", "scope_actors", "scope_prevalence",
+             "scope_size")}
     result = score_report(thin)
     assert sum(WEIGHTS[q] for q in thin) == 40
     assert result.content_score is None
@@ -105,20 +149,19 @@ def test_below_half_decidable_weight_withholds_the_score():
 
 
 def test_exactly_half_decidable_weight_scores():
-    half = {question_id: "present" for question_id in
-            ("impact_outcome", "impact_magnitude", "scope_actors", "scope_size",
-             "ownership_own_action")}
-    assert sum(WEIGHTS[q] for q in half) == 49
-    half["complete_projects"] = "present"
+    # All of Impact, Scope and Completeness is exactly 50 of 100.
+    half = {question_id: "present" for question_id in IDS
+            if question_id.split("_")[0] in ("impact", "scope", "complete")}
+    assert sum(WEIGHTS[q] for q in half) == 50
     result = score_report(half)
-    assert sum(WEIGHTS[q] for q in half) == 52
     assert result.content_score == 100
 
 
 def test_combined_total_uses_half_up_rounding():
-    present = ("impact_outcome", "impact_magnitude", "scope_actors", "scope_size",
-               "ownership_own_action", "ownership_decision", "relevance_responsibility",
-               "relevance_requirement")
+    # All of Impact, Scope, Ownership and Relevance is exactly 70.
+    present = [question_id for question_id in IDS
+               if question_id.split("_")[0] in ("impact", "scope", "ownership",
+                                                "relevance")]
     assert sum(WEIGHTS[q] for q in present) == 70
     result = score_report(answers("absent", **{q: "present" for q in present}),
                           structure_score=65)
@@ -226,8 +269,12 @@ def test_fixes_rank_lost_points_and_stop_at_three():
     assert len(result.fixes) == 3
     lost = [fix.lost_points for fix in result.fixes]
     assert lost == sorted(lost, reverse=True)
-    assert [fix.dimension for fix in result.fixes] == ["Scope", "Ownership", "Clarity"]
-    assert all(fix.lost_points == 15.0 for fix in result.fixes)
+    assert [fix.dimension for fix in result.fixes] == ["Impact", "Scope", "Ownership"]
+    assert lost == [17.0, 15.0, 15.0]
+    # The heaviest absent question in each dimension is the prevalence twin.
+    assert [fix.question_id for fix in result.fixes] == [
+        "impact_prevalence", "scope_prevalence", "ownership_own_action"
+    ]
     assert all(fix.question_id in WEIGHTS for fix in result.fixes)
 
 
@@ -242,9 +289,26 @@ def test_dimension_subtotals_renormalize_over_assessed_weight():
                                   impact_magnitude="unable_to_assess"))
     impact = next(row for row in result.dimensions if row.dimension == "Impact")
     assert impact.weight == 25
-    assert impact.assessed_weight == 15
-    assert impact.earned_weight == 15
-    assert impact.score == 100
+    assert impact.assessed_weight == 21
+    assert impact.earned_weight == 8
+    assert impact.score == 38
+
+
+def test_not_applicable_is_excluded_from_coverage():
+    # A document with no posting loses no coverage: the relevance weight is inert.
+    no_posting = answers(**{question_id: "not_applicable" for question_id in ALIGNMENT})
+    result = score_report(no_posting)
+    assert result.content_score == 100
+    assert result.coverage == 1.0
+    assert (result.range_low, result.range_high) == (100, 100)
+
+
+def test_unable_to_assess_lowers_coverage_but_not_applicable_does_not():
+    unable = answers(**{question_id: "unable_to_assess" for question_id in ALIGNMENT})
+    na = answers(**{question_id: "not_applicable" for question_id in ALIGNMENT})
+    assert score_report(unable).coverage == 0.85
+    assert score_report(na).coverage == 1.0
+    assert score_report(na).content_score == score_report(unable).content_score
 
 
 def test_as_dict_is_plain_data():
@@ -265,14 +329,20 @@ def test_score_content_reports_raw_weights():
 
 SECTION_BY_ID = {
     "impact_outcome": "all",
+    "impact_prevalence": "all",
     "impact_magnitude": "all",
+    "impact_magnitude_prevalence": "all",
     "scope_actors": "all",
+    "scope_prevalence": "all",
     "scope_size": "all",
     "ownership_own_action": "all",
+    "ownership_prevalence": "all",
     "ownership_decision": "all",
     "relevance_responsibility": "all",
+    "relevance_prevalence": "all",
     "relevance_requirement": "all",
     "clarity_concrete": "all",
+    "clarity_prevalence": "all",
     "clarity_self_contained": "all",
     "complete_roles": "experience",
     "complete_education": "education",
@@ -288,12 +358,12 @@ def test_section_values_are_the_documented_set():
 
 
 def test_every_question_has_a_valid_section():
-    assert len(rubric.QUESTIONS) == 14
+    assert len(rubric.QUESTIONS) == 20
     assert all(question.section in rubric.SECTION_VALUES for question in rubric.QUESTIONS)
 
 
 def test_section_map_covers_every_question_id():
-    assert len(rubric.SECTIONS) == len(IDS) == 14
+    assert len(rubric.SECTIONS) == len(IDS) == 20
     assert set(rubric.SECTIONS) == set(IDS)
     assert all(rubric.section_for(question_id) == rubric.SECTIONS[question_id]
                for question_id in IDS)
