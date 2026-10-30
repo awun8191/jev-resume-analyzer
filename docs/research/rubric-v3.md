@@ -393,6 +393,10 @@ rates by group [13].
   These are wiring faults, not user errors.
 - `not_applicable` and `unable_to_assess` keep their existing meanings from the frontend
   contract. Neither becomes zero.
+- The frontend contract reserves `rating` for an approved mapping and describes it as
+  communication quality. When integration happens, the total takes that field, and the
+  label must read document evidence. Do not reuse the phrase communication quality, and do
+  not imply a hiring chance. Put the mode and the coverage in the `basis` string.
 
 ## References
 
