@@ -205,7 +205,7 @@ Layout is reliable. The Choice question with five layout options answered
 `one_column` with probability 0.99 to 1.00 on both a single-page and a two-page
 request, which matches the fixture.
 
-Formatting judgements are reliable. Eight Choice questions about margins, alignment,
+Formatting judgements are reliable. Seven Choice questions about margins, alignment,
 hierarchy, spacing, density, entry format and page balance answered `pass` with
 probability 0.79 to 0.99, except page balance, which answered `major` at 0.53 to 0.99
 for a page that really is half empty.
