@@ -1,6 +1,6 @@
 # JEV frontend contract v1
 
-Status: implemented frontend contract. The backend now returns `scores`, `dimensions` and `structure_findings`; rendering them is the pending frontend task. Binding definition: `frontend/src/api/schema.ts` (Zod runtime validation and inferred TypeScript types). This supersedes the proposed field details in architecture section 5, without changing that document. The score fields below are from a verified live analysis of the synthetic two page fixture; the frontend has not rendered them yet. Synthetic fixtures live only under `frontend/tests/contract/fixtures`.
+Status: implemented frontend contract. The frontend sends the multipart request, renders `scores`, `dimensions` and `structure_findings`, and draws structure boxes on the document pane. Binding definition: `frontend/src/api/schema.ts` (Zod runtime validation and inferred TypeScript types). This supersedes the proposed field details in architecture section 5, without changing that document. The score fields below are from a verified live analysis of the synthetic two page fixture. Synthetic fixtures live only under `frontend/tests/contract/fixtures`.
 
 ## Local runtime
 
@@ -55,6 +55,8 @@ Multipart input, the shape the workspace uses:
 | `request` | The JSON body below, as a field or as an uploaded part named `request` |
 | `file` | Optional. The uploaded PDF. Required for a structure score |
 
+The frontend always sends this shape. `request` is a JSON blob. `file` is the original PDF, kept in memory for the request only, and it is sent only when the upload was a PDF. A DOCX sends `request` alone. The bytes are never stored. If a server answers 415 for multipart, the client makes one fallback attempt with a plain JSON body. There is no setting for this and no retry loop.
+
 A JSON body with no file still works and returns a content only report. An upload that is not a PDF gets no structure score and a `structure_unavailable` warning; the content report is still returned.
 
 JSON input:
@@ -107,6 +109,19 @@ A null structure score is never zero. Render "Not scored" with the reason, never
 
 Bands, highest first: `Very strong evidence` at 90, `Strong evidence` at 75, `Adequate evidence` at 60, `Partial evidence` at 40, `Thin evidence` at 0.
 
+### How the UI renders the scores
+
+The report shows, in this order: total, then the Structure and Content sub-scores, then dimension rows grouped by owner, then content findings, then structure findings, then warnings.
+
+- The total block shows the integer value, `/ 100`, the band, the mode, the coverage and the decided weight. A range is shown only when the total is the content score itself (`content_only`), because a combined total has no range in the contract.
+- `content_only` is labelled "Content only" and carries the structure reason in plain words. `structure_only` is labelled "Layout only" and says how much content weight could be decided. `unavailable` shows "Not scored" and no number.
+- A null score is never rendered as zero, and never as a dash that could be read as zero. The band line says "Not scored" in that case.
+- Known structure reasons map to fixed sentences: `unsupported_format` is "Layout is scored for PDF uploads only", `provider_error` is "Layout check failed, content review is complete", `render_failed` and `page_not_readable` each get their own line. An unknown reason still says the layout was not scored, and the raw code stays visible in small type.
+- Dimension rows keep server order inside their owner group. A null row value says "Not scored".
+- The two sub-score slots stack below 520px. The total stays above them at 375px.
+
+`frontend/tests/contract/scores.test.ts` covers each mode, null scores and unknown extra fields. `frontend/tests/report.test.tsx` covers the rendered blocks, the order and the grouping.
+
 ### Dimension
 
 `key` text, `label` text, `owner` `content` or `structure`, `weight` integer, `value` integer or null, `section` section key or null. Content rows weigh 100 together, and so do structure rows. Structure rows exist only when the structure report was scored.
@@ -114,6 +129,8 @@ Bands, highest first: `Very strong evidence` at 90, `Strong evidence` at 75, `Ad
 ### StructureFinding
 
 `id` text, `label` text, `severity` `pass`, `minor`, `major` or `unassessable`, `points_lost` integer 0..100, `page` 0-based integer or null, `box` `{top, bottom, left, right}` fractions or null, `confidence` number 0..1 or null, `evidence` text. A pass row carries no page and no box, because the rubric does not report where a check passed. Below 0.5 box confidence the box is the whole page, and the finding says so in `evidence`.
+
+The UI draws a structure box on the matching page when `box` is present. A check with a `page` and no `box` outlines the whole page with a dashed rule. That outline is drawn behind the other boxes and is not a click target. A `pass` row has no location, so it gets no box and no click target in the report either. A structure finding with no page is listed and not drawn. Structure ids are namespaced as `structure:<id>` in selection state so a content `question_id` can never collide with a layout check.
 
 ### Finding
 
@@ -178,7 +195,11 @@ Expected statuses: 413 limits, 415 unsupported format, 422 unreadable/invalid in
 
 Upload -> extracting -> check text -> analysing -> report. After extraction the page becomes a two pane workspace: the document pane on the left, the editable text or the report on the right, with no page change between them. Below 900px the panes stack and the document pane collapses. Extraction failure returns to upload with an error; analysis failure returns to check text with the error and both edited inputs preserved. Native file input and keyboard-accessible disclosures are the baseline; drop is an enhancement. Focus moves to the stage heading on a stage change, errors and statuses are announced, actions have 44px minimum height, and reduced motion is respected. Results render server strings as React text, never HTML.
 
-Session state lives in sessionStorage under one versioned key, `jev.state.v1`: stage, file name, extraction, CV text, job posting, report and the selected finding. The file bytes are never stored, so after a reload the text and report return and the document pane asks for the file again instead of showing an empty page. Page images and section boxes are derived from the in-memory File on every attach and are not persisted. Writes are wrapped in try/catch: on a quota failure the app keeps working in memory and shows a short notice. Reset and a new upload clear every `jev.` key. No localStorage, IndexedDB, cookie or service worker cache is used, and there is no account or database.
+Session state lives in sessionStorage under one versioned key, `jev.state.v1`: stage, file name, extraction, CV text, job posting, report and the selected finding. The file bytes are never stored, so after a reload the text and report return and the document pane asks for the file again instead of showing an empty page.
+
+The stored report is validated against `AnalysisReportSchema` on its own. A report written before `scores` existed fails that check, so it is discarded, its key removed, and the app returns to check text with the notice "The saved report was written by an older version and cannot be shown. Your text is kept. Run the analysis again for a fresh report." Text, job posting, file name and extraction are kept. A stored report in the current shape is restored as before. `frontend/tests/app.test.tsx` covers both.
+
+Page images and section boxes are derived from the in-memory File on every attach and are not persisted. Writes are wrapped in try/catch: on a quota failure the app keeps working in memory and shows a short notice. Reset and a new upload clear every `jev.` key. No localStorage, IndexedDB, cookie or service worker cache is used, and there is no account or database.
 
 ### Exact section boxes
 
