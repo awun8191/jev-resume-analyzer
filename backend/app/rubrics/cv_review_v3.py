@@ -3,9 +3,13 @@
 Fourteen decidable checks about what the document says. This module owns no
 scoring logic; weights live here and scoring_v3 consumes them. Layout, spacing,
 typography and density belong to the separate structure score.
+
+Each question names one resume section. The report repeats that section on every
+finding so the interface can point a finding at the region of the document it
+judges. A question that reads two or more sections uses ``all``.
 """
 from dataclasses import dataclass
-from typing import Literal
+from typing import Literal, get_args
 
 PREFIX = (
     "Evaluate only the written evidence in the complete `cv_text` document, not the person's "
@@ -22,6 +26,14 @@ UNREADABLE = (
 )
 
 
+Section = Literal[
+    "header", "summary", "experience", "education", "skills", "projects", "all"
+]
+
+# Iterable form of the literal, for validation and for the frontend contract docs.
+SECTION_VALUES: tuple[Section, ...] = get_args(Section)
+
+
 @dataclass(frozen=True)
 class RatedQuestion:
     id: str
@@ -29,6 +41,7 @@ class RatedQuestion:
     weight: int
     prompt: str
     criteria: dict[str, str]
+    section: Section
     scope: Literal["general_review", "job_alignment"] = "general_review"
 
     @property
@@ -39,7 +52,7 @@ class RatedQuestion:
         return {"type": "choice", "instructions": self.instructions, "criteria": self.criteria}
 
 
-def check(id, dimension, weight, prompt, present, absent, na,
+def check(id, dimension, weight, prompt, present, absent, na, section,
           scope: Literal["general_review", "job_alignment"] = "general_review"):
     return RatedQuestion(
         id,
@@ -54,6 +67,7 @@ def check(id, dimension, weight, prompt, present, absent, na,
             "not_applicable": na,
             "unable_to_assess": UNREADABLE,
         },
+        section,
         scope,
     )
 
@@ -69,6 +83,7 @@ QUESTIONS = (
         "that followed it. A list of duties with no stated result does not meet this threshold.",
         "no entry states a result, deliverable or change that followed an action.",
         "Select only when the document has no experience, volunteering or project entries.",
+        "all",
         "general_review",
     ),
     check(
@@ -82,6 +97,7 @@ QUESTIONS = (
         "results are stated, but none gives a quantity with a unit or baseline.",
         "Select only when the document states no result at all, so no result can carry a "
         "magnitude. Do not select when results exist but lack numbers.",
+        "all",
         "general_review",
     ),
     check(
@@ -93,6 +109,7 @@ QUESTIONS = (
         "the work served or affected. An employer name alone does not meet this threshold.",
         "no entry names who the work served or affected.",
         "Select only when the document has no experience, volunteering or project entries.",
+        "all",
         "general_review",
     ),
     check(
@@ -105,6 +122,7 @@ QUESTIONS = (
         "numbers are acceptable; the check measures whether scale is stated, not how large it is.",
         "no entry states a countable feature of the work setting.",
         "Select only when the document has no experience, volunteering or project entries.",
+        "all",
         "general_review",
     ),
     check(
@@ -118,6 +136,7 @@ QUESTIONS = (
         "employer or another person.",
         "every description attributes the activity to a team, the employer or another person.",
         "Select only when the document has no experience, volunteering or project entries.",
+        "all",
         "general_review",
     ),
     check(
@@ -130,6 +149,7 @@ QUESTIONS = (
         "meet this threshold. A single verb is not decisive; the object of the sentence decides.",
         "every described action is support, assistance or participation.",
         "Select only when the document has no experience, volunteering or project entries.",
+        "all",
         "general_review",
     ),
     check(
@@ -144,6 +164,7 @@ QUESTIONS = (
         "no described CV task or contribution relates to a stated responsibility.",
         "Select only when `job_text` is absent, or when the posting states no identifiable "
         "responsibility.",
+        "all",
         "job_alignment",
     ),
     check(
@@ -159,6 +180,7 @@ QUESTIONS = (
         "the CV states no requested qualification and no clear equivalent.",
         "Select only when `job_text` is absent, or when the posting states no identifiable "
         "qualification.",
+        "all",
         "job_alignment",
     ),
     check(
@@ -172,6 +194,7 @@ QUESTIONS = (
         "operations, does not meet this threshold.",
         "every description names only a duty category and no object.",
         "Select only when the document has no experience, volunteering or project entries.",
+        "all",
         "general_review",
     ),
     check(
@@ -186,6 +209,7 @@ QUESTIONS = (
         "at least one description depends on an internal name or abbreviation that the document "
         "never explains.",
         "Select only when the document has no experience, volunteering or project entries.",
+        "all",
         "general_review",
     ),
     check(
@@ -199,6 +223,7 @@ QUESTIONS = (
         "check reads presence, not consistency.",
         "at least one employment entry omits the employer, the title or a date boundary.",
         "Select only when the document has no employment entries.",
+        "experience",
         "general_review",
     ),
     check(
@@ -214,6 +239,7 @@ QUESTIONS = (
         "or date.",
         "Select only when the document has no education or certification section. Omitting "
         "education is not a defect for every candidate.",
+        "education",
         "general_review",
     ),
     check(
@@ -226,6 +252,7 @@ QUESTIONS = (
         "threshold.",
         "at least one project entry omits its purpose or the author's contribution.",
         "Select only when the document has no project entries.",
+        "projects",
         "general_review",
     ),
     check(
@@ -241,12 +268,25 @@ QUESTIONS = (
         "description.",
         "Select only when the document has no section that lists tools, methods, languages or "
         "platforms.",
+        "skills",
         "general_review",
     ),
 )
 
 IDS = tuple(question.id for question in QUESTIONS)
 WEIGHTS = {question.id: question.weight for question in QUESTIONS}
+
+# Question id to resume section. The one place the frontend contract is defined.
+SECTIONS: dict[str, Section] = {question.id: question.section for question in QUESTIONS}
+
+
+def section_for(question_id: str) -> Section:
+    """Return the resume section a v3 question judges. Pure lookup, no scoring."""
+    try:
+        return SECTIONS[question_id]
+    except KeyError:
+        raise KeyError(f"Unknown question id: {question_id}") from None
+
 
 DIMENSIONS = ("Impact", "Scope", "Ownership", "Relevance", "Clarity", "Completeness", "Skills")
 DIMENSION_WEIGHTS = {
@@ -255,3 +295,5 @@ DIMENSION_WEIGHTS = {
 }
 assert sum(WEIGHTS.values()) == 100
 assert sum(DIMENSION_WEIGHTS.values()) == 100
+assert len(SECTIONS) == len(IDS)
+assert all(question.section in SECTION_VALUES for question in QUESTIONS)
