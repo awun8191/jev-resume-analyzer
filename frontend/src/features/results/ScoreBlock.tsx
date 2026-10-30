@@ -9,10 +9,10 @@ import {
   totalRange,
 } from './summary'
 
-function ScoreValue({ value }: { value: number | null }) {
+function ScoreValue({ value, valueClass }: { value: number | null; valueClass: string }) {
   if (value === null) return <span className="score__none">Not scored</span>
   return (
-    <span className="score__value">
+    <span className={valueClass}>
       <span>{value}</span>
       <small>/ 100</small>
     </span>
@@ -32,7 +32,7 @@ export default function ScoreBlock({ scores, overview }: { scores: Scores; overv
       <section className="score" aria-labelledby="score-title" data-mode={scores.total.mode}>
         <div className="score__main">
           <h2 className="label score__label" id="score-title">Total score</h2>
-          <ScoreValue value={scores.total.value} />
+          <ScoreValue value={scores.total.value} valueClass="score__value" />
           <p className="score__mode">{MODE_LABEL[scores.total.mode]}</p>
           {scores.total.band && <p className="score__caption">{scores.total.band}</p>}
           {range && (
@@ -83,7 +83,7 @@ export default function ScoreBlock({ scores, overview }: { scores: Scores; overv
         <ul className="subscores">
           <li className="subscore" data-owner="structure">
             <p className="label">Structure</p>
-            <ScoreValue value={scores.structure.value} />
+            <ScoreValue value={scores.structure.value} valueClass="subscore__value" />
             <p className="subscore__band">
               {scores.structure.value === null ? 'Not scored' : (scores.structure.band ?? 'No band reported')}
             </p>
@@ -92,7 +92,7 @@ export default function ScoreBlock({ scores, overview }: { scores: Scores; overv
           </li>
           <li className="subscore" data-owner="content">
             <p className="label">Content</p>
-            <ScoreValue value={scores.content.value} />
+            <ScoreValue value={scores.content.value} valueClass="subscore__value" />
             <p className="subscore__band">
               {scores.content.value === null ? 'Not scored' : (scores.content.band ?? 'No band reported')}
             </p>

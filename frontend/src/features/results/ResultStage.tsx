@@ -208,6 +208,21 @@ export default function ResultStage({
         })}
       </section>
 
+      <section className="section" aria-labelledby="structure-title">
+        <div className="section__head">
+          <h2 className="section__title" id="structure-title">Structure findings</h2>
+          <p className="section__note">{r.structure_findings.length} checks</p>
+        </div>
+        <StructureFindings
+          findings={r.structure_findings}
+          selectedId={selectedId}
+          onSelect={onSelect}
+          nodeRef={structureRef}
+        />
+      </section>
+
+      <Warnings warnings={r.warnings} title="Analysis limitations" />
+
       <details className="disclosure request">
         <summary>
           <span>Request details and metrics</span>
@@ -233,21 +248,6 @@ export default function ResultStage({
           </dl>
         </div>
       </details>
-
-      <section className="section" aria-labelledby="structure-title">
-        <div className="section__head">
-          <h2 className="section__title" id="structure-title">Structure findings</h2>
-          <p className="section__note">{r.structure_findings.length} checks</p>
-        </div>
-        <StructureFindings
-          findings={r.structure_findings}
-          selectedId={selectedId}
-          onSelect={onSelect}
-          nodeRef={structureRef}
-        />
-      </section>
-
-      <Warnings warnings={r.warnings} title="Analysis limitations" />
 
       <div className="actions">
         <p className="actions__note">
