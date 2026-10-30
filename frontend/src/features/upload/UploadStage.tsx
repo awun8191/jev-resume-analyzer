@@ -1,12 +1,13 @@
 import { useRef, useState } from 'react'
 import './upload.css'
 
-export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024
+/* 4 MB, not 4 MiB: the API rejects a body above 4.5 MB before the app runs. */
+export const MAX_UPLOAD_BYTES = 4_000_000
 
 export function validateFile(file: File): string | null {
   if (!/\.(pdf|docx)$/i.test(file.name)) return 'Choose a PDF or DOCX file.'
   if (file.size === 0) return 'This file is empty. Choose a document with readable text.'
-  if (file.size > MAX_UPLOAD_BYTES) return 'This demo accepts files up to 10 MiB.'
+  if (file.size > MAX_UPLOAD_BYTES) return 'This demo accepts files up to 4 MB.'
   return null
 }
 
@@ -82,13 +83,13 @@ export default function UploadStage({ onFile }: { onFile: (file: File) => Promis
               event.currentTarget.value = ''
             }}
           />
-          <p className="help" id="upload-help">PDF or DOCX. Up to 10 MiB. One file at a time.</p>
+          <p className="help" id="upload-help">PDF or DOCX. Up to 4 MB. One file at a time.</p>
           {error && <p className="drop__error" id="upload-error" role="alert">{error}</p>}
         </div>
 
         <dl className="specs">
           <div><dt className="label">Accepts</dt><dd>PDF, DOCX</dd></div>
-          <div><dt className="label">Limit</dt><dd>10 MiB</dd></div>
+          <div><dt className="label">Limit</dt><dd>4 MB</dd></div>
           <div><dt className="label">Files</dt><dd>One per run</dd></div>
         </dl>
       </div>

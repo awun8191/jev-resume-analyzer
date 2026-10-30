@@ -23,7 +23,7 @@ const jevKeys = () => Array.from({ length: sessionStorage.length }, (_, i) => se
 it('validates format, zero bytes and size before upload', () => {
   expect(validateFile(new File(['x'], 'bad.txt'))).toContain('PDF or DOCX')
   expect(validateFile(new File([], 'empty.pdf'))).toContain('empty')
-  expect(validateFile(new File([new Uint8Array(MAX_UPLOAD_BYTES + 1)], 'large.pdf'))).toContain('10 MiB')
+  expect(validateFile(new File([new Uint8Array(MAX_UPLOAD_BYTES + 1)], 'large.pdf'))).toContain('4 MB')
   expect(validateFile(new File(['x'], 'TEST.DOCX'))).toBeNull()
 })
 
