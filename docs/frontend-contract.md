@@ -25,7 +25,7 @@ Liveness only, no provider call. UI says Backend connected, not provider ready. 
 
 ## POST /api/v1/documents/extract
 
-Multipart input: exactly one field named `file`. Browser owns Content-Type and its boundary. Supports PDF and DOCX. Frontend limit is 10 MiB (10,485,760 bytes), one file, nonempty; case-insensitive extension check. Backend must independently enforce format signatures, limits, parsing safety and temporary-file cleanup. Client checks are not a security boundary.
+Multipart input: exactly one field named `file`. Browser owns Content-Type and its boundary. Supports PDF and DOCX. Frontend limit is 4 MB (4,000,000 bytes), one file, nonempty, because Vercel rejects a request body over 4.5 MB before the app runs; case-insensitive extension check. Backend must independently enforce format signatures, limits, parsing safety and temporary-file cleanup. Client checks are not a security boundary.
 
 200 fields:
 

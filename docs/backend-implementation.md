@@ -97,11 +97,16 @@ page lost points, which is the honest outcome for that fixture.
 
 - Parsing runs in a disposable subprocess with PATH-only env, 384MiB address-space and
   10s CPU rlimits; hard timeout converts to a safe 422. No temp files are used at all.
-- Request boundary middleware caps request bytes before multipart spooling (10MiB+64KiB
-  for uploads), times out slow uploads (408), admits at most two concurrent POSTs (429)
-  and swallows unhandled exceptions into the safe envelope so exception text cannot leak.
-- No logging of bodies, prompts or credentials; no CORS middleware; secrets stay in
-  backend/.env read by pydantic-settings only (never printed, never exported).
+- Request boundary middleware caps request bytes before multipart spooling (4MB+64KiB
+  for uploads, because Vercel rejects a body over 4.5MB before the app runs), times out
+  slow uploads (408), admits at most two concurrent POSTs (429) and swallows unhandled
+  exceptions into the safe envelope so exception text cannot leak.
+- No logging of bodies, prompts or credentials; secrets stay in backend/.env read by
+  pydantic-settings only (never printed, never exported), or in Vercel environment
+  variables when deployed.
+- CORS allows only the comma separated origins in `ALLOWED_ORIGINS` (defaults to the two
+  local dev origins), GET and POST, the content-type header, no credentials. An unknown
+  Origin simply gets no allow-origin header.
 
 ## Known limitations
 
