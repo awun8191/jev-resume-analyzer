@@ -9,7 +9,7 @@ import type { PagePreview } from './features/document/types'
 import UploadStage from './features/upload/UploadStage'
 import ReviewStage from './features/preview/ReviewStage'
 import ResultStage from './features/results/ResultStage'
-import { boxFindings } from './features/results/summary'
+import { boxFindings, structureBoxes } from './features/results/summary'
 import './styles/layout.css'
 
 type Health = 'checking' | 'ok' | 'down'
@@ -54,7 +54,10 @@ export default function App() {
     return () => { active = false }
   }, [s.file])
 
-  const boxes = useMemo(() => boxFindings(s.report?.findings ?? []), [s.report])
+  const boxes = useMemo(() => [
+    ...boxFindings(s.report?.findings ?? []),
+    ...structureBoxes(s.report?.structure_findings ?? []),
+  ], [s.report])
 
   async function upload(file: File) {
     if (pending.current) return

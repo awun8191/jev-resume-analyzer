@@ -8,14 +8,14 @@ const image = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" w
 
 const boxes: BoxFinding[] = [
   {
-    id: 'a', page: 0,
+    id: 'a', kind: 'content', page: 0,
     box: { top: 0.1, bottom: 0.2, left: 0.1, right: 0.9 },
-    label: 'Work clarity', answer: 'present', severity: null,
+    label: 'Work clarity', state: 'Present', severity: null,
   },
   {
-    id: 'b', page: 1,
+    id: 'b', kind: 'content', page: 1,
     box: { top: 0.5, bottom: 0.6, left: 0.1, right: 0.4 },
-    label: 'Scope', answer: 'absent', severity: 'high',
+    label: 'Scope', state: 'Absent', severity: 'high',
   },
 ]
 
@@ -58,7 +58,7 @@ it('draws one box per returned location, positioned from the fractions', async (
   const user = userEvent.setup()
   const onSelect = show([{ imageUrl: image }])
 
-  const box = screen.getByRole('button', { name: 'Finding 1: Work clarity, present, page 1' })
+  const box = screen.getByRole('button', { name: 'Finding 1: Work clarity, Present, page 1' })
   expect(box.style.top).toContain('10')
   expect(box.style.left).toContain('10')
   expect(box.style.width).toContain('80')
@@ -90,7 +90,7 @@ it('moves between pages and shows the count', async () => {
 
   await user.click(screen.getByRole('button', { name: 'Next page' }))
   expect(nav.textContent).toContain('2 of 2')
-  expect(screen.getByRole('button', { name: 'Finding 2: Scope, absent, page 2' })).toBeTruthy()
+  expect(screen.getByRole('button', { name: 'Finding 2: Scope, Absent, page 2' })).toBeTruthy()
   expect(screen.queryByRole('button', { name: /Work clarity/ })).toBeNull()
 })
 
@@ -108,14 +108,14 @@ const sectionFindings: BoxFinding[] = [
   {
     id: 's1', page: 0,
     box: { top: 0.9, bottom: 0.95, left: 0.1, right: 0.2 },
-    section: 'Work Experience',
-    label: 'Work clarity', answer: 'present', severity: null,
+    section: 'Work Experience', kind: 'content',
+    label: 'Work clarity', state: 'Present', severity: null,
   },
   {
-    id: 's2', page: 0,
+    id: 's2', kind: 'content', page: 0,
     box: { top: 0.8, bottom: 0.85, left: 0.1, right: 0.2 },
     section: null,
-    label: 'Scope', answer: 'absent', severity: 'high',
+    label: 'Scope', state: 'Absent', severity: 'high',
   },
 ]
 
@@ -123,7 +123,7 @@ it('draws the exact section box for a finding that names a section', async () =>
   const user = userEvent.setup()
   show(sectionPages, true, null, sectionFindings)
 
-  const exact = screen.getByRole('button', { name: 'Finding 1: Work clarity, present, page 1' })
+  const exact = screen.getByRole('button', { name: 'Finding 1: Work clarity, Present, page 1' })
   expect(parseFloat(exact.style.top)).toBeCloseTo(20, 3)
   expect(parseFloat(exact.style.left)).toBeCloseTo(8, 3)
   expect(parseFloat(exact.style.width)).toBeCloseTo(84, 3)
@@ -136,7 +136,7 @@ it('draws the exact section box for a finding that names a section', async () =>
 
 it('keeps the reported box for a finding without a section', () => {
   show(sectionPages, true, null, sectionFindings)
-  const reported = screen.getByRole('button', { name: 'Finding 2: Scope, absent, page 1' })
+  const reported = screen.getByRole('button', { name: 'Finding 2: Scope, Absent, page 1' })
   expect(parseFloat(reported.style.top)).toBeCloseTo(80, 3)
   expect(reported.getAttribute('data-source')).toBe('reported')
 })
@@ -168,7 +168,7 @@ it('does not invent a box when no section or reported geometry matches', () => {
   const resolved = resolveBoxes(
     [{
       id: 'x', page: 0, box: null, section: 'Certifications',
-      label: 'Work clarity', answer: 'present', severity: null,
+      label: 'Work clarity', state: 'Present', kind: 'content', severity: null,
     }],
     sectionPages,
   )
@@ -177,8 +177,8 @@ it('does not invent a box when no section or reported geometry matches', () => {
 
 it('resolves a section without a page only when it appears on one page', () => {
   const finding: BoxFinding = {
-    id: 's3', page: null, box: null, section: 'Core Skills',
-    label: 'Work clarity', answer: 'present', severity: null,
+    id: 's3', kind: 'content', page: null, box: null, section: 'Core Skills',
+    label: 'Work clarity', state: 'Present', severity: null,
   }
   const [resolved] = resolveBoxes([finding], sectionPages)
   expect(resolved.page).toBe(0)
@@ -190,4 +190,55 @@ it('resolves a section without a page only when it appears on one page', () => {
     { imageUrl: image, sections: [{ id: 'skills', label: 'SKILLS', page: 1, box: { top: 0, bottom: 1, left: 0.08, right: 0.6 } }] },
   ]
   expect(resolveBoxes([finding], repeated)).toEqual([])
+})
+
+const structureBoxes: BoxFinding[] = [
+  {
+    id: 'structure:dense', kind: 'structure', page: 0,
+    box: { top: 0.3, bottom: 0.4, left: 0.5, right: 0.9 },
+    label: 'Dense columns', state: 'Major issue', severity: 'major',
+  },
+  {
+    id: 'structure:break', kind: 'structure', page: 1, box: null,
+    label: 'Section breaks across pages', state: 'Minor issue', severity: 'minor',
+  },
+]
+
+it('draws a structure box where the API sent one', () => {
+  show([{ imageUrl: image }, { imageUrl: image }], true, null, structureBoxes)
+  const box = screen.getByRole('button', { name: 'Finding 1: Dense columns, Major issue, page 1' })
+  expect(box.getAttribute('data-kind')).toBe('structure')
+  expect(box.getAttribute('data-source')).toBe('reported')
+  expect(parseFloat(box.style.top)).toBeCloseTo(30, 3)
+})
+
+it('outlines the whole page for a structure check with no box', async () => {
+  const user = userEvent.setup()
+  show([{ imageUrl: image }, { imageUrl: image }], true, null, structureBoxes)
+  // The check belongs to page 2, which is not the visible page yet.
+  expect(document.querySelector('.box--page')).toBeNull()
+
+  await user.click(screen.getByRole('button', { name: 'Next page' }))
+  const outline = document.querySelector('.box--page') as HTMLElement
+  expect(outline).toBeTruthy()
+  expect(outline.getAttribute('data-kind')).toBe('structure')
+  expect(outline.style.top).toBe('0px')
+  expect(outline.style.width).toBe('100%')
+  // A page outline is not a click target.
+  expect(outline.tagName).toBe('DIV')
+})
+
+it('turns to the page of a selected structure check', () => {
+  show([{ imageUrl: image }, { imageUrl: image }], true, 'structure:break', structureBoxes)
+  const nav = screen.getByRole('group', { name: 'Page navigation' })
+  expect(nav.textContent).toContain('2 of 2')
+})
+
+it('drops a structure entry that has no page', () => {
+  const resolved = resolveBoxes(
+    [{ id: 'structure:none', kind: 'structure', page: null, box: null,
+      label: 'No page', state: 'Pass', severity: 'pass' }],
+    [{ imageUrl: image }],
+  )
+  expect(resolved).toEqual([])
 })

@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest'
-import { ANSWER_ORDER, boxFindings, groupDimensions, percent } from '../src/features/results/summary'
+import { ANSWER_ORDER, boxFindings, groupDimensions, percent, structureBoxes } from '../src/features/results/summary'
 import { multiReport } from './contract/fixtures/responses'
 
 it('splits API dimension rows by owner without reordering them', () => {
@@ -26,6 +26,8 @@ it('only turns findings with real page geometry into boxes', () => {
   expect(boxes.map(box => box.page)).toEqual([0, 0, 1])
   expect(boxes[1].severity).toBe('high')
   expect(boxes[0].box.right).toBe(0.92)
+  expect(boxes[0].kind).toBe('content')
+  expect(boxes[0].state).toBe('Present')
 })
 
 it('keeps a finding that only names a section, for the layout to place', () => {
@@ -33,4 +35,15 @@ it('keeps a finding that only names a section, for the layout to place', () => {
   const boxes = boxFindings([{ ...base, page: null, box: null, section: 'Experience' }])
   expect(boxes).toHaveLength(1)
   expect(boxes[0]).toMatchObject({ id: base.question_id, page: null, box: null, section: 'Experience' })
+})
+
+it('turns only located, non-pass structure checks into boxes', () => {
+  const boxes = structureBoxes(multiReport.structure_findings)
+  expect(boxes.map(box => box.id)).toEqual(['structure:dense-columns', 'structure:no-page-break'])
+  expect(boxes.map(box => box.page)).toEqual([0, 1])
+  expect(boxes[0].box).toEqual({ top: 0.3, bottom: 0.46, left: 0.52, right: 0.94 })
+  expect(boxes[0].state).toBe('Major issue')
+  // A page with no box stays drawable, with no invented rectangle.
+  expect(boxes[1].box).toBeNull()
+  expect(boxes.some(box => box.severity === 'pass')).toBe(false)
 })

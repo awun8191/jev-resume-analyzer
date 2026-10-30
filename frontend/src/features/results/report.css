@@ -294,6 +294,111 @@
   }
 }
 
+/* Structure checks. The severity is a word plus a rule weight, never colour
+ * alone. Only a check with a page is a button. */
+.sfinds {
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--ink);
+}
+
+.sfind {
+  padding-block: var(--s3);
+  border-bottom: 1px solid var(--rule);
+  transition: background var(--dur) var(--ease);
+}
+
+.sfind[data-selected='true'] {
+  background: var(--paper-sunk);
+}
+
+.sfind__select,
+.sfind__head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: var(--s1) var(--s3);
+  width: 100%;
+  min-height: var(--tap);
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+
+.sfind__select {
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .sfind__select:hover {
+    color: var(--accent);
+  }
+}
+
+.sfind__select:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.sfind__index {
+  font-size: var(--fs-1);
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+}
+
+.sfind__label {
+  font-size: var(--fs-4);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.sfind__loc {
+  grid-column: 2 / span 2;
+  grid-row: 2;
+  font-size: var(--fs-1);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.sfind__severity {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+  font-size: var(--fs-1);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.sfind__severity[data-severity='major'] {
+  color: var(--accent);
+}
+
+.sfind__severity[data-severity='unassessable'] {
+  color: var(--ink-2);
+}
+
+.sfind__evidence {
+  margin-top: var(--s2);
+  max-width: 62ch;
+  color: var(--ink-2);
+}
+
+.sfind__meta {
+  margin-top: var(--s1);
+  font-size: var(--fs-1);
+  color: var(--ink-3);
+}
+
+.sfind[data-selected='true'] .sfind__severity {
+  color: var(--accent);
+}
+
 /* Findings */
 .group + .group {
   margin-top: var(--s6);

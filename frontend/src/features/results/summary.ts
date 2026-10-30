@@ -1,4 +1,6 @@
-import type { AnswerCategory, Dimension, Finding, ScoreMode, Scores, StructureScore } from '../../api/schema'
+import type {
+  AnswerCategory, Dimension, Finding, ScoreMode, Scores, StructureFinding, StructureScore,
+} from '../../api/schema'
 import type { BoxFinding } from '../document/types'
 
 /* Fixed order so counts and distributions read the same way everywhere. */
@@ -33,11 +35,12 @@ export function boxFindings(findings: Finding[]): BoxFinding[] {
     if (finding.page != null && !finding.box && !finding.section) continue
     boxes.push({
       id: finding.question_id,
+      kind: 'content',
       page: finding.page ?? null,
       box: finding.box ?? null,
       section: finding.section ?? null,
       label: finding.dimension,
-      answer: finding.answer,
+      state: ANSWER_TEXT[finding.answer],
       severity: finding.severity ?? null,
     })
   }
@@ -45,6 +48,34 @@ export function boxFindings(findings: Finding[]): BoxFinding[] {
 }
 
 export const percent = (n: number) => `${(n * 100).toFixed(1)}%`
+
+export const SEVERITY_TEXT: Record<StructureFinding['severity'], string> = {
+  pass: 'Pass',
+  minor: 'Minor issue',
+  major: 'Major issue',
+  unassessable: 'Unable to assess',
+}
+
+/* Structure checks carry their own page, and sometimes a box. A pass has no
+ * location, so it never reaches the overlay. A check with a page and no box
+ * keeps the page index and lets the pane outline the whole page. */
+export function structureBoxes(findings: StructureFinding[]): BoxFinding[] {
+  const boxes: BoxFinding[] = []
+  for (const finding of findings) {
+    if (finding.severity === 'pass' || finding.page == null) continue
+    boxes.push({
+      id: `structure:${finding.id}`,
+      kind: 'structure',
+      page: finding.page,
+      box: finding.box ?? null,
+      section: null,
+      label: finding.label,
+      state: SEVERITY_TEXT[finding.severity],
+      severity: finding.severity,
+    })
+  }
+  return boxes
+}
 
 /* API dimension rows, split by the score that owns them. Order is kept as the
  * server sent it. A row with a null value is shown as not scored. */

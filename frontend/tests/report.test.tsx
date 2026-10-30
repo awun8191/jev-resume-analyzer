@@ -188,3 +188,40 @@ it('marks the selected finding in the list', () => {
   expect(first.getAttribute('data-selected')).toBe('true')
   expect(within(first).getByRole('button', { name: /Work clarity/ }).getAttribute('aria-pressed')).toBe('true')
 })
+
+it('lists structure findings with a reason and no target for a pass', async () => {
+  const user = userEvent.setup()
+  const onSelect = vi.fn()
+  const { container } = show(multiReport, null, onSelect)
+
+  const section = container.querySelector('[aria-labelledby="structure-title"]') as HTMLElement
+  const rows = [...section.querySelectorAll('.sfind')]
+  expect(rows).toHaveLength(4)
+  expect(rows.map(row => row.querySelector('.sfind__label')!.textContent)).toEqual([
+    'Section order follows the rubric',
+    'Two column layout is dense',
+    'Section breaks across pages',
+    'Font sizes are inconsistent',
+  ])
+  expect(rows[0].textContent).toContain('Pass')
+  expect(rows[0].textContent).toContain('No location')
+  expect(rows[0].querySelector('button')).toBeNull()
+  expect(rows[2].textContent).toContain('Page 2')
+
+  await user.click(within(section).getByRole('button', { name: 'Two column layout is dense. Major issue. Page 1.' }))
+  expect(onSelect).toHaveBeenCalledWith('structure:dense-columns')
+  expect(section.textContent).toContain('12 points lost')
+  expect(section.textContent).toContain('SYNTHETIC: column gap is below the body text size.')
+})
+
+it('marks a selected structure finding', () => {
+  const { container } = show(multiReport, 'structure:dense-columns')
+  const selected = container.querySelector('.sfind[data-selected="true"]') as HTMLElement
+  expect(selected.querySelector('.sfind__label')!.textContent).toBe('Two column layout is dense')
+  expect(selected.querySelector('button')!.getAttribute('aria-pressed')).toBe('true')
+})
+
+it('says a content only report has no structure checks', () => {
+  show(contentOnlyReport)
+  expect(screen.getByText('No structure checks were returned. A content only report has no layout rows.')).toBeTruthy()
+})

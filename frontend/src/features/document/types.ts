@@ -1,4 +1,4 @@
-import type { AnswerCategory, FindingBox } from '../../api/schema'
+import type { FindingBox } from '../../api/schema'
 import type { PageSection } from './pdfLayout'
 
 export interface PagePreview {
@@ -8,12 +8,16 @@ export interface PagePreview {
   sections?: PageSection[]
 }
 
+/* One drawable entry, from either score. `state` is already a word, so the pane
+ * never has to interpret a rubric answer or a severity. `kind` separates content
+ * findings from structure checks. */
 export interface BoxFinding {
   id: string
+  kind: 'content' | 'structure'
   page: number | null
   box: FindingBox | null
   section?: string | null
   label: string
-  answer: AnswerCategory
+  state: string
   severity: string | null
 }

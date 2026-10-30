@@ -5,6 +5,7 @@ import Warnings from '../../components/Warnings'
 import { ANSWER_GLYPH, ANSWER_ORDER, ANSWER_TEXT, percent } from './summary'
 import Dimensions from './Dimensions'
 import ScoreBlock from './ScoreBlock'
+import StructureFindings from './StructureFindings'
 import './report.css'
 
 function FindingRow({
@@ -138,6 +139,7 @@ export default function ResultStage({
 }) {
   const o = r.overview
   const selectedRef = useRef<HTMLElement>(null)
+  const structureRef = useRef<HTMLLIElement>(null)
   const firstRun = useRef(true)
 
   /* A box click selects a finding. Bring that finding into view, but leave the
@@ -147,7 +149,8 @@ export default function ResultStage({
       firstRun.current = false
       return
     }
-    selectedRef.current?.scrollIntoView?.({ block: 'nearest' })
+    const target = selectedId?.startsWith('structure:') ? structureRef.current : selectedRef.current
+    target?.scrollIntoView?.({ block: 'nearest' })
   }, [selectedId])
 
   return (
@@ -230,6 +233,19 @@ export default function ResultStage({
           </dl>
         </div>
       </details>
+
+      <section className="section" aria-labelledby="structure-title">
+        <div className="section__head">
+          <h2 className="section__title" id="structure-title">Structure findings</h2>
+          <p className="section__note">{r.structure_findings.length} checks</p>
+        </div>
+        <StructureFindings
+          findings={r.structure_findings}
+          selectedId={selectedId}
+          onSelect={onSelect}
+          nodeRef={structureRef}
+        />
+      </section>
 
       <Warnings warnings={r.warnings} title="Analysis limitations" />
 
