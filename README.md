@@ -47,7 +47,7 @@ The Vite dev server proxies `/api` to the backend on `127.0.0.1:8017`.
 ## Tests
 
 ```bash
-# Backend: 270 synthetic tests + lint (live tests are gated behind JEV_RUN_LIVE=1 and a running API)
+# Backend: 277 synthetic tests + lint (live tests are gated behind JEV_RUN_LIVE=1 and a running API)
 cd backend && uv run pytest -q && uv run ruff check app tests
 
 # Frontend: 50 tests, typecheck, build

@@ -78,6 +78,12 @@ def content_dimensions(content: ScoreResult) -> list[DimensionRow]:
 
 
 def assemble_scores(content: ScoreResult, structure: StructureOutcome) -> Scores:
+    """Project the scored result into the report contract.
+
+    The total is taken from the score result, so it must have been computed with the
+    same structure score that comes in here. That keeps the 0.7 and 0.3 rule in one
+    place, in scoring_v3.
+    """
     assessed = sum(row.assessed_weight for row in content.dimensions)
     content_range = (
         (content.range_low, content.range_high)

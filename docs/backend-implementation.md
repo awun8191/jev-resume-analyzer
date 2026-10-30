@@ -14,7 +14,7 @@ Status: implemented and verified on this host. Not deployed, not in git (per car
 ## Current synthetic verification (cleanup card t_fdb62e42, 2026-09-17)
 
 - From the project root, `env -u JEV_RUN_LIVE uv run --directory backend pytest -o addopts='' -q`:
-  270 passed, 0 failed, 3 gated-live skipped, exit 0 (review wiring). The 69 test run
+  277 passed, 0 failed, 3 gated-live skipped, exit 0 (review wiring). The 69 test run
   below belongs to the earlier card.
   The warnings concern Starlette's httpx TestClient and AnyIO BlockingPortal alias.
 - From backend/, `uv run ruff check .`: all checks passed, exit 0.

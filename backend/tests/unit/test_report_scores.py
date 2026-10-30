@@ -140,3 +140,75 @@ def test_rubric_section_map_is_unchanged_by_the_wiring():
     assert rubric.section_for("complete_education") == "education"
     assert rubric.section_for("complete_projects") == "projects"
     assert rubric.section_for("skills_evidence") == "skills"
+
+
+def scores_for(answer: str, structure: int | None = None):
+    from app.rubrics.scoring_v3 import score_report
+    from app.services.reporting import assemble_scores
+    from app.services.structure_review import StructureOutcome
+
+    outcome = StructureOutcome(
+        score=structure,
+        band=None if structure is None else "test band",
+        reason="scored" if structure is not None else "no_file",
+        assessed_weight=100 if structure is not None else 0,
+    )
+    return assemble_scores(score_report(every(answer), structure), outcome)
+
+
+def test_the_total_follows_the_seventy_thirty_rule():
+    scores = scores_for("present", 94)
+    assert scores.total.value == 98
+    assert scores.total.mode == "combined"
+    assert scores.content.value == 100
+    assert scores.structure.value == 94
+
+
+def test_a_missing_structure_score_renormalises_to_content():
+    scores = scores_for("present", None)
+    assert scores.total.mode == "content_only"
+    assert scores.total.value == scores.content.value
+
+
+def test_a_missing_content_score_renormalises_to_structure():
+    scores = scores_for("unable_to_assess", 80)
+    assert scores.content.value is None
+    assert scores.content.band is None
+    assert scores.content.assessed_weight == 0
+    assert scores.total.mode == "structure_only"
+    assert scores.total.value == 80
+
+
+def test_two_missing_scores_are_unavailable_not_zero():
+    scores = scores_for("unable_to_assess", None)
+    assert scores.total.mode == "unavailable"
+    assert scores.total.value is None
+    assert scores.content.value is None
+    assert scores.structure.value is None
+
+
+def test_not_applicable_answers_never_become_zero():
+    scores = scores_for("not_applicable", None)
+    assert scores.content.value is None
+    assert scores.content.assessed_weight == 0
+    assert scores.content.coverage == 0.0
+    assert scores.total.mode == "unavailable"
+
+
+def test_the_content_range_is_a_pair_or_null():
+    scores = scores_for("present", None)
+    assert scores.content.range == (100, 100)
+    missing = scores_for("not_applicable", None)
+    assert missing.content.range is None
+
+
+def test_content_coverage_counts_only_the_decided_weight():
+    from app.rubrics.scoring_v3 import score_report
+    from app.services.reporting import assemble_scores
+    from app.services.structure_review import StructureOutcome
+
+    answers = every("present") | {"impact_outcome": "unable_to_assess"}
+    scores = assemble_scores(score_report(answers), StructureOutcome())
+    assert scores.content.assessed_weight == 85
+    assert scores.content.coverage == 0.85
+    assert scores.content.range == (85, 100)
