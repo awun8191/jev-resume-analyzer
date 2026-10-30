@@ -21,9 +21,6 @@ function SubScores({ report }: { report: AnalysisReport }) {
               <small>/ 100</small>
             </p>
           )}
-          {scores.structure.value !== null && (
-            <p className="subscore__band">{scores.structure.band ?? 'No band reported'}</p>
-          )}
           {structureReason && <p className="subscore__reason">{structureReason}</p>}
         </li>
         <li className="subscore" data-owner="content">
@@ -35,9 +32,6 @@ function SubScores({ report }: { report: AnalysisReport }) {
               <span>{scores.content.value}</span>
               <small>/ 100</small>
             </p>
-          )}
-          {scores.content.value !== null && (
-            <p className="subscore__band">{scores.content.band ?? 'No band reported'}</p>
           )}
           {scores.content.range && scores.content.range[0] !== scores.content.range[1] && scores.content.value !== null && (
             <p className="subscore__reason">Range {rangeText(scores.content.range)}</p>
@@ -88,7 +82,7 @@ export default function ReportSummary({
       <section className="section" aria-labelledby="fixes-title">
         <div className="section__head">
           <h2 className="section__title" id="fixes-title">Top fixes</h2>
-          <p className="section__note">{fixes.length} absent</p>
+          <p className="section__note">{fixes.length} gaps</p>
         </div>
         {fixes.length ? (
           <ul className="fixes">

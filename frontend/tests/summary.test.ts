@@ -78,9 +78,9 @@ it('takes only the absent answers as fixes, in server order', () => {
 
 it('counts prepared, returned and assessable without inventing a total', () => {
   expect(countsText({ questions_total: 5, questions_answered: 4, questions_assessable: 2, rating: null }))
-    .toBe('5 prepared · 4 returned · 2 assessable · 1 not returned')
+    .toBe('4 of 5 answered · 2 assessable · 1 not returned')
   expect(countsText({ questions_total: 3, questions_answered: 3, questions_assessable: 3, rating: null }))
-    .toBe('3 prepared · 3 returned · 3 assessable')
+    .toBe('3 of 3 answered · 3 assessable')
 })
 
 it('prints a range as one value when both ends match', () => {

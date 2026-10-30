@@ -142,8 +142,7 @@ export function coveragePercent(scores: Scores): string {
 export function countsText(overview: Overview): string {
   const missing = overview.questions_total - overview.questions_answered
   const parts = [
-    `${overview.questions_total} prepared`,
-    `${overview.questions_answered} returned`,
+    `${overview.questions_answered} of ${overview.questions_total} answered`,
     `${overview.questions_assessable} assessable`,
   ]
   if (missing > 0) parts.push(`${missing} not returned`)

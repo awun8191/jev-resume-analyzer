@@ -39,7 +39,7 @@ it('shows the total, band, mode and coverage in one compact block', () => {
   expect(block.textContent).toContain('Adequate evidence')
   expect(block.textContent).not.toContain('Content and layout')
   expect(block.textContent).toContain('80%')
-  expect(block.textContent).toContain('5 prepared · 4 returned · 2 assessable · 1 not returned')
+  expect(block.textContent).toContain('4 of 5 answered · 2 assessable · 1 not returned')
   // A combined total has no range of its own, so none is shown.
   expect(block.querySelector('.score__range')).toBeNull()
 })
@@ -60,9 +60,8 @@ it('puts structure first and content second in the two tiles', () => {
   const subscores = [...container.querySelectorAll('.subscore')]
   expect(subscores.map(node => node.getAttribute('data-owner'))).toEqual(['structure', 'content'])
   expect(subscores[0].textContent).toContain('81')
-  expect(subscores[0].textContent).toContain('Strong evidence')
+  expect(subscores[0].textContent).not.toContain('Strong evidence')
   expect(subscores[1].textContent).toContain('58')
-  expect(subscores[1].textContent).toContain('Partial evidence')
   expect(subscores[1].textContent).toContain('Range 46 to 69')
 })
 
