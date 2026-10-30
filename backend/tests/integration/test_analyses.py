@@ -50,8 +50,8 @@ def harness():
     app.dependency_overrides.clear()
 
 
-@pytest.mark.parametrize("with_job,count", [(False, 8), (True, 10)])
-def test_full_document_one_call(harness, with_job, count):
+@pytest.mark.parametrize("with_job", [False, True])
+def test_full_document_one_call(harness, with_job):
     client, calls, _ = harness
     body = {"mode": "review", "cv_text": "Synthetic CV. Built a useful project."}
     if with_job:
@@ -61,26 +61,49 @@ def test_full_document_one_call(harness, with_job, count):
     report = response.json()
     assert len(calls) == 1
     assert calls[0]["state"]["cv_text"] == body["cv_text"]
-    assert calls[0]["state"]["bullets"] == []
-    assert len(calls[0]["questions"]) == count
+    # The v3 flow sends the text and nothing else. No bullet preparation.
+    expected_state = {"cv_text", "job_text"} if with_job else {"cv_text"}
+    assert set(calls[0]["state"]) == expected_state
+    assert len(calls[0]["questions"]) == 14
     for finding in report["findings"]:
-        if finding["source"] == "document_metadata":
-            assert finding["answer"] == "unable_to_assess"
-            assert finding["confidence"] is None
-            continue
         actual = calls[0]["questions"][finding["question_id"]]
         assert actual["type"] == "choice"
         assert set(actual["criteria"]) == set(OPTIONS)
         assert finding["question"] == actual["instructions"]
         assert finding["criteria"] == [f"{k}: {v}" for k, v in actual["criteria"].items()]
         assert finding["assessment_level"] == "full_document"
+        assert finding["source"] == "provider"
         assert finding["probabilities"] == dict(zip(OPTIONS, [0.7, 0.1, 0.1, 0.1]))
     assert report["overview"] == {
-        "questions_total": count + 4,
-        "questions_answered": count + 4,
-        "questions_assessable": count,
+        "questions_total": 14,
+        "questions_answered": 14,
+        "questions_assessable": 14,
         "rating": None,
     }
+    assert report["rubric_version"] == "v3"
+    assert report["scores"]["content"]["value"] == 100
+    assert report["scores"]["content"]["band"] == "Very strong evidence"
+    assert report["scores"]["content"]["range"] == [100, 100]
+    assert report["scores"]["content"]["assessed_weight"] == 100
+    assert report["scores"]["content"]["coverage"] == 1.0
+    # A JSON call carries no page image, so structure is null, not zero.
+    assert report["scores"]["structure"] == {
+        "value": None,
+        "band": None,
+        "reason": "no_file",
+        "assessed_weight": 0,
+    }
+    assert report["scores"]["total"] == {
+        "value": 100,
+        "band": "Very strong evidence",
+        "mode": "content_only",
+    }
+    assert [row["owner"] for row in report["dimensions"]] == ["content"] * 7
+    assert [row["weight"] for row in report["dimensions"]] == [25, 15, 15, 15, 15, 10, 5]
+    assert report["structure_findings"] == []
+    codes = {warning["code"] for warning in report["warnings"]}
+    assert "structure_unavailable" in codes
+    assert "bullet_coverage" not in codes
     assert report["metrics"]["cost_usd"] is None
     assert report["metrics"]["input_tokens"] == 123
     assert report["metrics"]["duration_ms"] >= 0
