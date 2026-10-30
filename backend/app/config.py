@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     max_analysis_chars: int = Field(default=40000, gt=0, le=60000)
     max_docx_uncompressed_bytes: int = Field(default=20971520, gt=0)
     parser_timeout_seconds: float = Field(default=15, gt=0, le=30)
+    parser_inline: bool = False
     rate_limit_enabled: bool = True
     # The Vercel marketplace installs Upstash as KV_REST_API_*, so accept both names.
     upstash_redis_rest_url: str = Field(
@@ -37,6 +38,6 @@ class Settings(BaseSettings):
     def require_rest_token_with_url(self):
         if self.upstash_redis_rest_url and not self.upstash_redis_rest_token.get_secret_value():
             raise ValueError(
-                "UPSTASH_REDIS_REST_TOKEN or KV_REST_API_TOKEN is required when the REST URL is set."
+                "UPSTASH_REDIS_REST_TOKEN or KV_REST_API_TOKEN is required with a REST URL."
             )
         return self

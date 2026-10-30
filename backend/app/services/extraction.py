@@ -7,6 +7,7 @@ from starlette.datastructures import UploadFile
 
 from app.config import ROOT, Settings
 from app.errors import AppError
+from app.parsers.run import parse as parse_document
 
 SIGNATURES = {".pdf": b"%PDF-", ".docx": b"PK\x03\x04"}
 
@@ -36,6 +37,20 @@ async def extract_document(data: bytes, filename: str, settings: Settings) -> di
         else {"max_uncompressed_bytes": settings.max_docx_uncompressed_bytes}
     )
     params["max_chars"] = settings.max_extracted_chars
+    if settings.parser_inline:
+        # Serverless platforms do not give a reliable child process, so parse in a thread.
+        try:
+            output = await asyncio.wait_for(
+                asyncio.to_thread(parse_document, kind, data, params),
+                timeout=settings.parser_timeout_seconds,
+            )
+        except TimeoutError:
+            raise AppError(
+                422,
+                "PARSER_TIMEOUT",
+                "Document processing timed out. Export a simpler text-based file.",
+            ) from None
+        return _result(output, kind)
     # No inherited API secrets, shell, applicant paths or persistent upload files.
     process = await asyncio.create_subprocess_exec(
         sys.executable,
@@ -67,7 +82,10 @@ async def extract_document(data: bytes, filename: str, settings: Settings) -> di
         raise AppError(
             422, "UNREADABLE_DOCUMENT", "Document exceeded processing resources or is unreadable."
         )
-    output = json.loads(stdout)
+    return _result(json.loads(stdout), kind)
+
+
+def _result(output: dict, kind: str) -> dict:
     if "result" not in output:
         raise AppError(
             output["status"],
