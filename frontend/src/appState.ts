@@ -167,10 +167,6 @@ export function useAppState() {
     setState({ ...EMPTY, stage: 'extracting', fileName: next.name })
   }
 
-  function attachFile(next: File) {
-    setFile(next)
-  }
-
   function selectFinding(id: string | null) {
     setState(current => ({ ...current, selectedId: id }))
   }
@@ -199,7 +195,6 @@ export function useAppState() {
     restoreNotice,
     file,
     startUpload,
-    attachFile,
     reset,
     edit,
   }
