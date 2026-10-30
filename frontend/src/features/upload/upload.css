@@ -1,0 +1,133 @@
+/*
+ * Upload stage. A single ruled drop area, left aligned, with the file control
+ * as the baseline action and drag and drop as an enhancement.
+ */
+.drop {
+  display: grid;
+  gap: var(--s5);
+  padding: var(--s5);
+  border: 1px solid var(--rule-2);
+  background: var(--paper);
+  transition: border-color var(--dur) var(--ease);
+}
+
+.drop.is-dragging {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.drop__title {
+  margin-top: var(--s2);
+  font-size: var(--fs-5);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  max-width: 24ch;
+}
+
+.drop__lead .help {
+  margin-top: var(--s2);
+  max-width: 46ch;
+}
+
+.drop__control {
+  padding-top: var(--s4);
+  border-top: 1px solid var(--rule);
+}
+
+.drop__control .help {
+  margin-top: var(--s2);
+}
+
+.drop__error {
+  margin-top: var(--s2);
+  font-size: var(--fs-2);
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.drop__error::before {
+  content: '!';
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: var(--s2);
+  border: 1px solid var(--accent);
+  text-align: center;
+  line-height: 14px;
+  font-size: 11px;
+}
+
+.specs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s3);
+  padding-top: var(--s4);
+  border-top: 1px solid var(--rule);
+}
+
+.specs dd {
+  margin-top: 2px;
+  font-size: var(--fs-2);
+}
+
+.specs div + div {
+  padding-left: var(--s3);
+  border-left: 1px solid var(--rule);
+}
+
+.notes {
+  display: grid;
+  gap: var(--s3);
+  margin-top: var(--s7);
+  border-top: 1px solid var(--ink);
+  padding-top: var(--s3);
+}
+
+.notes ul {
+  display: grid;
+  gap: var(--s3);
+  padding: 0;
+  list-style: none;
+  font-size: var(--fs-2);
+  line-height: 1.55;
+  color: var(--ink-2);
+  max-width: 62ch;
+}
+
+.notes b {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+@media (min-width: 720px) {
+  .drop {
+    padding: var(--s6);
+  }
+}
+
+@media (min-width: 860px) {
+  .drop {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--s6);
+  }
+
+  .notes {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 9fr);
+    gap: var(--s5);
+  }
+}
+
+@media (max-width: 560px) {
+  .specs {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--s2);
+  }
+
+  .specs div + div {
+    padding-left: 0;
+    padding-top: var(--s2);
+    border-left: 0;
+    border-top: 1px solid var(--rule);
+  }
+}
