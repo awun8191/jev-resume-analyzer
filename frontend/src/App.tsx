@@ -149,6 +149,7 @@ export default function App() {
       </div>
 
       <main ref={main} tabIndex={-1} className="shell" id="main">
+        {s.restoreNotice && <p className="storage" role="status">{s.restoreNotice}</p>}
         {s.storageNotice && <p className="storage" role="status">{s.storageNotice}</p>}
 
         {s.stage === 'empty' && (

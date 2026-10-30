@@ -122,3 +122,42 @@ it('shows an extraction error without a fake preview', async () => {
   expect(screen.queryByLabelText('CV text')).toBeNull()
   await waitFor(() => expect(screen.getByText('Backend unavailable')).toBeTruthy())
 })
+
+it('drops a stored report from before scores existed and returns to check text', async () => {
+  mockApi()
+  const oldReport = {
+    analysis_id: 'synthetic-old-report', rubric_version: 'v2', model: 'synthetic-test-model',
+    findings: [], overview: { questions_total: 0, questions_answered: 0, questions_assessable: 0, rating: null },
+    warnings: [], metrics: null,
+  }
+  sessionStorage.setItem('jev.state.v1', JSON.stringify({
+    version: 1, stage: 'result', fileName: 'old.pdf',
+    extraction, cvText: extraction.text, jobText: '', report: oldReport, selectedId: 'q-old',
+  }))
+
+  render(<App />)
+
+  expect(await screen.findByLabelText('CV text')).toBeTruthy()
+  expect(screen.queryByRole('heading', { name: 'The report.' })).toBeNull()
+  expect(screen.getByText(/older version/)).toBeTruthy()
+  expect((screen.getByLabelText('CV text') as HTMLTextAreaElement).value).toBe(extraction.text)
+
+  const stored = JSON.parse(sessionStorage.getItem('jev.state.v1')!)
+  expect(stored.stage).toBe('reviewing')
+  expect(stored.report).toBeNull()
+  expect(stored.selectedId).toBeNull()
+})
+
+it('keeps a stored report that matches the current shape', async () => {
+  mockApi()
+  sessionStorage.setItem('jev.state.v1', JSON.stringify({
+    version: 1, stage: 'result', fileName: 'current.pdf',
+    extraction, cvText: extraction.text, jobText: '', report, selectedId: null,
+  }))
+
+  render(<App />)
+
+  expect(await screen.findByRole('heading', { name: 'The report.' })).toBeTruthy()
+  expect(screen.queryByText(/older version/)).toBeNull()
+  expect(screen.getByText('71')).toBeTruthy()
+})
