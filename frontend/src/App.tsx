@@ -87,7 +87,7 @@ export default function App() {
           : {}),
         ...(s.jobText.trim() ? { job_text: s.jobText.trim() } : {}),
         mode: 'review',
-      })
+      }, s.file)
       s.setReport(result)
       s.setStage('result')
     } catch (error) {
