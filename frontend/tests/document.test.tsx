@@ -213,12 +213,17 @@ it('draws a structure box where the API sent one', () => {
   expect(parseFloat(box.style.top)).toBeCloseTo(30, 3)
 })
 
-it('outlines the whole page for a structure check with no box', async () => {
+it('shows no whole-page outline when nothing is selected', async () => {
   const user = userEvent.setup()
   show([{ imageUrl: image }, { imageUrl: image }], true, null, structureBoxes)
-  // The check belongs to page 2, which is not the visible page yet.
   expect(document.querySelector('.box--page')).toBeNull()
+  await user.click(screen.getByRole('button', { name: 'Next page' }))
+  expect(document.querySelector('.box--page')).toBeNull()
+})
 
+it('outlines the whole page for the selected structure check with no box', async () => {
+  const user = userEvent.setup()
+  show([{ imageUrl: image }, { imageUrl: image }], true, 'structure:break', structureBoxes)
   await user.click(screen.getByRole('button', { name: 'Next page' }))
   const outline = document.querySelector('.box--page') as HTMLElement
   expect(outline).toBeTruthy()
