@@ -281,6 +281,33 @@
   color: var(--paper);
 }
 
+/* A structure check with a page and no box. The whole page is outlined, it sits
+ * behind the other boxes and it is not a click target. */
+.box--page {
+  cursor: default;
+  pointer-events: none;
+  border-style: dashed;
+  border-color: var(--rule-2);
+  z-index: 0;
+}
+
+.box--page .box__n {
+  top: auto;
+  bottom: 0;
+  background: var(--paper);
+  color: var(--ink-2);
+  border: 1px solid var(--rule-2);
+}
+
+.box--page[data-selected='true'] {
+  border-width: 2px;
+  border-color: var(--accent);
+}
+
+.box[data-kind='structure']:not(.box--page) {
+  border-style: dashed;
+}
+
 /* Box index, used when a page image is not available */
 .docpane__index {
   margin-top: var(--s4);

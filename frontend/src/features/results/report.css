@@ -51,6 +51,31 @@
   font-size: var(--fs-4);
 }
 
+/* The mode is part of the total, not a footnote. It says how the number was
+ * derived, or why there is no number. */
+.score__mode {
+  margin-top: var(--s3);
+  font-size: var(--fs-1);
+  font-weight: 600;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.score__range {
+  margin-top: var(--s2);
+  font-size: var(--fs-2);
+  color: var(--ink-2);
+}
+
+.score__reason {
+  margin-top: var(--s3);
+  max-width: 48ch;
+  font-size: var(--fs-2);
+  line-height: 1.5;
+  color: var(--ink);
+}
+
 .score__main .help {
   margin-top: var(--s4);
   max-width: 48ch;
@@ -96,8 +121,8 @@
   margin-top: var(--s3);
 }
 
-/* Sub-score slots. Structure and Content stay pending until the backend sends
- * them; the labels are part of the report hierarchy, not decoration. */
+/* Sub-scores. Structure and Content carry their own value, band and reason.
+ * The two slots stack at narrow widths; the total stays above them. */
 .subscores {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -118,13 +143,37 @@
 
 .subscore__value {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: var(--s2);
   margin-top: var(--s2);
-  font-size: var(--fs-4);
+  font-size: var(--subscore-value);
   font-weight: 600;
-  letter-spacing: -0.01em;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.subscore__value small {
+  font-size: var(--fs-1);
+  font-weight: 400;
+  letter-spacing: 0;
   color: var(--ink-2);
+}
+
+.subscore .score__none {
+  display: block;
+  margin-top: var(--s2);
+  font-size: var(--subscore-value);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.subscore__band {
+  margin-top: var(--s2);
+  font-size: var(--fs-2);
+  font-weight: 600;
+  color: var(--ink);
 }
 
 .subscore .help {
@@ -133,7 +182,50 @@
   line-height: 1.45;
 }
 
-/* Dimension counts */
+/* Coverage reads as label and value rows. Prose does not fit a three column
+ * grid at 375px. */
+.cov--scores {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  margin-top: var(--s2);
+}
+
+.cov--scores > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s1) var(--s4);
+  padding: 6px 0;
+  border-top: 1px solid var(--rule);
+}
+
+.cov--scores dt {
+  font-size: var(--fs-1);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.cov--scores dd {
+  margin-top: 0;
+  font-size: var(--fs-2);
+  font-weight: 400;
+  line-height: 1.4;
+  letter-spacing: 0;
+  text-align: right;
+}
+
+.cov--counts {
+  margin-top: var(--s4);
+}
+
+/* Dimension rows from the API, grouped by the score that owns them. The value
+ * is the row's own score, not a count of findings. */
+.dim-group + .dim-group {
+  margin-top: var(--s5);
+}
+
 .dims {
   padding: 0;
   list-style: none;
@@ -142,66 +234,52 @@
 
 .dim {
   display: grid;
-  gap: var(--s2);
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: var(--s1) var(--s4);
   padding-block: var(--s3);
   border-bottom: 1px solid var(--rule);
 }
 
 .dim__name {
+  grid-column: 1;
+  grid-row: 1;
   font-size: var(--fs-3);
   font-weight: 600;
   letter-spacing: -0.01em;
 }
 
-.dim__counts {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--s2) var(--s4);
-  padding: 0;
-  list-style: none;
-}
-
-.dim__counts li {
-  display: grid;
-  grid-template-columns: 12px auto;
-  column-gap: 6px;
-  row-gap: 2px;
-  min-width: 0;
-}
-
-.dim__glyph {
-  grid-row: 1;
-  align-self: center;
-  font-size: 11px;
-  line-height: 1;
-  width: 10px;
-}
-
-.dim__n {
-  grid-row: 1;
-  font-size: var(--fs-3);
-  font-weight: 600;
-  line-height: 1.2;
-}
-
-.dim__s {
-  grid-column: 2;
+.dim__meta {
+  grid-column: 1;
   grid-row: 2;
   font-size: var(--fs-1);
-  line-height: 1.3;
+  letter-spacing: 0.04em;
   color: var(--ink-2);
 }
 
-.dim__counts li.is-zero .dim__n,
-.dim__counts li.is-zero .dim__s {
-  color: var(--ink-3);
+.dim__value {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+  font-size: var(--fs-4);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
 }
 
-@media (min-width: 520px) {
-  .dim__counts {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: var(--s3);
-  }
+.dim__value small {
+  margin-left: var(--s1);
+  font-size: var(--fs-1);
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--ink-2);
+}
+
+.dim__value--none {
+  font-size: var(--fs-2);
+  font-weight: 400;
+  color: var(--ink-2);
 }
 
 @media (max-width: 520px) {
@@ -214,6 +292,111 @@
     border-top: 1px solid var(--rule);
     padding-left: 0;
   }
+}
+
+/* Structure checks. The severity is a word plus a rule weight, never colour
+ * alone. Only a check with a page is a button. */
+.sfinds {
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--ink);
+}
+
+.sfind {
+  padding-block: var(--s3);
+  border-bottom: 1px solid var(--rule);
+  transition: background var(--dur) var(--ease);
+}
+
+.sfind[data-selected='true'] {
+  background: var(--paper-sunk);
+}
+
+.sfind__select,
+.sfind__head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: var(--s1) var(--s3);
+  width: 100%;
+  min-height: var(--tap);
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+
+.sfind__select {
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .sfind__select:hover {
+    color: var(--accent);
+  }
+}
+
+.sfind__select:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.sfind__index {
+  font-size: var(--fs-1);
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+}
+
+.sfind__label {
+  font-size: var(--fs-4);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.sfind__loc {
+  grid-column: 2 / span 2;
+  grid-row: 2;
+  font-size: var(--fs-1);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.sfind__severity {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+  font-size: var(--fs-1);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.sfind__severity[data-severity='major'] {
+  color: var(--accent);
+}
+
+.sfind__severity[data-severity='unassessable'] {
+  color: var(--ink-2);
+}
+
+.sfind__evidence {
+  margin-top: var(--s2);
+  max-width: 62ch;
+  color: var(--ink-2);
+}
+
+.sfind__meta {
+  margin-top: var(--s1);
+  font-size: var(--fs-1);
+  color: var(--ink-3);
+}
+
+.sfind[data-selected='true'] .sfind__severity {
+  color: var(--accent);
 }
 
 /* Findings */

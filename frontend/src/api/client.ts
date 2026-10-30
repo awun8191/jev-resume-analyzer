@@ -53,7 +53,46 @@ export function extractDocument(file: File, timeoutMs = 60_000) {
   const body = new FormData(); body.append('file', file)
   return request('/documents/extract', ExtractionSchema, { method: 'POST', body }, timeoutMs)
 }
-export function runAnalysis(payload: AnalysisRequest, timeoutMs = 120_000) {
-  return request('/analyses', AnalysisReportSchema, { method: 'POST',
-    headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(AnalysisRequestSchema.parse(payload)) }, timeoutMs)
+
+/* Only a PDF can be laid out by the structure route. A DOCX request sends the
+ * text alone, which returns a content only report. */
+export function isPdfUpload(file: File): boolean {
+  return file.type === 'application/pdf' || /\.pdf$/i.test(file.name)
+}
+
+/* The workspace shape: one `request` part with the JSON body and, for a PDF, one
+ * `file` part with the original bytes. The browser owns the boundary header. */
+export function analysisForm(payload: AnalysisRequest, file: File | null): FormData {
+  const body = new FormData()
+  const request = AnalysisRequestSchema.parse(payload)
+  body.append('request', new Blob([JSON.stringify(request)], { type: 'application/json' }), 'request.json')
+  if (file && isPdfUpload(file)) body.append('file', file, file.name)
+  return body
+}
+
+/* A server that predates the multipart route answers 415 for it. That one case
+ * falls back to the JSON body, which still returns a content only report. No
+ * setting, no retry loop: one fallback attempt and nothing more. */
+function multipartUnsupported(error: ApiError): boolean {
+  if (error.status === 415) return true
+  return error.code === 'MULTIPART_UNSUPPORTED' || error.code === 'UNSUPPORTED_MEDIA_TYPE'
+}
+
+export async function runAnalysis(
+  payload: AnalysisRequest,
+  file: File | null = null,
+  timeoutMs = 120_000,
+) {
+  const body = analysisForm(payload, file)
+  try {
+    return await request('/analyses', AnalysisReportSchema, { method: 'POST', body }, timeoutMs)
+  } catch (error) {
+    if (!(error instanceof ApiError) || !multipartUnsupported(error)) throw error
+    /* Each attempt has its own timeout. The fallback is one request, never a
+     * billable retry of a request the server already accepted. */
+    return request('/analyses', AnalysisReportSchema, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(AnalysisRequestSchema.parse(payload)),
+    }, timeoutMs)
+  }
 }

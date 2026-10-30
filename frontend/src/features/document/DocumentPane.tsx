@@ -11,11 +11,15 @@ const pct = (n: number) => `${(n * 100).toFixed(3)}%`
 interface DrawableBox extends BoxFinding {
   page: number
   box: FindingBox
-  source: 'section' | 'reported'
+  source: 'section' | 'reported' | 'page'
 }
 
-/* A finding with a section uses the exact text layer box. A finding without
- * one keeps the reported box. Nothing is drawn unless one of the two exists. */
+const WHOLE_PAGE: FindingBox = { top: 0, bottom: 1, left: 0, right: 1 }
+
+/* A content finding with a section uses the exact text layer box. A content
+ * finding without one keeps the reported box. A structure check carries its own
+ * page: with a box it is drawn, without one the page is outlined whole. Nothing
+ * is drawn unless the data supports it. */
 export function resolveBoxes(findings: BoxFinding[], pages: PagePreview[]): DrawableBox[] {
   const byPage = new Map<number, Map<string, { page: number; box: FindingBox }>>()
   const anywhere = new Map<string, Array<{ page: number; box: FindingBox }>>()
@@ -35,6 +39,12 @@ export function resolveBoxes(findings: BoxFinding[], pages: PagePreview[]): Draw
 
   const resolved: DrawableBox[] = []
   for (const finding of findings) {
+    if (finding.kind === 'structure') {
+      if (finding.page == null) continue
+      if (finding.box) resolved.push({ ...finding, page: finding.page, box: finding.box, source: 'reported' })
+      else resolved.push({ ...finding, page: finding.page, box: WHOLE_PAGE, source: 'page' })
+      continue
+    }
     if (finding.section) {
       const key = sectionKey(finding.section)
       let hit = finding.page == null ? undefined : byPage.get(finding.page)?.get(key)
@@ -84,7 +94,7 @@ export default function DocumentPane({
   const [zoomIndex, setZoomIndex] = useState(0)
   const [showBoxes, setShowBoxes] = useState(true)
   const [collapsed, setCollapsed] = useState(initialCollapsed)
-  const boxRefs = useRef<Record<string, HTMLButtonElement | null>>({})
+  const boxRefs = useRef<Record<string, HTMLElement | null>>({})
 
   const total = pages.length
   const page = pages[pageIndex]
@@ -193,15 +203,34 @@ export default function DocumentPane({
           {hasImage ? (
             <div className="docpane__page" style={{ width: `${ZOOMS[zoomIndex] * 100}%` }}>
               <img src={page!.imageUrl} alt={`Page ${pageIndex + 1} of ${fileName}`} />
-              {showBoxes && pageBoxes.map(box => (
+              {showBoxes && pageBoxes.filter(box => box.source === 'page').map(box => (
+                /* A check with a page and no box has no exact rectangle. The
+                 * whole page is outlined, behind the other boxes, and the row
+                 * in the report stays the click target. */
+                <div
+                  key={box.id}
+                  ref={node => { boxRefs.current[box.id] = node }}
+                  className="box box--page"
+                  data-kind={box.kind}
+                  data-selected={box.id === selectedId}
+                  style={{ top: 0, left: 0, width: '100%', height: '100%' }}
+                  aria-hidden="true"
+                >
+                  <span className="box__n">
+                    {String(numbers.get(box.id)).padStart(2, '0')}
+                  </span>
+                </div>
+              ))}
+              {showBoxes && pageBoxes.filter(box => box.source !== 'page').map(box => (
                 <button
                   key={box.id}
                   ref={node => { boxRefs.current[box.id] = node }}
                   type="button"
                   className="box"
                   data-source={box.source}
+                  data-kind={box.kind}
                   aria-pressed={box.id === selectedId}
-                  aria-label={`Finding ${numbers.get(box.id)}: ${box.label}, ${box.answer.replace(/_/g, ' ')}, page ${box.page + 1}`}
+                  aria-label={`Finding ${numbers.get(box.id)}: ${box.label}, ${box.state}, page ${box.page + 1}`}
                   style={{
                     top: pct(box.box.top),
                     left: pct(box.box.left),
@@ -221,7 +250,7 @@ export default function DocumentPane({
                   <span className="box__tip" aria-hidden="true">
                     <strong>{box.label}</strong>
                     <span>
-                      {box.answer.replace(/_/g, ' ')}
+                      {box.state}
                       {box.severity ? ` / ${box.severity}` : ''}
                     </span>
                   </span>

@@ -1,20 +1,18 @@
 import { expect, it } from 'vitest'
-import { ANSWER_ORDER, boxFindings, dimensionRows, percent } from '../src/features/results/summary'
+import {
+  ANSWER_ORDER, boxFindings, groupDimensions, percent, structureBoxes, structureReasonText,
+} from '../src/features/results/summary'
 import { multiReport } from './contract/fixtures/responses'
 
-it('returns nothing for no findings', () => {
-  expect(dimensionRows([])).toEqual([])
+it('splits API dimension rows by owner without reordering them', () => {
+  const groups = groupDimensions(multiReport.dimensions)
+  expect(groups.content.map(row => row.key)).toEqual(['work_clarity', 'scope', 'responsibility_alignment'])
+  expect(groups.structure.map(row => row.key)).toEqual(['layout_order', 'page_budget'])
+  expect([...groups.content, ...groups.structure]).toHaveLength(multiReport.dimensions.length)
 })
 
-it('groups findings by dimension and counts each answer once', () => {
-  const rows = dimensionRows(multiReport.findings)
-  expect(rows.map(row => row.dimension)).toEqual(['Work clarity', 'Scope', 'Responsibility alignment'])
-  expect(rows[0]).toEqual({
-    dimension: 'Work clarity',
-    total: 2,
-    counts: { present: 1, absent: 1, not_applicable: 0, unable_to_assess: 0 },
-  })
-  expect(rows.reduce((sum, row) => sum + row.total, 0)).toBe(multiReport.findings.length)
+it('returns empty groups for no rows', () => {
+  expect(groupDimensions([])).toEqual({ content: [], structure: [] })
 })
 
 it('keeps a fixed answer order and formats probabilities to one decimal', () => {
@@ -30,6 +28,8 @@ it('only turns findings with real page geometry into boxes', () => {
   expect(boxes.map(box => box.page)).toEqual([0, 0, 1])
   expect(boxes[1].severity).toBe('high')
   expect(boxes[0].box.right).toBe(0.92)
+  expect(boxes[0].kind).toBe('content')
+  expect(boxes[0].state).toBe('Present')
 })
 
 it('keeps a finding that only names a section, for the layout to place', () => {
@@ -37,4 +37,29 @@ it('keeps a finding that only names a section, for the layout to place', () => {
   const boxes = boxFindings([{ ...base, page: null, box: null, section: 'Experience' }])
   expect(boxes).toHaveLength(1)
   expect(boxes[0]).toMatchObject({ id: base.question_id, page: null, box: null, section: 'Experience' })
+})
+
+it('turns only located, non-pass structure checks into boxes', () => {
+  const boxes = structureBoxes(multiReport.structure_findings)
+  expect(boxes.map(box => box.id)).toEqual(['structure:dense-columns', 'structure:no-page-break'])
+  expect(boxes.map(box => box.page)).toEqual([0, 1])
+  expect(boxes[0].box).toEqual({ top: 0.3, bottom: 0.46, left: 0.52, right: 0.94 })
+  expect(boxes[0].state).toBe('Major issue')
+  // A page with no box stays drawable, with no invented rectangle.
+  expect(boxes[1].box).toBeNull()
+  expect(boxes.some(box => box.severity === 'pass')).toBe(false)
+})
+
+it('maps each reported structure reason to one plain sentence', () => {
+  const reason = (code: string | null) =>
+    structureReasonText({ value: null, band: null, reason: code, assessed_weight: 0 })
+
+  expect(reason('unsupported_format')).toBe('Layout is scored for PDF uploads only.')
+  expect(reason('provider_error')).toBe('Layout check failed, content review is complete.')
+  expect(reason('render_failed')).toBe('The layout check could not render the pages.')
+  expect(reason('page_not_readable')).toBe('The layout check could not read the pages.')
+  expect(reason(null)).toContain('no reason was reported')
+  expect(reason('something_new')).toBe('Layout was not scored for this document.')
+  expect(structureReasonText({ value: 80, band: 'Strong evidence', reason: 'scored', assessed_weight: 100 }))
+    .toBeNull()
 })

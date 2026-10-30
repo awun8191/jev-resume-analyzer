@@ -38,12 +38,12 @@ for (const width of [375, 1280]) {
     const errors: string[] = []
     page.on('pageerror', e => errors.push(e.message))
     let attempts = 0
-    const payloads: unknown[] = []
+    const payloads: string[] = []
     await page.route('**/api/v1/**', async route => {
       const url = route.request().url()
       if (url.endsWith('/health')) return route.fulfill({ json: { status: 'ok' } })
       if (url.endsWith('/extract')) return route.fulfill({ json: extraction })
-      payloads.push(route.request().postDataJSON())
+      payloads.push(route.request().postDataBuffer()?.toString('utf8') ?? '')
       attempts++
       return route.fulfill({
         status: attempts === 1 ? 503 : 200,
@@ -85,7 +85,7 @@ for (const width of [375, 1280]) {
     if (width < 900) {
       await page.getByRole('button', { name: 'Show document' }).click()
     }
-    await expect(page.getByText('No page preview')).toBeVisible()
+    await expect(page.getByText('No page preview', { exact: true })).toBeVisible()
     await audit()
     await page.screenshot({ path: `test-results/preview-${width}.png`, fullPage: true })
 
@@ -96,14 +96,23 @@ for (const width of [375, 1280]) {
 
     await page.getByRole('button', { name: 'Analyse CV' }).click()
     await expect(page.getByRole('heading', { name: 'The report.' })).toBeVisible()
-    await expect(page.getByText('Not scored yet')).toBeVisible()
-    await expect(page.getByText('Pending').first()).toBeVisible()
+    await expect(page.locator('.score__main .score__value')).toContainText('65')
+    await expect(page.locator('.score__mode')).toContainText('Content and layout')
+    await expect(page.locator('.subscore')).toHaveCount(2)
+    await expect(page.locator('.subscore[data-owner="structure"] .subscore__value')).toContainText('81')
+    await expect(page.locator('.dim-group[data-owner="content"] .dim')).toHaveCount(3)
+    await expect(page.locator('.dim-group[data-owner="structure"] .dim')).toHaveCount(2)
     await audit()
     await page.screenshot({ path: `test-results/report-${width}.png`, fullPage: true })
 
     // The document pane is collapsible below 900px and was opened above.
     await expect(page.getByText('Re-attach the file to show the page')).toHaveCount(0)
-    await expect(page.locator('.docpane__list button')).toHaveCount(3)
+    // Three content findings plus two located structure checks.
+    await expect(page.locator('.docpane__list button')).toHaveCount(5)
+
+    // A structure check selects its row and turns the pane.
+    await page.getByRole('button', { name: 'Two column layout is dense. Major issue. Page 1.' }).click()
+    await expect(page.locator('.docpane__list button[aria-pressed="true"]')).toContainText('Two column layout is dense')
 
     // A box selects its finding; a finding selects its box.
     await page.locator('.docpane__list button').first().click()
@@ -120,11 +129,15 @@ for (const width of [375, 1280]) {
     await audit()
     await page.screenshot({ path: `test-results/report-detail-${width}.png`, fullPage: true })
 
-    expect(payloads).toEqual(Array(2).fill({
-      cv_text: 'Edited SYNTHETIC test CV',
-      job_text: 'SYNTHETIC job posting',
-      mode: 'review',
-    }))
+    expect(payloads).toHaveLength(2)
+    for (const body of payloads) {
+      expect(body).toContain('name="request"')
+      expect(body).toContain('"cv_text":"Edited SYNTHETIC test CV"')
+      expect(body).toContain('"job_text":"SYNTHETIC job posting"')
+      expect(body).toContain('"mode":"review"')
+      expect(body).toContain('name="file"')
+      expect(body).toContain('filename="SYNTHETIC-fixture.pdf"')
+    }
     expect(await page.evaluate(jevKeys)).toHaveLength(1)
 
     await page.getByRole('button', { name: 'Edit text and run a new review' }).click()
