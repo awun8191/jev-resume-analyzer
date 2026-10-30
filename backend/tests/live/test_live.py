@@ -50,7 +50,12 @@ def test_authorized_resume_through_running_api():
         elapsed = (perf_counter() - start) * 1000
         require(report.status_code == 200, f"Analysis returned HTTP {report.status_code}")
         body = report.json()
-        require(len(body["findings"]) == 8, "Expected eight real provider findings")
+        require(len(body["findings"]) == 14, "Expected fourteen real provider findings")
+        require(body["rubric_version"] == "v3", "Rubric version is not v3")
+        require(
+            body["scores"]["total"]["mode"] == "content_only",
+            "A JSON analysis without a file must be content only",
+        )
         require(body["overview"]["rating"] is None, "Rating must remain null")
         require(body["metrics"]["cost_usd"] is None, "Cost must remain null")
         validation = subprocess.run(
