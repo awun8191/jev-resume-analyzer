@@ -8,20 +8,33 @@
   min-height: 0;
 }
 
+/* One row: name on the left, the disclosure on the right. No second line on a
+ * phone, and the name truncates instead of wrapping. */
 .docpane__bar {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: var(--s3);
-  border-top: 2px solid var(--ink);
-  padding-top: var(--s2);
-  padding-bottom: var(--s3);
+  gap: var(--s2) var(--s3);
+  min-height: var(--tap);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-panel);
+  padding: var(--s2) var(--s2) var(--s2) var(--s3);
+}
+
+.docpane__bar > div {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  min-width: 0;
 }
 
 .docpane__file {
-  margin-top: 2px;
+  min-width: 0;
   font-size: var(--fs-2);
-  overflow-wrap: anywhere;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .docpane__collapse {
@@ -64,6 +77,7 @@
   width: var(--tap);
   height: var(--tap);
   border: 1px solid var(--rule-2);
+  border-radius: var(--r-control);
   background: var(--paper);
   color: var(--ink);
   font-size: var(--fs-3);
@@ -140,7 +154,9 @@
   position: relative;
   width: 100%;
   border: 1px solid var(--rule-2);
+  border-radius: var(--r-control);
   background: var(--paper-sunk);
+  overflow: hidden;
 }
 
 .docpane__page img {
@@ -153,9 +169,9 @@
   display: flex;
   flex-direction: column;
   gap: var(--s2);
-  padding: var(--s5);
-  border: 1px solid var(--rule-2);
-  border-top: 2px solid var(--ink);
+  padding: var(--s4);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-panel);
   background: var(--paper);
 }
 
@@ -311,13 +327,23 @@
 /* Box index, used when a page image is not available */
 .docpane__index {
   margin-top: var(--s4);
-  border-top: 1px solid var(--ink);
-  padding-top: var(--s2);
+}
+
+.docpane__index > .label {
+  margin-bottom: var(--s2);
 }
 
 .docpane__list {
+  margin: 0;
   padding: 0;
   list-style: none;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-panel);
+  overflow: hidden;
+}
+
+.docpane__list li + li button {
+  border-top: 1px solid var(--rule);
 }
 
 .docpane__list button {
@@ -327,9 +353,8 @@
   gap: var(--s3);
   width: 100%;
   min-height: var(--tap);
-  padding-block: var(--s2);
+  padding: var(--s2) var(--s3);
   border: 0;
-  border-bottom: 1px solid var(--rule);
   background: none;
   text-align: left;
   font-size: var(--fs-2);
@@ -375,5 +400,10 @@
 @media (max-width: 899px) {
   .docpane__scroll {
     max-height: 58vh;
+  }
+
+  /* The bar is the only row a phone shows when the pane is closed. */
+  .docpane__bar .label {
+    display: none;
   }
 }

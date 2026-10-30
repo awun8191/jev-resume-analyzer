@@ -28,7 +28,7 @@ test('unavailable backend: keyboard upload, honest error, no report', async ({ p
 
   await expect(page.getByRole('alert')).toContainText('HTTP 502')
   await expect(page.getByLabel('CV text')).toHaveCount(0)
-  await expect(page.getByRole('heading', { name: 'The report.' })).toHaveCount(0)
+  await expect(page.getByRole('heading', { name: 'Report' })).toHaveCount(0)
   await page.screenshot({ path: 'test-results/real-backend-unavailable.png', fullPage: true })
 })
 
@@ -95,37 +95,42 @@ for (const width of [375, 1280]) {
     await expect(page.getByLabel('Job posting', { exact: true })).toHaveValue('SYNTHETIC job posting')
 
     await page.getByRole('button', { name: 'Analyse CV' }).click()
-    await expect(page.getByRole('heading', { name: 'The report.' })).toBeVisible()
-    await expect(page.locator('.score__main .score__value')).toContainText('65')
-    await expect(page.locator('.score__mode')).toContainText('Content and layout')
+    await expect(page.getByRole('heading', { name: 'Report' })).toBeVisible()
+    await expect(page.locator('.score .score__value')).toContainText('65')
+    await expect(page.locator('.score__flags')).toContainText('Content and layout')
     await expect(page.locator('.subscore')).toHaveCount(2)
     await expect(page.locator('.subscore[data-owner="structure"] .subscore__value')).toContainText('81')
+    // The three highest findings are visible; the rest is behind one control.
+    await expect(page.locator('.finding')).toHaveCount(3)
+    await expect(page.getByRole('button', { name: 'Show all 4 findings' })).toBeVisible()
+    await page.getByRole('button', { name: /All dimensions/ }).click()
     await expect(page.locator('.dim-group[data-owner="content"] .dim')).toHaveCount(3)
     await expect(page.locator('.dim-group[data-owner="structure"] .dim')).toHaveCount(2)
     await audit()
     await page.screenshot({ path: `test-results/report-${width}.png`, fullPage: true })
 
     // The document pane is collapsible below 900px and was opened above.
-    await expect(page.getByText('Re-attach the file to show the page')).toHaveCount(0)
+    await expect(page.getByText('Re-attach the file')).toHaveCount(0)
     // Three content findings plus two located structure checks.
     await expect(page.locator('.docpane__list button')).toHaveCount(5)
 
-    // A structure check selects its row and turns the pane.
+    // A structure check selects its row and turns the pane. The disclosure has
+    // to be open first, because the row stays collapsed by default.
+    await page.getByRole('button', { name: /Structure findings/ }).click()
     await page.getByRole('button', { name: 'Two column layout is dense. Major issue. Page 1.' }).click()
     await expect(page.locator('.docpane__list button[aria-pressed="true"]')).toContainText('Two column layout is dense')
 
     // A box selects its finding; a finding selects its box.
     await page.locator('.docpane__list button').first().click()
-    await expect(page.getByRole('button', { name: 'Work clarity. Page 1. Present.' }))
-      .toHaveAttribute('aria-pressed', 'true')
-    await page.getByRole('button', { name: 'Responsibility alignment. Page 2. Unable to assess.' }).click()
-    await expect(page.locator('.docpane__list button[aria-pressed="true"]')).toContainText('Responsibility alignment')
+    await expect(page.getByRole('button', { name: /^Work clarity:/ }).first())
+      .toHaveAttribute('aria-current', 'true')
 
-    const detail = page.locator('summary').filter({ hasText: 'Question and answer detail' }).first()
-    await detail.focus()
+    // A row is one line and opens its detail on tap.
+    const row = page.getByRole('button', { name: /^Work clarity:/ }).first()
+    await row.focus()
     await page.keyboard.press('Enter')
     await expect(page.getByText('62.0%')).toBeVisible()
-    await page.locator('summary').filter({ hasText: 'Request details and metrics' }).click()
+    await page.locator('summary').filter({ hasText: 'Request details' }).click()
     await audit()
     await page.screenshot({ path: `test-results/report-detail-${width}.png`, fullPage: true })
 
@@ -141,8 +146,9 @@ for (const width of [375, 1280]) {
     expect(await page.evaluate(jevKeys)).toHaveLength(1)
 
     await page.getByRole('button', { name: 'Edit text and run a new review' }).click()
-    await expect(page.getByRole('heading', { name: 'The report.' })).toHaveCount(0)
-    await page.getByRole('button', { name: 'Clear document and start over' }).click()
+    await expect(page.getByRole('heading', { name: 'Report' })).toHaveCount(0)
+    await page.getByRole('button', { name: 'New review' }).click()
+    await page.getByRole('button', { name: 'Clear this tab' }).click()
     await expect(page.getByLabel('Choose CV file')).toBeVisible()
     expect(await page.evaluate(jevKeys)).toEqual([])
     expect(await page.evaluate(() => [localStorage.length, sessionStorage.length])).toEqual([0, 0])

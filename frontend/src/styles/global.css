@@ -1,6 +1,7 @@
 /*
  * Base layer: reset, typography, and the few primitives shared by every stage.
- * Rules are hairlines. Corners are square. Nothing floats.
+ * Rules stay hairlines. Panels are rounded. Only the score block carries a
+ * shadow.
  */
 *,
 *::before,
@@ -66,15 +67,23 @@ a {
   color: var(--paper);
 }
 
-/* Small caps label. The only uppercase voice in the interface. */
+/* Small caps label. The only uppercase voice in the interface, 12px. */
 .label {
   display: block;
   font-size: var(--fs-1);
   font-weight: 600;
-  line-height: 1.35;
+  line-height: 1.25;
   letter-spacing: var(--track-label);
   text-transform: uppercase;
   color: var(--ink-2);
+}
+
+/* Panel and chip primitives. A panel is a hairline box with a soft radius; a
+ * chip is a fully rounded label for a state or a mode. */
+.panel {
+  border: 1px solid var(--rule);
+  border-radius: var(--r-panel);
+  padding: var(--s4);
 }
 
 .help {
@@ -99,7 +108,7 @@ a {
   border: 0;
 }
 
-/* Buttons. Square, 44px tall, black fill for the one primary action. */
+/* Buttons. 10px corners, 44px tall, black fill for the one primary action. */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -108,7 +117,7 @@ a {
   min-height: var(--tap);
   padding: 0 20px;
   border: 1px solid var(--ink);
-  border-radius: 0;
+  border-radius: var(--r-control);
   background: var(--paper);
   color: var(--ink);
   font-size: var(--fs-2);
@@ -149,7 +158,7 @@ a {
   cursor: not-allowed;
 }
 
-/* Text fields. Hairline border, square corners, no inner shadow. */
+/* Text fields. Hairline border, 10px corners, no inner shadow. */
 .field-label {
   display: flex;
   flex-wrap: wrap;
@@ -176,12 +185,13 @@ textarea {
   min-height: 180px;
   padding: var(--s4);
   border: 1px solid var(--rule-2);
-  border-radius: 0;
+  border-radius: var(--r-control);
   background: var(--paper);
   color: var(--ink);
   font-size: var(--fs-3);
-  line-height: 1.6;
+  line-height: 1.5;
   resize: vertical;
+  scroll-margin-block: var(--s6) var(--s7);
   transition: border-color var(--dur) var(--ease);
 }
 
@@ -197,7 +207,7 @@ textarea:disabled {
   color: var(--ink-2);
 }
 
-/* Native file input. The picker button is a black block, never a pill. */
+/* Native file input. The picker button is a black block, not a pill. */
 input[type='file'] {
   display: block;
   width: 100%;
@@ -205,7 +215,7 @@ input[type='file'] {
   min-height: var(--tap);
   padding: 6px;
   border: 1px solid var(--rule-2);
-  border-radius: 0;
+  border-radius: var(--r-control);
   background: var(--paper-sunk);
   font-size: var(--fs-2);
   color: var(--ink-2);
@@ -216,7 +226,7 @@ input[type='file']::file-selector-button {
   margin-right: var(--s4);
   padding: 10px 20px;
   border: 1px solid var(--ink);
-  border-radius: 0;
+  border-radius: var(--r-control);
   background: var(--ink);
   color: var(--paper);
   font: inherit;
@@ -238,15 +248,22 @@ input[type='file']::file-selector-button {
   border-bottom: 1px solid var(--rule);
 }
 
+/* A disclosure that carries a whole section reads as a panel. */
+.disclosure--panel {
+  border: 1px solid var(--rule);
+  border-radius: var(--r-panel);
+  padding-inline: var(--s4);
+}
+
 .disclosure > summary {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--s4);
-  min-height: 48px;
+  min-height: var(--tap);
   padding-block: var(--s3);
   cursor: pointer;
-  font-size: var(--fs-2);
+  font-size: var(--fs-3);
   font-weight: 600;
   list-style: none;
 }
@@ -297,11 +314,13 @@ input[type='file']::file-selector-button {
   color: var(--ink-2);
 }
 
-/* Warning block. Black rule, square marker, text carries the meaning. */
+/* Warning block. Hairline panel, square marker, text carries the meaning. */
 .notice {
-  border-top: 2px solid var(--ink);
-  padding-top: var(--s3);
-  margin-block: var(--s6);
+  border: 1px solid var(--rule);
+  border-left: 2px solid var(--ink);
+  border-radius: var(--r-panel);
+  padding: var(--s4);
+  margin-block: var(--s5);
 }
 
 .notice > .label {
@@ -336,9 +355,11 @@ input[type='file']::file-selector-button {
 
 /* Request failure. Accent rule plus the words "Request failed". */
 .alert {
-  border-top: 2px solid var(--accent);
-  padding-top: var(--s3);
-  margin-bottom: var(--s6);
+  border: 1px solid var(--rule);
+  border-left: 2px solid var(--accent);
+  border-radius: var(--r-panel);
+  padding: var(--s4);
+  margin-bottom: var(--s5);
 }
 
 .alert > .label {

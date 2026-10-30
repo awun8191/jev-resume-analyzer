@@ -87,7 +87,7 @@ def test_extraction(name, data, format_):
         ("locked.pdf", pdf_bytes(encrypted=True), 422),
         ("scan.pdf", pdf_bytes(blank=True), 422),
         ("bad.docx", b"PK\x03\x04broken", 422),
-        ("large.pdf", b"%PDF-" + b"x" * 10485760, 413),
+        ("large.pdf", b"%PDF-" + b"x" * 4000000, 413),
     ],
 )
 def test_bad_documents(name, data, status):

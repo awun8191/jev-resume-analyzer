@@ -47,15 +47,36 @@ The Vite dev server proxies `/api` to the backend on `127.0.0.1:8017`.
 ## Tests
 
 ```bash
-# Backend: 277 synthetic tests + lint (live tests are gated behind JEV_RUN_LIVE=1 and a running API)
+# Backend: 300 synthetic tests, 3 gated live tests skipped, plus lint
 cd backend && uv run pytest -q && uv run ruff check app tests
 
-# Frontend: 50 tests, typecheck, build
+# Frontend: 105 tests, typecheck, build
 cd frontend && npm test && npm run typecheck && npm run build
 
 # Browser flows (needs Chromium; see docs/frontend-contract.md)
 cd frontend && CHROMIUM_PATH=<chromium-binary> npx playwright test
 ```
+
+## Deploy
+
+Two Vercel projects deploy from this repository: `backend` as a Python
+function (`app.main:app`) and `frontend` as a static Vite build. Both are
+configured in the tree. GitHub Actions builds, smoke tests and promotes them,
+and the workflow is the only path to production.
+
+- API: `backend/`, entrypoint `app.main:app`, Python 3.12, 60 s and 1 GB.
+- Web: `frontend/`, Vite build to `dist`, SPA rewrite, cached assets.
+- Uploads: **4 MB** (4,000,000 bytes). Vercel rejects a body over 4.5 MB before
+  the app runs, so the app enforces 4 MB itself and answers with a JSON 413.
+  The web app checks the same number before it uploads.
+- CORS: `ALLOWED_ORIGINS` on the API lists the web origins. GET and POST only,
+  `content-type` only, no credentials.
+- Web builds read `VITE_API_BASE_URL`. Empty means same origin, which is the
+  dev proxy.
+
+Full runbook: first-time setup, environment variables, the promote flow,
+blue-green on Hobby, rolling releases on Pro, rollback and limits. See
+[docs/deployment.md](docs/deployment.md).
 
 ## Design boundaries
 
@@ -75,4 +96,4 @@ cd frontend && CHROMIUM_PATH=<chromium-binary> npx playwright test
 
 ## Status
 
-Working end-to-end on localhost: upload → editable extraction preview → one text and one image request → traceable report with content, structure and total scores. Deferred: generated suggestions (phase 2), OCR, accounts, public deployment.
+Working end-to-end on localhost: upload → editable extraction preview → one text and one image request → traceable report with content, structure and total scores. Deployment configuration for two Vercel projects and the CI/CD workflows are in the tree; no project has been created or deployed yet. Deferred: generated suggestions (phase 2), OCR, accounts.

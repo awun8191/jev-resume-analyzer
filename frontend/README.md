@@ -11,7 +11,9 @@ npm ci
 npm run dev
 ```
 
-Open http://127.0.0.1:5273. The `/api` proxy expects a future backend on http://127.0.0.1:8017. Without it the UI displays a real error, never a fixture report. Ports avoid unrelated services on this host. Do not change them without checking ownership and availability.
+Open http://127.0.0.1:5273. The `/api` proxy expects the backend on http://127.0.0.1:8017. Without it the UI displays a real error, never a fixture report. Ports avoid unrelated services on this host. Do not change them without checking ownership and availability.
+
+`VITE_API_BASE_URL` overrides the API origin for a build. Empty means same origin, which is the dev proxy. A trailing slash is stripped. The deploy workflow sets it to the API preview URL for preview builds and to the production API for production builds. It is inlined at build time, so a change needs a new build.
 
 ## Verify
 

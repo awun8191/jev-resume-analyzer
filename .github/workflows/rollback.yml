@@ -1,0 +1,61 @@
+name: Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      project:
+        description: Which Vercel project to roll back to its previous production deployment
+        required: true
+        default: both
+        type: choice
+        options: [both, api, web]
+
+permissions:
+  contents: read
+
+# Shares the deploy group so a rollback can never overlap a promote.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+
+jobs:
+  rollback:
+    name: Roll back ${{ inputs.project }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Roll back the API
+        if: inputs.project == 'api' || inputs.project == 'both'
+        env:
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_API }}
+        run: |
+          set -euo pipefail
+          npx --yes vercel@latest rollback --yes --token "$VERCEL_TOKEN"
+          echo "API rolled back to the previous production deployment."
+
+      - name: Roll back the web
+        if: inputs.project == 'web' || inputs.project == 'both'
+        env:
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_WEB }}
+        run: |
+          set -euo pipefail
+          npx --yes vercel@latest rollback --yes --token "$VERCEL_TOKEN"
+          echo "Web rolled back to the previous production deployment."
+
+      - name: Summary
+        run: |
+          {
+            echo "### Rolled back: ${{ inputs.project }}"
+            echo "Smoke test the production URLs before closing the incident."
+            echo "API: \`GET <production API>/api/v1/health\` must return status ok."
+            echo "Web: the production URL must return HTTP 200 with the JEV title."
+          } >> "$GITHUB_STEP_SUMMARY"

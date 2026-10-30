@@ -6,7 +6,8 @@
   display: grid;
   gap: var(--s5);
   padding: var(--s5);
-  border: 1px solid var(--rule-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-card);
   background: var(--paper);
   transition: border-color var(--dur) var(--ease);
 }
@@ -18,7 +19,7 @@
 
 .drop__title {
   margin-top: var(--s2);
-  font-size: var(--fs-5);
+  font-size: var(--fs-4);
   font-weight: 600;
   line-height: 1.15;
   letter-spacing: -0.025em;
@@ -79,9 +80,7 @@
 .notes {
   display: grid;
   gap: var(--s3);
-  margin-top: var(--s7);
-  border-top: 1px solid var(--ink);
-  padding-top: var(--s3);
+  margin-top: var(--s6);
 }
 
 .notes ul {

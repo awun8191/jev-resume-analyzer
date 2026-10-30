@@ -1,0 +1,42 @@
+name: Release
+
+# Publish a GitHub release from a tag. Release notes come from the commit log,
+# so the changelog matches what actually merged.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to publish
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    name: Publish the release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists. Nothing to do."
+            exit 0
+          fi
+          printf 'Production: https://jev-web-one.vercel.app\nAPI health: https://jev-api-cyan.vercel.app/api/v1/health\n' > /tmp/notes.md
+          gh release create "$TAG" \
+            --title "$TAG" \
+            --generate-notes \
+            --notes-file /tmp/notes.md
+          echo "Published $TAG."

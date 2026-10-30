@@ -5,3 +5,5 @@ coverage/
 test-results/
 .env
 .env.*
+.vercel
+.env*

@@ -9,6 +9,7 @@ import type { PagePreview } from './features/document/types'
 import UploadStage from './features/upload/UploadStage'
 import ReviewStage from './features/preview/ReviewStage'
 import ResultStage from './features/results/ResultStage'
+import ReportSummary from './features/results/ReportSummary'
 import { boxFindings, structureBoxes } from './features/results/summary'
 import './styles/layout.css'
 
@@ -25,6 +26,16 @@ export default function App() {
   const pending = useRef(false)
   const main = useRef<HTMLElement>(null)
   const [health, setHealth] = useState<Health>('checking')
+
+  /* Reset is destructive, so it asks once. The question is one line and the
+   * confirm button is focused, so it works from the keyboard. */
+  const [confirming, setConfirming] = useState(false)
+  const confirmRef = useRef<HTMLButtonElement>(null)
+  const newReviewRef = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    if (confirming) confirmRef.current?.focus()
+  }, [confirming])
 
   useEffect(() => {
     let active = true
@@ -59,6 +70,9 @@ export default function App() {
     ...structureBoxes(s.report?.structure_findings ?? []),
   ], [s.report])
 
+  /* One path for a new file, whether it arrives from the upload stage or from
+   * the document pane. A re-attached file clears the old report and runs the
+   * whole extract again. */
   async function upload(file: File) {
     if (pending.current) return
     pending.current = true
@@ -101,8 +115,14 @@ export default function App() {
     }
   }
 
+  function cancelReset() {
+    setConfirming(false)
+    newReviewRef.current?.focus()
+  }
+
   const busy = s.stage === 'extracting' || s.stage === 'analysing'
   const workspace = Boolean(s.extraction) && s.stage !== 'empty' && s.stage !== 'extracting'
+  const showNewReview = s.stage !== 'empty'
 
   const alert = s.error ? (
     <div className="alert" role="alert">
@@ -110,23 +130,11 @@ export default function App() {
       <h2>{s.error.title}</h2>
       <p>{s.error.detail}</p>
       {s.extraction && (
-        <p>
-          Your CV and job posting are preserved below. A retry sends a new request and may incur
-          provider cost.
-        </p>
+        <p>Your CV and job posting are preserved below. A retry is a new request and may cost again.</p>
       )}
       {s.error.requestId && <p>Request ID: <code>{s.error.requestId}</code></p>}
     </div>
   ) : null
-
-  const reset = s.stage !== 'empty' && (
-    <div className="reset">
-      <p className="help">Clears this tab, including the saved report. Provider records are not touched.</p>
-      <button className="btn btn--quiet" disabled={busy} onClick={s.reset}>
-        Clear document and start over
-      </button>
-    </div>
-  )
 
   return (
     <div className="app">
@@ -135,10 +143,21 @@ export default function App() {
       <header className="masthead">
         <div className="shell masthead__row">
           <p className="wordmark"><strong>JEV</strong><span>Resume Analyzer</span></p>
-          <p className={`health health--${health}`} role="status">
-            <span className="health__mark" aria-hidden="true" />
-            {HEALTH_TEXT[health]}
-          </p>
+          <div className="masthead__tools">
+            {health === 'down' && (
+              <p className="health" role="status">{HEALTH_TEXT.down}</p>
+            )}
+            {showNewReview && (
+              <button
+                ref={newReviewRef}
+                type="button"
+                className="btn btn--quiet newreview"
+                onClick={() => setConfirming(true)}
+              >
+                New review
+              </button>
+            )}
+          </div>
         </div>
       </header>
 
@@ -151,6 +170,42 @@ export default function App() {
       <main ref={main} tabIndex={-1} className="shell" id="main">
         {s.restoreNotice && <p className="storage" role="status">{s.restoreNotice}</p>}
         {s.storageNotice && <p className="storage" role="status">{s.storageNotice}</p>}
+
+        {confirming && (
+          <div
+            className="confirm"
+            role="dialog"
+            aria-labelledby="confirm-title"
+            aria-describedby="confirm-note"
+            onKeyDown={event => {
+              if (event.key === 'Escape') {
+                event.stopPropagation()
+                cancelReset()
+              }
+            }}
+          >
+            <p className="label" id="confirm-title">Start a new review</p>
+            <p className="confirm__note" id="confirm-note">
+              Clears this tab. Provider records are not touched.
+            </p>
+            <div className="confirm__row">
+              <button
+                ref={confirmRef}
+                type="button"
+                className="btn btn--primary"
+                onClick={() => {
+                  setConfirming(false)
+                  s.reset()
+                }}
+              >
+                Clear this tab
+              </button>
+              <button type="button" className="btn btn--quiet" onClick={cancelReset}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
 
         {s.stage === 'empty' && (
           <div className="page">
@@ -166,13 +221,10 @@ export default function App() {
             <div className="stage">
               <section aria-labelledby="extracting-title" aria-busy="true">
                 <header className="stage__head">
-                  <span className="stage__index">01 / Upload</span>
                   <h1 className="stage__title" tabIndex={-1} id="extracting-title">Reading the document.</h1>
                   <p className="help stage__file">{s.fileName}</p>
                 </header>
-                <p role="status" className="busy">
-                  Text is being extracted on the local server. No model request has been made.
-                </p>
+                <p role="status" className="busy">Extracting text on the server. No model request yet.</p>
               </section>
             </div>
           </div>
@@ -180,6 +232,17 @@ export default function App() {
 
         {workspace && (
           <div className="workspace">
+            <div className="workspace__summary">
+              {s.stage === 'result' && s.report && (
+                <ReportSummary
+                  report={s.report}
+                  selectedId={s.selectedId}
+                  onSelect={s.selectFinding}
+                  onStartOver={() => setConfirming(true)}
+                />
+              )}
+            </div>
+
             <div className="workspace__doc">
               <DocumentPane
                 pages={pages}
@@ -188,7 +251,7 @@ export default function App() {
                 onSelect={s.selectFinding}
                 fileName={s.fileName}
                 attached={Boolean(s.file)}
-                onReattach={s.attachFile}
+                onReattach={upload}
               />
             </div>
 
@@ -214,26 +277,10 @@ export default function App() {
                   busy={busy}
                 />
               )}
-
-              {reset}
             </div>
           </div>
         )}
       </main>
-
-      <footer className="footer">
-        <div className="shell footer__grid">
-          <p className="label">Local demo</p>
-          <p>
-            Stored in this tab only, cleared when the tab closes. No accounts, no database. The
-            document file is never saved.
-          </p>
-          <p>
-            Analysis sends CV text and any job posting to TypeSafe. Layout metadata is checked
-            locally. Provider retention terms have not been verified. This is not an offline tool.
-          </p>
-        </div>
-      </footer>
     </div>
   )
 }

@@ -1,0 +1,91 @@
+name: Release monitor
+
+# Polls production after every release and on a schedule. A failure opens one
+# incident issue and a recovery closes it, so the repo shows the current state.
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: release-monitor
+  cancel-in-progress: false
+
+env:
+  API_URL: https://jev-api-cyan.vercel.app/api/v1/health
+  WEB_URL: https://jev-web-one.vercel.app/
+  TITLE: "[monitor] Production check failing"
+
+jobs:
+  check:
+    name: Check production
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe the API and the web app
+        id: probe
+        run: |
+          set -uo pipefail
+          ok=1
+          reason=""
+
+          body="$(curl -fsS --max-time 20 "$API_URL" 2>/dev/null || true)"
+          if ! printf '%s' "$body" | grep -q '"status":"ok"'; then
+            ok=0
+            reason="API health returned: ${body:-no response}"
+          fi
+
+          code="$(curl -sS -o /tmp/web.html -w '%{http_code}' --max-time 20 "$WEB_URL" 2>/dev/null || true)"
+          if [ "$code" != "200" ]; then
+            ok=0
+            reason="${reason:+$reason; }web returned HTTP ${code:-none}"
+          elif ! grep -q "<title>JEV Resume Analyzer</title>" /tmp/web.html; then
+            ok=0
+            reason="${reason:+$reason; }web page title missing"
+          fi
+
+          echo "ok=$ok" >> "$GITHUB_OUTPUT"
+          echo "reason=$reason" >> "$GITHUB_OUTPUT"
+          echo "Result: ok=$ok ${reason}"
+
+      - name: Open or close the incident
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          OK: ${{ steps.probe.outputs.ok }}
+          REASON: ${{ steps.probe.outputs.reason }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          gh label create incident --color B60205 --description "Production monitor" >/dev/null 2>&1 || true
+          existing="$(gh issue list --label incident --state open --json number,title \
+            --jq '.[] | select(.title == "'"$TITLE"'") | .number' | head -n 1)"
+
+          if [ "$OK" = "1" ]; then
+            if [ -n "$existing" ]; then
+              gh issue close "$existing" --comment "Production recovered. Last check passed: $RUN_URL"
+              echo "Closed incident #$existing."
+            else
+              echo "Production healthy. No open incident."
+            fi
+            exit 0
+          fi
+
+          body="Production check failed.
+
+          Reason: ${REASON:-unknown}
+          API: $API_URL
+          Web: $WEB_URL
+          Run: $RUN_URL"
+
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body "$body"
+            echo "Commented on incident #$existing."
+          else
+            gh issue create --title "$TITLE" --label incident --body "$body"
+          fi
+          exit 1

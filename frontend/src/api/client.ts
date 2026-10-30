@@ -16,12 +16,22 @@ export class ApiError extends Error {
   }
 }
 
-// Relative URLs only. No keys, provider SDK, storage, body logging or automatic retries.
+/* Relative URLs only. No keys, provider SDK, storage, body logging or automatic retries. */
+
+/* Empty means same origin, which is the Vite dev proxy. A preview deployment
+ * sets VITE_API_BASE_URL to the API preview URL. Trailing slashes are stripped
+ * so the join below never produces a double slash. */
+export function apiBaseUrl(raw: string | undefined): string {
+  return (raw ?? '').trim().replace(/\/+$/, '')
+}
+export const API_BASE_URL = apiBaseUrl(import.meta.env.VITE_API_BASE_URL)
+export const apiUrl = (path: string) => `${API_BASE_URL}/api/v1${path}`
+
 async function request<T>(path: string, schema: z.ZodType<T, z.ZodTypeDef, unknown>, init: RequestInit, timeoutMs: number): Promise<T> {
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), timeoutMs)
   try {
-    const response = await fetch(`/api/v1${path}`, { ...init, signal: controller.signal, credentials: 'omit' })
+    const response = await fetch(apiUrl(path), { ...init, signal: controller.signal, credentials: 'omit' })
     let raw: unknown
     try { raw = await response.json() }
     catch (error) { if (controller.signal.aborted) throw error; raw = undefined }
@@ -31,7 +41,7 @@ async function request<T>(path: string, schema: z.ZodType<T, z.ZodTypeDef, unkno
         message: parsed.data.error.message, retryable: parsed.data.error.retryable,
         requestId: parsed.data.request_id, status: response.status })
       throw new ApiError({ kind: 'api', code: `HTTP_${response.status}`, status: response.status,
-        message: `The local server returned HTTP ${response.status}. Check that the backend is running on port 8017.`,
+        message: `The analysis server returned HTTP ${response.status}. Try again in a moment.`,
         retryable: response.status >= 500 || response.status === 429 })
     }
     const parsed = schema.safeParse(raw)
@@ -43,7 +53,7 @@ async function request<T>(path: string, schema: z.ZodType<T, z.ZodTypeDef, unkno
     if (controller.signal.aborted) throw new ApiError({ kind: 'timeout', code: 'REQUEST_TIMEOUT',
       message: 'The request timed out. The server may still be processing it. A retry may incur another provider charge.', retryable: true })
     throw new ApiError({ kind: 'network', code: 'NETWORK_UNREACHABLE',
-      message: 'Could not reach the local server. Check that the backend is running on port 8017.', retryable: true })
+      message: 'Could not reach the analysis server. Check the connection and try again.', retryable: true })
   } finally { clearTimeout(timer) }
 }
 export function checkHealth(timeoutMs = 10_000) {

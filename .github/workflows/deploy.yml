@@ -1,0 +1,202 @@
+name: Deploy
+
+# The workflow is the source of truth. Do not connect either Vercel project to
+# Git auto-deploy: that would race this pipeline and skip the smoke tests.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# One production pipeline at a time, and never cancel a promote midway.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID_API: ${{ secrets.VERCEL_PROJECT_ID_API }}
+  VERCEL_PROJECT_ID_WEB: ${{ secrets.VERCEL_PROJECT_ID_WEB }}
+
+jobs:
+  deploy:
+    name: Preview, smoke, promote
+    # Off until preview smoke tests can authenticate past Vercel Deployment
+    # Protection. Set the repository variable DEPLOY_ENABLED to true to arm it.
+    if: ${{ vars.DEPLOY_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check the deploy secrets
+        run: |
+          missing=""
+          for name in VERCEL_TOKEN VERCEL_ORG_ID VERCEL_PROJECT_ID_API VERCEL_PROJECT_ID_WEB; do
+            [ -n "${!name:-}" ] || missing="$missing $name"
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::Missing repository secrets:$missing"
+            exit 1
+          fi
+
+      - name: Deploy the API preview
+        id: api
+        working-directory: backend
+        env:
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_API }}
+        run: |
+          set -euo pipefail
+          url="$(npx --yes vercel@latest deploy --yes --token "$VERCEL_TOKEN" | grep -Eo 'https://[A-Za-z0-9._-]+\.vercel\.app' | tail -n 1)"
+          if [ -z "$url" ]; then
+            echo "::error::The API deploy printed no preview URL."
+            exit 1
+          fi
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "API preview: $url"
+
+      - name: Smoke test the API preview
+        env:
+          API_URL: ${{ steps.api.outputs.url }}
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4 5 6; do
+            body="$(curl -fsS --max-time 30 "$API_URL/api/v1/health" || true)"
+            if printf '%s' "$body" | grep -q '"status":"ok"'; then
+              echo "API preview healthy: $body"
+              exit 0
+            fi
+            echo "attempt $attempt: ${body:-no response}"
+            sleep 10
+          done
+          echo "::error::API health check failed at $API_URL/api/v1/health"
+          exit 1
+
+      - name: Deploy the web preview
+        id: web
+        working-directory: frontend
+        env:
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_WEB }}
+          VITE_API_BASE_URL: ${{ steps.api.outputs.url }}
+        run: |
+          set -euo pipefail
+          npm ci
+          url="$(npx --yes vercel@latest deploy --yes --token "$VERCEL_TOKEN" | grep -Eo 'https://[A-Za-z0-9._-]+\.vercel\.app' | tail -n 1)"
+          if [ -z "$url" ]; then
+            echo "::error::The web deploy printed no preview URL."
+            exit 1
+          fi
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "Web preview: $url"
+
+      - name: Smoke test the web preview
+        env:
+          WEB_URL: ${{ steps.web.outputs.url }}
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4 5 6; do
+            status="$(curl -sS -o /tmp/web.html -w '%{http_code}' --max-time 30 "$WEB_URL" || true)"
+            if [ "$status" = "200" ] && grep -q '<title>JEV Resume Analyzer</title>' /tmp/web.html; then
+              echo "Web preview healthy: HTTP $status with the expected title."
+              exit 0
+            fi
+            echo "attempt $attempt: HTTP ${status:-none}"
+            sleep 10
+          done
+          echo "::error::Web smoke test failed at $WEB_URL (HTTP ${status:-none}, title missing or wrong)."
+          exit 1
+
+      - name: Promote the API
+        working-directory: backend
+        env:
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_API }}
+          PREVIEW_URL: ${{ steps.api.outputs.url }}
+        run: |
+          set -euo pipefail
+          npx --yes vercel@latest promote "$PREVIEW_URL" --yes --token "$VERCEL_TOKEN"
+          echo "API promoted: $PREVIEW_URL"
+
+      - name: Promote the web
+        working-directory: frontend
+        env:
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_WEB }}
+          PREVIEW_URL: ${{ steps.web.outputs.url }}
+        run: |
+          set -euo pipefail
+          npx --yes vercel@latest promote "$PREVIEW_URL" --yes --token "$VERCEL_TOKEN"
+          echo "Web promoted: $PREVIEW_URL"
+
+      - name: Resolve the production URLs
+        id: prod
+        env:
+          API_DEPLOYMENT: ${{ steps.api.outputs.url }}
+          WEB_DEPLOYMENT: ${{ steps.web.outputs.url }}
+          PROD_API_URL_VAR: ${{ vars.PROD_API_URL }}
+          PROD_WEB_URL_VAR: ${{ vars.PROD_WEB_URL }}
+        run: |
+          set -euo pipefail
+          api="${PROD_API_URL_VAR:-$(python3 .github/scripts/prod_url.py "$API_DEPLOYMENT")}"
+          web="${PROD_WEB_URL_VAR:-$(python3 .github/scripts/prod_url.py "$WEB_DEPLOYMENT")}"
+          echo "api=$api" >> "$GITHUB_OUTPUT"
+          echo "web=$web" >> "$GITHUB_OUTPUT"
+          echo "Production API: $api"
+          echo "Production web: $web"
+
+      - name: Smoke test production
+        env:
+          PROD_API: ${{ steps.prod.outputs.api }}
+          PROD_WEB: ${{ steps.prod.outputs.web }}
+        run: |
+          set -euo pipefail
+          body="$(curl -fsS --max-time 30 "$PROD_API/api/v1/health")" || {
+            echo "::error::Production API health check failed at $PROD_API/api/v1/health"
+            exit 1
+          }
+          printf '%s' "$body" | grep -q '"status":"ok"' || {
+            echo "::error::Production API health body was: $body"
+            exit 1
+          }
+          status="$(curl -sS -o /tmp/prod.html -w '%{http_code}' --max-time 30 "$PROD_WEB")"
+          [ "$status" = "200" ] || {
+            echo "::error::Production web returned HTTP $status at $PROD_WEB"
+            exit 1
+          }
+          grep -q '<title>JEV Resume Analyzer</title>' /tmp/prod.html || {
+            echo "::error::Production web page title was wrong at $PROD_WEB"
+            exit 1
+          }
+          echo "Production healthy: API ok, web HTTP 200 with the expected title."
+
+      - name: Deployment summary
+        if: success()
+        run: |
+          {
+            echo "### Deployed"
+            echo "| Project | Preview | Production |"
+            echo "| --- | --- | --- |"
+            echo "| API | ${{ steps.api.outputs.url }} | ${{ steps.prod.outputs.api }} |"
+            echo "| Web | ${{ steps.web.outputs.url }} | ${{ steps.prod.outputs.web }} |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Rollback instructions
+        if: failure()
+        run: |
+          {
+            echo "### Deployment failed"
+            echo ""
+            echo "If a promote step already ran, roll back now. If not, production is untouched."
+            echo ""
+            echo '```sh'
+            echo "VERCEL_ORG_ID=$VERCEL_ORG_ID VERCEL_PROJECT_ID=$VERCEL_PROJECT_ID_API npx vercel@latest rollback --yes --token \"\$VERCEL_TOKEN\""
+            echo "VERCEL_ORG_ID=$VERCEL_ORG_ID VERCEL_PROJECT_ID=$VERCEL_PROJECT_ID_WEB npx vercel@latest rollback --yes --token \"\$VERCEL_TOKEN\""
+            echo '```'
+            echo ""
+            echo "Or run the Rollback workflow: Actions -> Rollback -> Run workflow, project=both."
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "::error::Deployment failed. See the job summary for the rollback commands."

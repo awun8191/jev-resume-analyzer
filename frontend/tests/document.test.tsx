@@ -50,7 +50,8 @@ it('says plainly that there is no page preview and lists the boxes', () => {
 
 it('asks for the file again when the tab was restored without it', () => {
   show([], false)
-  expect(screen.getByText('Re-attach the file to show the page')).toBeTruthy()
+  expect(screen.getByText('Re-attach the file')).toBeTruthy()
+  expect(screen.getByText('Report restored from this tab. The file is not kept, so the page cannot be drawn.')).toBeTruthy()
   expect(screen.getByLabelText('Re-attach the CV file')).toBeTruthy()
 })
 

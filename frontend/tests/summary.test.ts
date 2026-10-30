@@ -1,6 +1,7 @@
 import { expect, it } from 'vitest'
 import {
-  ANSWER_ORDER, boxFindings, groupDimensions, percent, structureBoxes, structureReasonText,
+  ANSWER_ORDER, boxFindings, countsText, findingLabel, groupDimensions, groupFindings, percent,
+  rangeText, structureBoxes, structureReasonText, topFixes,
 } from '../src/features/results/summary'
 import { multiReport } from './contract/fixtures/responses'
 
@@ -48,6 +49,43 @@ it('turns only located, non-pass structure checks into boxes', () => {
   // A page with no box stays drawable, with no invented rectangle.
   expect(boxes[1].box).toBeNull()
   expect(boxes.some(box => box.severity === 'pass')).toBe(false)
+})
+
+it('names a check from the server question id, never from its prose', () => {
+  expect(findingLabel('Impact', 'impact_outcome')).toBe('Outcome')
+  expect(findingLabel('Scope', 'scope_stated')).toBe('Stated')
+  expect(findingLabel('Clarity', 'clarity-action')).toBe('Action')
+  // An id that does not follow the dimension prefix keeps all of its words.
+  expect(findingLabel('Impact', 'multi_page_bullets')).toBe('Multi page bullets')
+  expect(findingLabel('Impact', 'impact')).toBe('Impact')
+})
+
+it('groups findings by scope and dimension and keeps server order', () => {
+  const groups = groupFindings(multiReport.findings)
+  expect(groups.map(group => group.key)).toEqual([
+    'general_review:Work clarity',
+    'general_review:Scope',
+    'job_alignment:Responsibility alignment',
+  ])
+  expect(groups.map(group => group.findings.length)).toEqual([2, 1, 1])
+})
+
+it('takes only the absent answers as fixes, in server order', () => {
+  expect(topFixes(multiReport.findings).map(finding => finding.question_id)).toEqual(['q-ownership'])
+  expect(topFixes(multiReport.findings, 1)).toHaveLength(1)
+  expect(topFixes([])).toEqual([])
+})
+
+it('counts prepared, returned and assessable without inventing a total', () => {
+  expect(countsText({ questions_total: 5, questions_answered: 4, questions_assessable: 2, rating: null }))
+    .toBe('4 of 5 answered · 2 assessable · 1 not returned')
+  expect(countsText({ questions_total: 3, questions_answered: 3, questions_assessable: 3, rating: null }))
+    .toBe('3 of 3 answered · 3 assessable')
+})
+
+it('prints a range as one value when both ends match', () => {
+  expect(rangeText([46, 69])).toBe('46 to 69')
+  expect(rangeText([91, 91])).toBe('91')
 })
 
 it('maps each reported structure reason to one plain sentence', () => {
