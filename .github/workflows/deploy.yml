@@ -24,6 +24,9 @@ env:
 jobs:
   deploy:
     name: Preview, smoke, promote
+    # Off until preview smoke tests can authenticate past Vercel Deployment
+    # Protection. Set the repository variable DEPLOY_ENABLED to true to arm it.
+    if: ${{ vars.DEPLOY_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
