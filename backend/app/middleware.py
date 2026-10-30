@@ -5,6 +5,11 @@ from starlette.requests import Request
 
 from app.errors import AppError, error_response
 
+# Vercel rejects a request body over 4.5 MB before the app runs. Stay under it:
+# 4 MB of content plus room for the multipart envelope Starlette has to parse.
+MAX_UPLOAD_BYTES = 4000000
+MULTIPART_OVERHEAD_BYTES = 65536
+
 
 class RequestBoundary:
     """Bound body bytes before multipart spooling; admit at most two POSTs per process."""
@@ -46,7 +51,7 @@ class RequestBoundary:
             return await response(scope, receive, send)
         self.active += 1
         if scope["path"].endswith(("/documents/extract", "/analyses")):
-            limit = 10485760 + 65536
+            limit = MAX_UPLOAD_BYTES + MULTIPART_OVERHEAD_BYTES
         else:
             limit = 512000
         try:

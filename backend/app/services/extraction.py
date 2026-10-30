@@ -16,7 +16,7 @@ async def read_bounded(upload: UploadFile, limit: int) -> bytes:
     while chunk := await upload.read(512 * 1024):
         size += len(chunk)
         if size > limit:
-            raise AppError(413, "FILE_TOO_LARGE", "File exceeds the upload limit of 10 MiB.")
+            raise AppError(413, "FILE_TOO_LARGE", "File exceeds the upload limit of 4 MB.")
         chunks.append(chunk)
     return b"".join(chunks)
 

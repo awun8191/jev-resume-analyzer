@@ -18,8 +18,9 @@ def main():
 
     try:
         params = json.loads(sys.argv[2])
-        data = sys.stdin.buffer.read(10485761)
-        if len(data) > 10485760:
+        # Backstop for the request boundary, which admits at most 4 MB of content.
+        data = sys.stdin.buffer.read(4000001)
+        if len(data) > 4000000:
             raise ParseError(413, "File exceeds the upload limit.")
         parser = extract_pdf if sys.argv[1] == "pdf" else extract_docx
         char_limit = params.pop("max_chars")
