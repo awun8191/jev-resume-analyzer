@@ -21,7 +21,6 @@ from app.errors import AppError
 from app.models.analyses import DimensionRow, StructureFindingItem, StructureScore
 from app.models.documents import WarningItem
 from app.models.image_answers import BoxEdges, ImageAnswer, NoulAnswer
-from app.models.questions import Usage
 from app.rubrics.scoring_v3 import band_for
 from app.rubrics.structure_questions_v1 import structure_questions
 from app.rubrics.structure_v1 import (
@@ -94,12 +93,6 @@ class StructureOutcome:
     input_tokens: int | None = None
     output_tokens: int | None = None
     pages_reviewed: int = 0
-
-    @property
-    def usage(self) -> Usage | None:
-        if self.input_tokens is None and self.output_tokens is None:
-            return None
-        return Usage(input_tokens=self.input_tokens, output_tokens=self.output_tokens)
 
     def as_score(self) -> StructureScore:
         return StructureScore(
@@ -215,7 +208,7 @@ async def assess(pdf: bytes | None, gateway) -> StructureOutcome:
         return unavailable("unsupported_format")
     try:
         total = page_count(pdf)
-    except RenderError:
+    except (RenderError, ValueError):
         return unavailable("render_failed")
     reviewed = min(total, MAX_REVIEW_PAGES)
     warnings: list[WarningItem] = []
@@ -247,9 +240,9 @@ async def assess(pdf: bytes | None, gateway) -> StructureOutcome:
                 model=IMAGE_MODEL,
             )
             response = await gateway.evaluate_image(request)
-        except RenderError:
+        except (RenderError, RequestBuildError):
             return unavailable("render_failed", tuple(warnings))
-        except (AppError, RequestBuildError, ValueError, TypeError):
+        except (AppError, ValueError, TypeError):
             return unavailable("provider_error", tuple(warnings))
         chunks.append(response.answers)
         if response.usage is not None:
