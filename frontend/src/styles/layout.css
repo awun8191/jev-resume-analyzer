@@ -1,6 +1,7 @@
 /*
  * Page shell. A 12 column grid for reading pages, and a split workspace for
- * the document and the report. Rules mark the rhythm; nothing floats.
+ * the document and the report. Rules mark the rhythm; panels carry radius. On a
+ * phone the report summary comes first, then the document row, then the rest.
  */
 .app {
   display: flex;
@@ -21,6 +22,7 @@
   top: -120px;
   z-index: 20;
   padding: var(--s3) var(--s4);
+  border-radius: var(--r-control);
   background: var(--ink);
   color: var(--paper);
   font-size: var(--fs-2);
@@ -32,22 +34,22 @@
 
 /* Masthead */
 .masthead {
-  border-bottom: 1px solid var(--ink);
+  border-bottom: 1px solid var(--rule);
 }
 
 .masthead__row {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: var(--s2) var(--s5);
-  padding-block: var(--s4);
+  padding-block: var(--s3);
 }
 
 .wordmark {
   display: flex;
   align-items: baseline;
-  gap: var(--s3);
+  gap: var(--s2);
   font-size: var(--fs-2);
   letter-spacing: 0.01em;
 }
@@ -64,13 +66,23 @@
   border-left: 1px solid var(--rule-2);
 }
 
-.health {
+.masthead__tools {
   display: flex;
   align-items: center;
+  gap: var(--s3);
+}
+
+.health {
+  display: inline-flex;
+  align-items: center;
   gap: var(--s2);
-  font-size: var(--fs-1);
+  min-height: 24px;
+  padding: 2px 10px;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-pill);
+  font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.07em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--ink-2);
 }
@@ -79,6 +91,7 @@
   display: block;
   width: 8px;
   height: 8px;
+  border-radius: var(--r-pill);
   border: 1px solid var(--ink-2);
 }
 
@@ -94,6 +107,14 @@
 
 .health--down {
   color: var(--ink);
+  border-color: var(--rule-2);
+}
+
+/* The one persistent escape hatch. It stays 44px tall on every stage. */
+.newreview {
+  min-height: var(--tap);
+  padding: 0 var(--s4);
+  font-size: var(--fs-2);
 }
 
 /* Stage bar */
@@ -104,25 +125,28 @@
 .progress {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
-  gap: var(--s2) var(--s5);
-  padding-block: var(--s3);
+  gap: var(--s1) var(--s5);
+  padding-block: var(--s2);
   font-size: var(--fs-2);
 }
 
 .progress__steps {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--s2) var(--s5);
+  gap: var(--s1) var(--s4);
   padding: 0;
   list-style: none;
 }
 
 .progress__steps li {
-  display: flex;
+  display: inline-flex;
   align-items: baseline;
   gap: var(--s2);
+  min-height: 32px;
+  align-items: center;
+  padding: 2px 0;
   color: var(--ink-3);
 }
 
@@ -144,6 +168,7 @@
 .progress__mark {
   width: 6px;
   height: 6px;
+  border-radius: var(--r-pill);
   background: var(--accent);
 }
 
@@ -159,7 +184,7 @@
   display: grid;
   grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
   column-gap: var(--gutter);
-  padding-block: var(--s6) var(--s8);
+  padding-block: var(--s5) var(--s7);
 }
 
 main:focus {
@@ -173,7 +198,7 @@ main:focus {
 
 @media (min-width: 960px) {
   .page {
-    padding-block: var(--s7) var(--s9);
+    padding-block: var(--s7) var(--s8);
   }
 
   .stage {
@@ -181,28 +206,48 @@ main:focus {
   }
 }
 
-/* Split workspace: document left, report right, one scroll for the page. */
+/* Split workspace. On a phone the order is summary, document row, report. The
+ * summary is the score, so the number is the first thing on the screen. */
 .workspace {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  padding-block: var(--s5) var(--s7);
+  grid-template-areas:
+    'summary'
+    'doc'
+    'report';
+  padding-block: var(--s4) var(--s6);
+  row-gap: var(--s4);
 }
 
-.workspace__doc,
-.workspace__report {
+.workspace__summary {
+  grid-area: summary;
+  min-width: 0;
+}
+
+.workspace__summary:empty {
+  display: none;
+}
+
+.workspace__doc {
+  grid-area: doc;
   min-width: 0;
 }
 
 .workspace__report {
-  padding-top: var(--s6);
-  border-top: 1px solid var(--ink);
+  grid-area: report;
+  min-width: 0;
 }
 
 @media (min-width: 900px) {
   .workspace {
     grid-template-columns: minmax(0, 54fr) minmax(0, 46fr);
+    grid-template-areas:
+      'doc summary'
+      'doc report';
+    grid-template-rows: auto 1fr;
     align-items: start;
     padding-block: 0;
+    row-gap: var(--s5);
   }
 
   .workspace__doc {
@@ -211,14 +256,17 @@ main:focus {
     height: 100dvh;
     display: flex;
     flex-direction: column;
-    padding: var(--s6) var(--s6) var(--s5) 0;
+    padding: var(--s5) var(--s5) var(--s4) 0;
     border-right: 1px solid var(--rule);
     overflow: hidden;
   }
 
+  .workspace__summary {
+    padding-top: var(--s5);
+  }
+
   .workspace__report {
-    padding: var(--s6) 0 var(--s8) var(--s6);
-    border-top: 0;
+    padding: 0 0 var(--s8) 0;
   }
 }
 
@@ -226,12 +274,12 @@ main:focus {
 .stage__head {
   border-top: 2px solid var(--ink);
   padding-top: var(--s3);
-  margin-bottom: var(--s6);
+  margin-bottom: var(--s4);
 }
 
 .stage__index {
   display: block;
-  margin-bottom: var(--s4);
+  margin-bottom: var(--s2);
   font-size: var(--fs-1);
   font-weight: 600;
   letter-spacing: var(--track-label);
@@ -248,47 +296,46 @@ main:focus {
 }
 
 .stage__lead {
-  margin-top: var(--s4);
+  margin-top: var(--s2);
   max-width: 46ch;
-  font-size: var(--fs-4);
-  line-height: 1.4;
+  font-size: var(--fs-3);
+  line-height: 1.45;
   letter-spacing: -0.005em;
   color: var(--ink-2);
 }
 
 .stage__file {
-  margin-top: var(--s3);
+  margin-top: var(--s2);
   overflow-wrap: anywhere;
 }
 
 .section {
-  margin-top: var(--s7);
+  margin-top: var(--s6);
 }
 
-.score + .section {
+.section + .section {
   margin-top: var(--s6);
 }
 
 .section__head {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
-  gap: var(--s4);
-  border-top: 1px solid var(--ink);
-  padding-top: var(--s2);
-  margin-bottom: var(--s4);
+  gap: var(--s3);
+  margin-bottom: var(--s3);
 }
 
 .section__title {
-  font-size: var(--fs-2);
+  font-size: var(--fs-4);
   font-weight: 600;
-  letter-spacing: 0.02em;
+  letter-spacing: -0.015em;
 }
 
 .section__note {
   font-size: var(--fs-1);
   color: var(--ink-3);
   text-align: right;
+  white-space: nowrap;
 }
 
 .actions {
@@ -296,10 +343,8 @@ main:focus {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--s4) var(--s5);
+  gap: var(--s3) var(--s5);
   margin-top: var(--s6);
-  border-top: 2px solid var(--ink);
-  padding-top: var(--s4);
 }
 
 .actions__note {
@@ -309,23 +354,52 @@ main:focus {
   color: var(--ink-2);
 }
 
+/* Confirm step for the reset. One line, two 44px buttons, Escape cancels. */
+.confirm {
+  display: grid;
+  gap: var(--s2);
+  margin-top: var(--s3);
+  border: 1px solid var(--ink);
+  border-radius: var(--r-panel);
+  padding: var(--s3) var(--s4);
+}
+
+.confirm__note {
+  font-size: var(--fs-2);
+  color: var(--ink-2);
+}
+
+.confirm__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
+}
+
 .reset {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: var(--s3) var(--s5);
-  margin-top: var(--s6);
-  border-top: 1px solid var(--rule);
-  padding-top: var(--s4);
+  margin-top: var(--s5);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-panel);
+  padding: var(--s3) var(--s4);
+}
+
+.reset__note {
+  font-size: var(--fs-1);
+  color: var(--ink-3);
 }
 
 .storage {
   display: flex;
   gap: var(--s3);
-  margin-block: var(--s4) var(--s5);
-  border-top: 2px solid var(--accent);
-  padding-top: var(--s2);
+  margin-block: var(--s4);
+  border: 1px solid var(--rule);
+  border-left: 2px solid var(--accent);
+  border-radius: var(--r-panel);
+  padding: var(--s3) var(--s4);
   font-size: var(--fs-2);
   line-height: 1.5;
   color: var(--ink-2);
@@ -333,25 +407,26 @@ main:focus {
 
 /* Footer */
 .footer {
-  border-top: 1px solid var(--ink);
-  padding-block: var(--s5) var(--s7);
-  color: var(--ink-2);
+  margin-top: auto;
+  border-top: 1px solid var(--rule);
+  padding-block: var(--s4) calc(var(--s5) + var(--safe-b));
+  color: var(--ink-3);
   font-size: var(--fs-1);
-  line-height: 1.55;
+  line-height: 1.5;
 }
 
 .footer__grid {
   display: grid;
-  gap: var(--s3);
-  max-width: 62ch;
+  gap: var(--s2);
+  max-width: 70ch;
 }
 
 .footer p {
-  max-width: 62ch;
+  max-width: 70ch;
 }
 
 .footer .label {
-  color: var(--ink);
+  color: var(--ink-2);
 }
 
 @media (max-width: 599px) {
@@ -364,11 +439,15 @@ main:focus {
     align-items: center;
   }
 
-  .stage__lead {
-    font-size: var(--fs-3);
-  }
-
   .progress__file {
     width: 100%;
+  }
+
+  .section__head {
+    align-items: baseline;
+  }
+
+  .footer {
+    padding-bottom: calc(var(--s6) + var(--safe-b));
   }
 }

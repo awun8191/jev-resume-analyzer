@@ -6,17 +6,17 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0;
-  border-top: 1px solid var(--ink);
-  border-bottom: 1px solid var(--rule);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-panel);
+  overflow: hidden;
 }
 
 .doc > div {
-  padding: var(--s3) 0;
+  padding: var(--s3);
   min-width: 0;
 }
 
 .doc > div + div {
-  padding-left: var(--s3);
   border-left: 1px solid var(--rule);
 }
 
@@ -45,9 +45,7 @@
 }
 
 .form {
-  margin-top: var(--s7);
-  border-top: 1px solid var(--ink);
-  padding-top: var(--s3);
+  margin-top: var(--s6);
 }
 
 .field + .field,
