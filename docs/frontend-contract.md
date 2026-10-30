@@ -193,7 +193,7 @@ Expected statuses: 413 limits, 415 unsupported format, 422 unreadable/invalid in
 
 ## UI state and storage
 
-Upload -> extracting -> check text -> analysing -> report. After extraction the page becomes a two pane workspace: the document pane on the left, the editable text or the report on the right, with no page change between them. Below 900px the panes stack and the document pane collapses. Extraction failure returns to upload with an error; analysis failure returns to check text with the error and both edited inputs preserved. Native file input and keyboard-accessible disclosures are the baseline; drop is an enhancement. Focus moves to the stage heading on a stage change, errors and statuses are announced, actions have 44px minimum height, and reduced motion is respected. Results render server strings as React text, never HTML.
+Upload -> extracting -> check text -> analysing -> report. After extraction the page becomes a two pane workspace: the document pane on the left, the editable text or the report on the right, with no page change between them. Below 900px the panes stack into three rows: the score summary, then a one row document bar with the file name and Show document, then the rest of the report. The score is therefore the first thing on a phone screen, and the document stays one tap away. Extraction failure returns to upload with an error; analysis failure returns to check text with the error and both edited inputs preserved. Native file input and keyboard-accessible disclosures are the baseline; drop is an enhancement. Focus moves to the stage heading on a stage change, errors and statuses are announced, actions have 44px minimum height, and reduced motion is respected. Results render server strings as React text, never HTML.
 
 Session state lives in sessionStorage under one versioned key, `jev.state.v1`: stage, file name, extraction, CV text, job posting, report and the selected finding. The file bytes are never stored, so after a reload the text and report return and the document pane asks for the file again instead of showing an empty page.
 
@@ -205,7 +205,17 @@ Page images and section boxes are derived from the in-memory File on every attac
 
 pdf.js renders each page to a canvas at twice the point size and reads text items from the same document. Items are grouped into lines by baseline, and each line splits where the horizontal gap exceeds a word space, which keeps two columns apart. A heading is a short line that matches HEADER, SUMMARY or PROFILE, EXPERIENCE, EDUCATION, SKILLS, PROJECTS, or a listed variant, and whose glyph height is at or above the page body median. A section span runs from its heading top to the next heading top in the same column, or the page bottom. Spans are clamped to the page and sorted. A page that starts without a heading continues the previous page's last section, with one box per section per page. `frontend/tests/pdfLayout.test.ts` covers a single column, two columns, a page without headings, two heading sizes and a continuation page.
 
-Edit text from the report clears the report and returns to check text. Clear document and start over clears CV, extraction, job posting, filename, error, report, selected finding and stored keys. Clearing this tab does not imply provider deletion. Before submission the UI discloses TypeSafe transfer and unverified retention terms.
+Edit text from the report clears the report and returns to check text. Start over sits beside the report title, New review sits in the top bar on every stage after upload, and both open the same one line question before clearing. Clear this tab clears CV, extraction, job posting, filename, error, report, selected finding and stored keys. Clearing this tab does not imply provider deletion. A new file always runs the whole extract again, whether it arrives from the upload stage or from the re-attach control: the old extraction, report and selection are cleared first. Before submission the UI discloses TypeSafe transfer and unverified retention terms.
+
+## Report presentation
+
+The report reads in this order: total score, two sub-score tiles, top fixes, then the body.
+
+- The total block holds the value, band, mode, range and coverage only. It carries no explainer paragraph. A missing score is the words Not scored with its one line reason in place, and a raw reason code when the server sent one.
+- Top fixes lists the absent answers, at most three, in server order. Each row selects its finding and turns the document pane to the page. A visible Jump to finding control is always present.
+- Content findings are grouped by scope and dimension, with labels taken from the server question id. Three findings are visible; the rest sit behind Show all N findings. Each row is one line and opens its question, criteria, confidence and probability distribution on tap.
+- All dimensions and structure findings each sit behind one disclosure. The structure summary states the count and the score, including Not scored. An empty list opens by default so the empty sentence is never hidden.
+- Geometry: cards and panels use a 12 to 16px radius, controls 10px, chips a full pill. Hairline borders stay, one soft shadow belongs to the score block only, and there are no gradients. Body text is 16px with a 1.5 line height; labels are 12px uppercase.
 
 ## Verification and integration gaps
 
