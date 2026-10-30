@@ -236,8 +236,6 @@ export default function App() {
               {s.stage === 'result' && s.report && (
                 <ReportSummary
                   report={s.report}
-                  selectedId={s.selectedId}
-                  onSelect={s.selectFinding}
                   onStartOver={() => setConfirming(true)}
                 />
               )}

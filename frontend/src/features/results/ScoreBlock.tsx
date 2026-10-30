@@ -1,70 +1,53 @@
-import type { Overview, Scores } from '../../api/schema'
-import {
-  MODE_LABEL,
-  contentReasonText,
-  countsText,
-  coveragePercent,
-  rangeText,
-  structureReasonText,
-  totalRange,
-} from './summary'
+import type { Scores } from '../../api/schema'
+import { bandOf } from './summary'
 
-function ScoreValue({ value, valueClass }: { value: number | null; valueClass: string }) {
-  if (value === null) return <span className="score__none">Not scored</span>
+/* A score as the page reads it: the numeral in its band colour, a small unit,
+ * and the band word in plain text. A null score is the word Not scored in ink,
+ * with no numeral behind it. */
+function Value({
+  value,
+  band,
+  size,
+}: {
+  value: number | null
+  band: string | null
+  size: 'total' | 'split'
+}) {
+  if (value === null) {
+    return <span className={`score__none score__none--${size}`}>Not scored</span>
+  }
   return (
-    <span className={valueClass}>
-      <span>{value}</span>
-      <small>/ 100</small>
+    <span className={`score__figure score__figure--${size}`}>
+      <span className="score__value" data-band={bandOf(value) ?? undefined}>{value}</span>
+      <span className="score__unit">/100</span>
+      {band && <span className="score__band">{band}</span>}
     </span>
   )
 }
 
-/* Total score, one compact block: value, band, mode, range, coverage. Every
- * missing value is a word, and a missing half keeps its reason in place. */
-export default function ScoreBlock({ scores, overview }: { scores: Scores; overview: Overview }) {
-  const range = totalRange(scores)
-  const structureReason = structureReasonText(scores.structure)
-  const contentReason = contentReasonText(scores)
-
+/* The whole verdict: one total line, then the two halves it is built from.
+ * Nothing else lives here. */
+export default function ScoreBlock({ scores }: { scores: Scores }) {
   return (
-    <section className="score" aria-labelledby="score-title" data-mode={scores.total.mode}>
-      <div className="score__head">
-        <div>
-          <h2 className="label score__label" id="score-title">Total score</h2>
-          <ScoreValue value={scores.total.value} valueClass="score__value" />
-          {scores.total.band && <p className="score__band">{scores.total.band}</p>}
-        </div>
-        <div className="score__flags">
-          {scores.total.mode !== 'combined' && (
-            <p className="label">{MODE_LABEL[scores.total.mode]}</p>
-          )}
-          {range && range[0] !== range[1] && (
-            <p className="subscore__reason">Range {rangeText(range)}</p>
-          )}
-        </div>
-      </div>
+    <section className="score" aria-label="Score">
+      <p className="score__total">
+        <Value value={scores.total.value} band={scores.total.band} size="total" />
+      </p>
 
-      <dl className="score__cov">
-        <div>
-          <dt>Covered</dt>
-          <dd>{coveragePercent(scores)}</dd>
+      <dl className="score__split">
+        <div className="score__half" data-owner="structure">
+          <dt className="label">Structure</dt>
+          <dd>
+            <Value value={scores.structure.value} band={scores.structure.band} size="split" />
+          </dd>
         </div>
-        <div>
-          <dt>Decided</dt>
-          <dd>{scores.content.assessed_weight}<small>/100</small></dd>
-        </div>
-        <div>
-          <dt>Layout</dt>
-          <dd>{scores.structure.assessed_weight}<small>/100</small></dd>
+        <div className="score__half" data-owner="content">
+          <dt className="label">Content</dt>
+          <dd>
+            <Value value={scores.content.value} band={scores.content.band} size="split" />
+          </dd>
         </div>
       </dl>
-      <p className="score__counts">{countsText(overview)}</p>
-
-      {structureReason && <p className="score__reason">{structureReason}</p>}
-      {contentReason && <p className="score__reason">{contentReason}</p>}
-      {scores.structure.value === null && scores.structure.reason && (
-        <p className="score__code">Layout reason: <code>{scores.structure.reason}</code></p>
-      )}
     </section>
   )
 }
