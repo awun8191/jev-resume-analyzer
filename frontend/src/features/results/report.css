@@ -1,19 +1,24 @@
 /*
- * Report pane. Rating first, then the two sub-score slots, then counts, then
- * the findings. A missing value stays a word, never a number.
+ * Report pane. Score first, then the two sub-score tiles, then the fixes, then
+ * the findings behind one line per row. A missing value stays a word, never a
+ * number.
  */
-.stage__file {
-  margin-top: var(--s3);
-}
 
+/* Total score. The only block with a shadow. */
 .score {
-  border-top: 2px solid var(--ink);
-  border-bottom: 1px solid var(--rule);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-card);
+  background: var(--paper);
+  box-shadow: var(--shadow-score);
+  padding: var(--s4);
 }
 
-.score__main {
-  padding-block: var(--s5) var(--s4);
-  min-width: 0;
+.score__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s2) var(--s4);
 }
 
 .score__label {
@@ -24,10 +29,10 @@
   display: flex;
   align-items: baseline;
   gap: var(--s2);
-  margin-top: var(--s3);
-  font-size: var(--fs-display);
+  margin-top: var(--s2);
+  font-size: var(--score-value);
   font-weight: 600;
-  line-height: 1;
+  line-height: 0.95;
   letter-spacing: -0.045em;
 }
 
@@ -35,37 +40,69 @@
   font-size: var(--fs-4);
   font-weight: 400;
   letter-spacing: 0;
-  color: var(--ink-2);
+  color: var(--ink-3);
 }
 
 .score__none {
+  display: block;
   margin-top: var(--s2);
-  font-size: var(--fs-6);
+  font-size: var(--fs-5);
   font-weight: 600;
-  line-height: 1.02;
+  line-height: 1.05;
   letter-spacing: -0.035em;
 }
 
-.score__caption {
-  margin-top: var(--s2);
-  font-size: var(--fs-4);
+.score__flags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
 }
 
-/* The mode is part of the total, not a footnote. It says how the number was
- * derived, or why there is no number. */
-.score__mode {
-  margin-top: var(--s3);
-  font-size: var(--fs-1);
+.score__band {
+  margin-top: var(--s2);
+  font-size: var(--fs-3);
   font-weight: 600;
-  letter-spacing: var(--track-label);
-  text-transform: uppercase;
-  color: var(--ink);
+  line-height: 1.3;
 }
 
-.score__range {
+/* Coverage: three numbers on one row, then one small count line. */
+.score__cov {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s3);
+  margin-top: var(--s4);
+  padding-top: var(--s3);
+  border-top: 1px solid var(--rule);
+}
+
+.score__cov dt {
+  font-size: var(--fs-1);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.score__cov dd {
+  margin-top: 2px;
+  font-size: var(--fs-4);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.score__counts {
   margin-top: var(--s2);
-  font-size: var(--fs-2);
-  color: var(--ink-2);
+  font-size: var(--fs-1);
+  color: var(--ink-3);
+}
+
+.score__cov dd small {
+  margin-left: 2px;
+  font-size: var(--fs-1);
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--ink-3);
 }
 
 .score__reason {
@@ -76,80 +113,73 @@
   color: var(--ink);
 }
 
-.score__main .help {
-  margin-top: var(--s4);
-  max-width: 48ch;
-}
-
-.score__coverage {
-  border-top: 1px solid var(--rule);
-  padding-block: var(--s3) var(--s4);
-}
-
-.cov {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin-top: var(--s2);
-}
-
-.cov > div {
-  padding-right: var(--s3);
-  min-width: 0;
-}
-
-.cov > div + div {
-  border-left: 1px solid var(--rule);
-  padding-left: var(--s3);
-}
-
-.cov dt {
+.score__code {
+  margin-top: var(--s1);
   font-size: var(--fs-1);
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--ink-2);
+  color: var(--ink-3);
 }
 
-.cov dd {
-  margin-top: 2px;
-  font-size: var(--fs-5);
-  font-weight: 600;
-  line-height: 1;
-  letter-spacing: -0.03em;
-}
-
-.score__coverage .help {
+/* Sub-scores: two tiles side by side. A null tile says so in words, in place,
+ * never behind a disclosure. */
+.summary__tools {
+  display: flex;
+  justify-content: flex-start;
   margin-top: var(--s3);
 }
 
-/* Sub-scores. Structure and Content carry their own value, band and reason.
- * The two slots stack at narrow widths; the total stays above them. */
+/* A utility action, not a card action. 44px tall, underlined, no box. */
+.startover {
+  min-height: var(--tap);
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: var(--fs-2);
+  font-weight: 600;
+  color: var(--ink-2);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .startover:hover {
+    color: var(--ink);
+  }
+}
+
 .subscores {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s2);
+  margin: var(--s2) 0 0;
   padding: 0;
   list-style: none;
-  border-bottom: 1px solid var(--rule);
 }
 
 .subscore {
-  padding-block: var(--s3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s1);
   min-width: 0;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-card);
+  padding: var(--s3);
 }
 
-.subscore + .subscore {
-  border-left: 1px solid var(--rule);
-  padding-left: var(--s4);
+.subscore__label {
+  color: var(--ink-2);
 }
 
 .subscore__value {
   display: flex;
   align-items: baseline;
-  gap: var(--s2);
-  margin-top: var(--s2);
+  gap: var(--s1);
+  margin-top: var(--s1);
   font-size: var(--subscore-value);
   font-weight: 600;
   line-height: 1;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   color: var(--ink);
 }
 
@@ -157,256 +187,151 @@
   font-size: var(--fs-1);
   font-weight: 400;
   letter-spacing: 0;
-  color: var(--ink-2);
+  color: var(--ink-3);
 }
 
 .subscore .score__none {
-  display: block;
-  margin-top: var(--s2);
-  font-size: var(--subscore-value);
-  font-weight: 600;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-}
-
-.subscore__band {
-  margin-top: var(--s2);
-  font-size: var(--fs-2);
-  font-weight: 600;
-  color: var(--ink);
-}
-
-.subscore .help {
-  margin-top: var(--s2);
-  font-size: var(--fs-1);
-  line-height: 1.45;
-}
-
-/* Coverage reads as label and value rows. Prose does not fit a three column
- * grid at 375px. */
-.cov--scores {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  margin-top: var(--s2);
-}
-
-.cov--scores > div {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--s1) var(--s4);
-  padding: 6px 0;
-  border-top: 1px solid var(--rule);
-}
-
-.cov--scores dt {
-  font-size: var(--fs-1);
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--ink-2);
-}
-
-.cov--scores dd {
-  margin-top: 0;
-  font-size: var(--fs-2);
-  font-weight: 400;
-  line-height: 1.4;
-  letter-spacing: 0;
-  text-align: right;
-}
-
-.cov--counts {
-  margin-top: var(--s4);
-}
-
-/* Dimension rows from the API, grouped by the score that owns them. The value
- * is the row's own score, not a count of findings. */
-.dim-group + .dim-group {
-  margin-top: var(--s5);
-}
-
-.dims {
-  padding: 0;
-  list-style: none;
-  border-top: 1px solid var(--ink);
-}
-
-.dim {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: baseline;
-  gap: var(--s1) var(--s4);
-  padding-block: var(--s3);
-  border-bottom: 1px solid var(--rule);
-}
-
-.dim__name {
-  grid-column: 1;
-  grid-row: 1;
-  font-size: var(--fs-3);
-  font-weight: 600;
+  margin-top: var(--s1);
+  font-size: var(--fs-4);
   letter-spacing: -0.01em;
 }
 
-.dim__meta {
-  grid-column: 1;
-  grid-row: 2;
-  font-size: var(--fs-1);
-  letter-spacing: 0.04em;
-  color: var(--ink-2);
-}
-
-.dim__value {
-  grid-column: 2;
-  grid-row: 1 / span 2;
-  align-self: center;
-  font-size: var(--fs-4);
-  font-weight: 600;
-  line-height: 1;
-  letter-spacing: -0.02em;
-  white-space: nowrap;
-}
-
-.dim__value small {
-  margin-left: var(--s1);
-  font-size: var(--fs-1);
-  font-weight: 400;
-  letter-spacing: 0;
-  color: var(--ink-2);
-}
-
-.dim__value--none {
+.subscore__band {
   font-size: var(--fs-2);
-  font-weight: 400;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--ink);
+}
+
+.subscore__reason {
+  font-size: var(--fs-1);
+  line-height: 1.45;
   color: var(--ink-2);
 }
 
-@media (max-width: 520px) {
-  .subscores {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .subscore + .subscore {
-    border-left: 0;
-    border-top: 1px solid var(--rule);
-    padding-left: 0;
-  }
-}
-
-/* Structure checks. The severity is a word plus a rule weight, never colour
- * alone. Only a check with a page is a button. */
-.sfinds {
+/* Top fixes: one row per absent answer. The row selects the finding and turns
+ * the document pane to its page, so nothing with a box is out of reach. */
+.fixes {
+  margin: 0;
   padding: 0;
   list-style: none;
-  border-top: 1px solid var(--ink);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-panel);
+  overflow: hidden;
 }
 
-.sfind {
-  padding-block: var(--s3);
-  border-bottom: 1px solid var(--rule);
-  transition: background var(--dur) var(--ease);
+.fix + .fix {
+  border-top: 1px solid var(--rule);
 }
 
-.sfind[data-selected='true'] {
-  background: var(--paper-sunk);
-}
-
-.sfind__select,
-.sfind__head {
+.fix__row {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: baseline;
-  gap: var(--s1) var(--s3);
+  grid-template-columns: 24px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--s2) var(--s3);
   width: 100%;
   min-height: var(--tap);
-  padding: 0;
+  padding: 6px var(--s3);
   border: 0;
   background: none;
   font: inherit;
   color: inherit;
   text-align: left;
-}
-
-.sfind__select {
   cursor: pointer;
+  transition: background var(--dur) var(--ease);
 }
 
-@media (hover: hover) {
-  .sfind__select:hover {
-    color: var(--accent);
-  }
-}
-
-.sfind__select:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 2px;
-}
-
-.sfind__index {
+.fix__n {
   font-size: var(--fs-1);
-  letter-spacing: 0.06em;
   color: var(--ink-3);
 }
 
-.sfind__label {
-  font-size: var(--fs-4);
+.fix__name {
+  font-size: var(--fs-3);
   font-weight: 600;
   letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
 }
 
-.sfind__loc {
-  grid-column: 2 / span 2;
-  grid-row: 2;
+.fix__page {
   font-size: var(--fs-1);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
   color: var(--ink-3);
-}
-
-.sfind__severity {
-  grid-column: 3;
-  grid-row: 1;
-  justify-self: end;
-  font-size: var(--fs-1);
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
   white-space: nowrap;
 }
 
-.sfind__severity[data-severity='major'] {
-  color: var(--accent);
+.fix__page[data-empty='true'] {
+  display: none;
 }
 
-.sfind__severity[data-severity='unassessable'] {
-  color: var(--ink-2);
-}
-
-.sfind__evidence {
-  margin-top: var(--s2);
-  max-width: 62ch;
-  color: var(--ink-2);
-}
-
-.sfind__meta {
-  margin-top: var(--s1);
+.fix__go {
   font-size: var(--fs-1);
-  color: var(--ink-3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  white-space: nowrap;
 }
 
-.sfind[data-selected='true'] .sfind__severity {
-  color: var(--accent);
+@media (hover: hover) {
+  .fix__row:hover,
+  .finding__row:hover,
+  .sfind__select:hover {
+    background: var(--paper-sunk);
+  }
+
+  .fix__row:hover .fix__go,
+  .finding__row:hover .finding__mark {
+    color: var(--ink);
+  }
 }
 
-/* Findings */
-.group + .group {
-  margin-top: var(--s6);
+.fix__row:focus-visible,
+.finding__row:focus-visible,
+.jump:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.fixes__none {
+  margin-top: var(--s2);
+  font-size: var(--fs-2);
+  color: var(--ink-2);
+}
+
+/* The jump path. It is always visible, so a finding with a box can be reached
+ * without hunting through disclosures. */
+.jump {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  min-height: var(--tap);
+  margin-top: var(--s2);
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: var(--fs-2);
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+/* Findings. One group per dimension, one line per finding, detail on tap. */
+.groups {
+  display: grid;
+  gap: var(--s4);
+}
+
+.group__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s3);
+  margin-bottom: var(--s2);
 }
 
 .group__title {
-  padding-bottom: var(--s2);
-  border-bottom: 1px solid var(--ink);
   font-size: var(--fs-1);
   font-weight: 600;
   letter-spacing: var(--track-label);
@@ -414,124 +339,163 @@
   color: var(--ink-2);
 }
 
-.finding {
-  padding-block: var(--s3) var(--s4);
-  border-bottom: 1px solid var(--rule);
-  transition: background var(--dur) var(--ease);
+.group__count {
+  font-size: var(--fs-1);
+  color: var(--ink-3);
+}
+
+.findings {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-panel);
+  overflow: hidden;
+}
+
+.finding + .finding {
+  border-top: 1px solid var(--rule);
 }
 
 .finding[data-selected='true'] {
   background: var(--paper-sunk);
 }
 
-.finding__head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--s1) var(--s4);
-}
-
-.finding__dim {
-  font-size: var(--fs-4);
-  letter-spacing: -0.01em;
-}
-
-.finding__select {
-  display: inline-flex;
-  align-items: baseline;
-  gap: var(--s2);
+.finding__row {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto auto auto;
+  align-items: center;
+  gap: var(--s2) var(--s3);
+  width: 100%;
   min-height: var(--tap);
-  padding: 0;
+  padding: 6px var(--s3);
   border: 0;
   background: none;
   font: inherit;
   color: inherit;
   text-align: left;
   cursor: pointer;
-}
-
-@media (hover: hover) {
-  .finding__select:hover {
-    color: var(--accent);
-  }
+  transition: background var(--dur) var(--ease);
 }
 
 .finding__index {
   font-size: var(--fs-1);
-  font-weight: 400;
-  letter-spacing: 0.06em;
   color: var(--ink-3);
 }
 
-.finding__loc {
-  margin-left: var(--s1);
-  font-size: var(--fs-1);
-  font-weight: 400;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink-3);
+.finding__name {
+  min-width: 0;
+  font-size: var(--fs-3);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.finding__select[aria-pressed='true'] {
-  color: var(--accent);
-}
-
-.finding__select[aria-pressed='true'] .finding__index {
-  color: var(--accent);
+.finding__state {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .state {
   display: inline-flex;
   align-items: center;
-  gap: var(--s2);
+  gap: var(--s1);
   font-size: var(--fs-1);
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  white-space: nowrap;
 }
 
 .state__glyph {
-  font-size: 12px;
+  font-size: 11px;
   line-height: 1;
   letter-spacing: 0;
 }
 
+.finding__page {
+  font-size: var(--fs-1);
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+
+.finding__page[data-empty='true'] {
+  display: none;
+}
+
+/* Plus or minus on the row, rotated to a chevron only by the mark itself. */
+.finding__mark {
+  position: relative;
+  width: 12px;
+  height: 12px;
+  color: var(--ink-3);
+}
+
+.finding__mark::before,
+.finding__mark::after {
+  content: '';
+  position: absolute;
+  background: currentColor;
+}
+
+.finding__mark::before {
+  inset: 5px 0 auto;
+  height: 2px;
+}
+
+.finding__mark::after {
+  inset: 0 5px auto;
+  width: 2px;
+  height: 12px;
+  transition: opacity var(--dur) var(--ease);
+}
+
+.finding__row[aria-expanded='true'] .finding__mark::after,
+.section__toggle[aria-expanded='true'] .disclosure__mark::after {
+  display: none;
+}
+
+.finding__detail[hidden] {
+  display: none;
+}
+
+.finding__detail {
+  display: grid;
+  gap: var(--s3);
+  padding: 0 var(--s3) var(--s4) calc(24px + var(--s3) + var(--s3));
+  font-size: var(--fs-2);
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
 .finding__source {
-  max-width: 72ch;
-  margin-top: var(--s2);
+  margin: 0;
   border-left: 2px solid var(--ink);
   padding-left: var(--s3);
-  font-size: var(--fs-2);
-  line-height: 1.55;
   color: var(--ink-2);
 }
 
 .finding__question {
-  margin-top: var(--s2);
+  color: var(--ink);
 }
 
-.finding__question p:last-child {
-  margin-top: 2px;
-  max-width: 62ch;
-}
-
-.finding > .disclosure {
-  margin-top: var(--s3);
-  border-bottom: 0;
+.finding__question .label {
+  margin-bottom: var(--s1);
 }
 
 .criteria {
+  margin: var(--s1) 0 0;
   padding: 0;
   list-style: none;
-  margin-top: var(--s1);
 }
 
 .criteria li {
   display: grid;
   grid-template-columns: 24px minmax(0, 1fr);
-  gap: var(--s3);
+  gap: var(--s2);
   padding-block: 6px;
   border-top: 1px solid var(--rule);
 }
@@ -539,12 +503,11 @@
 .criteria .n {
   font-size: var(--fs-1);
   color: var(--ink-3);
-  letter-spacing: 0.06em;
 }
 
 .kv {
   display: grid;
-  margin-top: var(--s1);
+  margin: var(--s1) 0 0;
 }
 
 .kv > div {
@@ -557,6 +520,13 @@
   border-top: 1px solid var(--rule);
 }
 
+.kv dt {
+  font-size: var(--fs-1);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
 .kv dd {
   color: var(--ink);
   overflow-wrap: anywhere;
@@ -565,7 +535,7 @@
 
 .dist {
   display: grid;
-  margin-top: var(--s1);
+  margin: 0;
 }
 
 .dist__row {
@@ -586,12 +556,15 @@
 .dist__track {
   display: block;
   height: 6px;
+  border-radius: var(--r-pill);
   background: var(--paper-sunk);
+  overflow: hidden;
 }
 
 .dist__fill {
   display: block;
   height: 100%;
+  border-radius: var(--r-pill);
   background: var(--ink);
 }
 
@@ -600,8 +573,7 @@
 }
 
 .rubric {
-  margin-top: var(--s3);
-  border-top: 1px solid var(--ink);
+  border-top: 1px solid var(--rule);
   padding-top: var(--s2);
 }
 
@@ -613,28 +585,232 @@
   color: var(--ink);
 }
 
+/* Structure checks. One disclosure holds all of them; the summary states the
+ * count and the score, so a null score is never hidden. */
+.sfinds {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sfind {
+  border-top: 1px solid var(--rule);
+  transition: background var(--dur) var(--ease);
+}
+
+.sfind[data-selected='true'] {
+  background: var(--paper-sunk);
+}
+
+.sfind__select,
+.sfind__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--s1) var(--s3);
+  width: 100%;
+  min-height: var(--tap);
+  padding: 6px var(--s3);
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+
+.sfind__select {
+  cursor: pointer;
+}
+
+.sfind__label {
+  font-size: var(--fs-3);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+
+.sfind__page {
+  font-size: var(--fs-1);
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+
+.sfind__evidence,
+.sfind__meta {
+  margin: 0;
+  padding: 0 var(--s3) 0 calc(var(--s3) + var(--s3));
+  font-size: var(--fs-2);
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+.sfind__meta {
+  padding-bottom: var(--s2);
+  font-size: var(--fs-1);
+  color: var(--ink-3);
+}
+
+.sfind__severity[data-severity='major'] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.sfind__severity[data-severity='unassessable'] {
+  color: var(--ink-2);
+}
+
+.sfind[data-selected='true'] .sfind__severity {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Dimension rows from the API, grouped by the score that owns them. */
+.dim-group + .dim-group {
+  margin-top: var(--s4);
+}
+
+.dims {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-panel);
+  overflow: hidden;
+}
+
+.dim {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0 var(--s3);
+  padding: 8px var(--s3);
+}
+
+.dim + .dim {
+  border-top: 1px solid var(--rule);
+}
+
+.dim__name {
+  grid-column: 1;
+  grid-row: 1;
+  font-size: var(--fs-3);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.dim__meta {
+  grid-column: 1;
+  grid-row: 2;
+  font-size: var(--fs-1);
+  color: var(--ink-3);
+}
+
+.dim__value {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+  font-size: var(--fs-4);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.dim__value small {
+  margin-left: 2px;
+  font-size: var(--fs-1);
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--ink-3);
+}
+
+.dim__value--none {
+  font-size: var(--fs-2);
+  font-weight: 400;
+  color: var(--ink-2);
+}
+
+/* A whole-section disclosure: heading, note, plus or minus, 44px row. */
+.section__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+  width: 100%;
+  min-height: var(--tap);
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.section__toggle:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
 .request {
-  margin-top: var(--s7);
+  margin-top: var(--s5);
 }
 
 @media (max-width: 560px) {
-  .finding__head {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--s1);
+  .score {
+    padding: var(--s3);
   }
 
-  .state {
-    justify-self: start;
+  .score__cov {
+    gap: var(--s2);
   }
 
-  .section {
-    margin-top: var(--s6);
+  .fix__row {
+    grid-template-columns: 20px minmax(0, 1fr) auto;
+  }
+
+  .fix__go {
+    display: none;
+  }
+
+  .finding__row {
+    grid-template-columns: 20px minmax(0, 1fr) auto auto 12px;
+    gap: var(--s2);
+    padding-inline: var(--s2);
+  }
+
+  .finding__detail {
+    padding: 0 var(--s3) var(--s4) var(--s3);
+  }
+
+  .sfind__select,
+  .sfind__head {
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding-inline: var(--s2);
+  }
+
+  .sfind__severity {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .sfind__page {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .sfind__evidence,
+  .sfind__meta {
+    padding-inline: var(--s3);
   }
 }
 
-@media (max-width: 420px) {
+@media (max-width: 380px) {
+  .subscore {
+    padding: var(--s2);
+  }
+
   .dist__row {
-    grid-template-columns: minmax(0, 1fr) 40px 48px;
+    grid-template-columns: minmax(0, 1fr) 40px 44px;
   }
 }

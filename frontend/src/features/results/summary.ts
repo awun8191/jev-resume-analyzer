@@ -1,5 +1,6 @@
 import type {
-  AnswerCategory, Dimension, Finding, ScoreMode, Scores, StructureFinding, StructureScore,
+  AnswerCategory, Dimension, Finding, Overview, ScoreMode, Scores, StructureFinding,
+  StructureScore,
 } from '../../api/schema'
 import type { BoxFinding } from '../document/types'
 
@@ -94,16 +95,8 @@ export const MODE_LABEL: Record<ScoreMode, string> = {
   unavailable: 'Not scored',
 }
 
-const MODE_NOTE: Record<ScoreMode, string> = {
-  combined: 'Weighted 70% content and 30% layout.',
-  content_only: 'The total is the content score. Layout did not contribute.',
-  structure_only: 'The total is the layout score. Content coverage was too thin to score.',
-  unavailable: 'Neither content nor layout produced a score.',
-}
-
-export function modeNote(mode: ScoreMode): string {
-  return MODE_NOTE[mode]
-}
+/* A mode needs no paragraph: the label says how the total was built, and a
+ * missing half already carries its own reason. */
 
 /* Known reasons get a plain sentence. An unknown reason still says the layout
  * was not scored, and the raw code stays visible next to it. */
@@ -140,6 +133,57 @@ export function rangeText(range: [number, number]): string {
   return `${range[0]} to ${range[1]}`
 }
 
-export function coverageText(scores: Scores): string {
-  return `${Math.round(scores.content.coverage * 100)}% of prepared content weight`
+/* Coverage is one number. The counts sit under it as one short line. */
+export function coveragePercent(scores: Scores): string {
+  return `${Math.round(scores.content.coverage * 100)}%`
+}
+
+export function countsText(overview: Overview): string {
+  const missing = overview.questions_total - overview.questions_answered
+  const parts = [
+    `${overview.questions_total} prepared`,
+    `${overview.questions_answered} returned`,
+    `${overview.questions_assessable} assessable`,
+  ]
+  if (missing > 0) parts.push(`${missing} not returned`)
+  return parts.join(' · ')
+}
+
+/* Content findings in server order, grouped by scope and dimension. The order
+ * is the order the server sent them in, so the highest weighted dimension
+ * stays first. A job alignment row never merges into a general one. */
+export interface FindingGroup {
+  key: string
+  dimension: string
+  scope: Finding['scope']
+  findings: Finding[]
+}
+
+export function groupFindings(findings: Finding[]): FindingGroup[] {
+  const groups: FindingGroup[] = []
+  for (const finding of findings) {
+    const key = `${finding.scope}:${finding.dimension}`
+    const existing = groups.find(group => group.key === key)
+    if (existing) existing.findings.push(finding)
+    else groups.push({ key, dimension: finding.dimension, scope: finding.scope, findings: [finding] })
+  }
+  return groups
+}
+
+/* A short name for one check, taken from the server's own question id and the
+ * row's dimension. The full question stays one tap away; nothing is paraphrased
+ * and nothing is invented. */
+export function findingLabel(dimension: string, questionId: string): string {
+  const slug = questionId.toLowerCase()
+  const prefix = `${dimension.toLowerCase().replace(/\s+/g, '_')}_`
+  const tail = slug.startsWith(prefix) ? slug.slice(prefix.length) : slug
+  const words = tail.replace(/[-_]+/g, ' ').trim()
+  if (!words) return dimension
+  return words.charAt(0).toUpperCase() + words.slice(1)
+}
+
+/* The three shortest actionable rows are the absent answers, in server order.
+ * Nothing is inferred: an answer is absent or it is not. */
+export function topFixes(findings: Finding[], limit = 3): Finding[] {
+  return findings.filter(finding => finding.answer === 'absent').slice(0, limit)
 }
