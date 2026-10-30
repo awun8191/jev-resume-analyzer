@@ -3,6 +3,10 @@
 The content score is a weighted percentage over the checks that were actually
 assessed. Answers of not_applicable and unable_to_assess never become zero:
 they leave the denominator and widen a reported range.
+
+Coverage uses the same denominator. It is the share of applicable weight that was
+actually decided, so ``not_applicable`` leaves the coverage denominator too. A
+document with no posting is not reported as partly uncovered.
 """
 from dataclasses import dataclass
 from math import floor
@@ -214,8 +218,9 @@ def score_report(
     """
     _validate_structure(structure_score)
     content, earned, assessed, applicable, rows = score_content(answers, prepared)
-    prepared_weight = sum(row.weight for row in rows)
-    coverage = round(assessed / prepared_weight, 4) if prepared_weight else 0.0
+    # Coverage divides by applicable weight, not prepared weight: a question answered
+    # not_applicable carries no points to miss, so it stays out of the denominator.
+    coverage = round(assessed / applicable, 4) if applicable else 0.0
 
     if applicable:
         range_low = _round_half_up(100 * earned / applicable)
