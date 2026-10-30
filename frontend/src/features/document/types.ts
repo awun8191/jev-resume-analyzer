@@ -10,8 +10,9 @@ export interface PagePreview {
 
 export interface BoxFinding {
   id: string
-  page: number
-  box: FindingBox
+  page: number | null
+  box: FindingBox | null
+  section?: string | null
   label: string
   answer: AnswerCategory
   severity: string | null
