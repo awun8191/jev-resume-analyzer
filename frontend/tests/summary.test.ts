@@ -1,26 +1,67 @@
 import { expect, it } from 'vitest'
 import {
-  ANSWER_ORDER, boxFindings, countsText, findingLabel, groupDimensions, groupFindings, percent,
-  rangeText, structureBoxes, structureReasonText, topFixes,
+  ANSWER_ORDER, FINDING_SCORE, bandOf, boxFindings, earnedPoints, findingLabel,
+  findingStakes, groupFindings, percent, scoreText, structureBoxes, structureScore,
 } from '../src/features/results/summary'
 import { multiReport } from './contract/fixtures/responses'
-
-it('splits API dimension rows by owner without reordering them', () => {
-  const groups = groupDimensions(multiReport.dimensions)
-  expect(groups.content.map(row => row.key)).toEqual(['work_clarity', 'scope', 'responsibility_alignment'])
-  expect(groups.structure.map(row => row.key)).toEqual(['layout_order', 'page_budget'])
-  expect([...groups.content, ...groups.structure]).toHaveLength(multiReport.dimensions.length)
-})
-
-it('returns empty groups for no rows', () => {
-  expect(groupDimensions([])).toEqual({ content: [], structure: [] })
-})
 
 it('keeps a fixed answer order and formats probabilities to one decimal', () => {
   expect(ANSWER_ORDER).toEqual(['present', 'absent', 'not_applicable', 'unable_to_assess'])
   expect(percent(0.7)).toBe('70.0%')
   expect(percent(0)).toBe('0.0%')
   expect(percent(1)).toBe('100.0%')
+})
+
+/* The per-finding score is defined in one place, and the two answers that
+ * decide nothing are a dash rather than a zero. */
+it('scores a finding once: present 100, absent 0, a dash for the rest', () => {
+  expect(FINDING_SCORE.present).toBe(100)
+  expect(FINDING_SCORE.absent).toBe(0)
+  expect(FINDING_SCORE.not_applicable).toBeNull()
+  expect(FINDING_SCORE.unable_to_assess).toBeNull()
+  expect(scoreText(FINDING_SCORE.not_applicable)).toBe('\u2014')
+  expect(scoreText(0)).toBe('0')
+})
+
+it('reads a structure check as full marks minus what it cost', () => {
+  const [pass, major, , unassessable] = multiReport.structure_findings
+  expect(structureScore(pass)).toBe(100)
+  expect(structureScore(major)).toBe(88)
+  expect(structureScore(unassessable)).toBeNull()
+  expect(scoreText(structureScore(unassessable))).toBe('\u2014')
+})
+
+it('bands 75 and above green, 40 to 74 amber, below 40 red, null unbanded', () => {
+  expect(bandOf(100)).toBe('good')
+  expect(bandOf(75)).toBe('good')
+  expect(bandOf(74)).toBe('fair')
+  expect(bandOf(40)).toBe('fair')
+  expect(bandOf(39)).toBe('poor')
+  expect(bandOf(0)).toBe('poor')
+  expect(bandOf(null)).toBeNull()
+})
+
+/* A dimension's weight is shared across its findings, so the row reads its own
+ * stake and the shares add back up to the dimension. */
+it('splits a dimension weight across its findings without losing a point', () => {
+  const stakes = findingStakes(multiReport.findings, multiReport.dimensions)
+  expect(stakes.get('q-clarity')).toBe(20)
+  expect(stakes.get('q-ownership')).toBe(20)
+  expect(stakes.get('q-scope')).toBe(25)
+  expect(stakes.get('q-align')).toBe(35)
+
+  const clarity = [...stakes.values()].slice(0, 2).reduce((a, b) => a + b, 0)
+  expect(clarity).toBe(40)
+
+  // A dimension the report does not score gives no stake at all.
+  expect(findingStakes(multiReport.findings, []).size).toBe(0)
+})
+
+it('earns the whole stake or none of it, and a dash earns a dash', () => {
+  expect(earnedPoints('present', 20)).toBe(20)
+  expect(earnedPoints('absent', 20)).toBe(0)
+  expect(earnedPoints('not_applicable', 20)).toBeNull()
+  expect(earnedPoints('unable_to_assess', 20)).toBeNull()
 })
 
 it('only turns findings with real page geometry into boxes', () => {
@@ -68,36 +109,4 @@ it('groups findings by scope and dimension and keeps server order', () => {
     'job_alignment:Responsibility alignment',
   ])
   expect(groups.map(group => group.findings.length)).toEqual([2, 1, 1])
-})
-
-it('takes only the absent answers as fixes, in server order', () => {
-  expect(topFixes(multiReport.findings).map(finding => finding.question_id)).toEqual(['q-ownership'])
-  expect(topFixes(multiReport.findings, 1)).toHaveLength(1)
-  expect(topFixes([])).toEqual([])
-})
-
-it('counts prepared, returned and assessable without inventing a total', () => {
-  expect(countsText({ questions_total: 5, questions_answered: 4, questions_assessable: 2, rating: null }))
-    .toBe('4 of 5 answered · 2 assessable · 1 not returned')
-  expect(countsText({ questions_total: 3, questions_answered: 3, questions_assessable: 3, rating: null }))
-    .toBe('3 of 3 answered · 3 assessable')
-})
-
-it('prints a range as one value when both ends match', () => {
-  expect(rangeText([46, 69])).toBe('46 to 69')
-  expect(rangeText([91, 91])).toBe('91')
-})
-
-it('maps each reported structure reason to one plain sentence', () => {
-  const reason = (code: string | null) =>
-    structureReasonText({ value: null, band: null, reason: code, assessed_weight: 0 })
-
-  expect(reason('unsupported_format')).toBe('Layout is scored for PDF uploads only.')
-  expect(reason('provider_error')).toBe('Layout check failed, content review is complete.')
-  expect(reason('render_failed')).toBe('The layout check could not render the pages.')
-  expect(reason('page_not_readable')).toBe('The layout check could not read the pages.')
-  expect(reason(null)).toContain('no reason was reported')
-  expect(reason('something_new')).toBe('Layout was not scored for this document.')
-  expect(structureReasonText({ value: 80, band: 'Strong evidence', reason: 'scored', assessed_weight: 100 }))
-    .toBeNull()
 })

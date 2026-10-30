@@ -8,8 +8,6 @@ import {
   contentOnlyReport,
   multiReport,
   report,
-  structureOnlyReport,
-  structureProviderErrorReport,
   unavailableReport,
 } from './contract/fixtures/responses'
 
@@ -20,153 +18,112 @@ const noop = () => {}
 function show(subject: AnalysisReport = multiReport, selectedId: string | null = null, onSelect = noop) {
   return render(
     <>
-      <ReportSummary
-        report={subject}
-        selectedId={selectedId}
-        onSelect={onSelect}
-        onStartOver={noop}
-      />
+      <ReportSummary report={subject} onStartOver={noop} />
       <ResultStage report={subject} onEdit={noop} selectedId={selectedId} onSelect={onSelect} />
     </>,
   )
 }
 
-it('shows the total, band, mode and coverage in one compact block', () => {
+const total = (container: HTMLElement) => container.querySelector('.score__total') as HTMLElement
+const halves = (container: HTMLElement) => [...container.querySelectorAll('.score__half')]
+
+it('shows the total as one numeral, a small unit and the band word', () => {
+  const { container } = show()
+  const line = total(container)
+  expect(line.textContent).toBe('65/100Adequate evidence')
+  expect(line.querySelector('.score__value')!.textContent).toBe('65')
+  expect(line.querySelector('.score__value')!.getAttribute('data-band')).toBe('fair')
+  expect(line.querySelector('.score__unit')!.textContent).toBe('/100')
+})
+
+it('puts structure first and content second under the total', () => {
+  const { container } = show()
+  const cells = halves(container)
+  expect(cells.map(cell => cell.getAttribute('data-owner'))).toEqual(['structure', 'content'])
+  expect(cells[0].textContent).toContain('81')
+  expect(cells[0].textContent).toContain('Strong evidence')
+  expect(cells[0].querySelector('.score__value')!.getAttribute('data-band')).toBe('good')
+  expect(cells[1].textContent).toContain('58')
+  expect(cells[1].textContent).toContain('Partial evidence')
+})
+
+it('keeps the score to the numbers alone: no coverage, weight or counts', () => {
   const { container } = show()
   const block = container.querySelector('.score') as HTMLElement
-  expect(block.getAttribute('data-mode')).toBe('combined')
-  expect(block.querySelector('.score__value')!.textContent).toBe('65/ 100')
-  expect(block.textContent).toContain('Adequate evidence')
-  expect(block.textContent).not.toContain('Content and layout')
-  expect(block.textContent).toContain('80%')
-  expect(block.textContent).toContain('4 of 5 answered · 2 assessable · 1 not returned')
-  // A combined total has no range of its own, so none is shown.
-  expect(block.querySelector('.score__range')).toBeNull()
+  const text = block.textContent!
+  expect(text).not.toContain('Covered')
+  expect(text).not.toContain('Decided')
+  expect(text).not.toContain('Layout')
+  expect(text).not.toContain('prepared')
+  expect(text).not.toContain('assessable')
+  expect(text).not.toContain('Range')
+  expect(block.querySelectorAll('dt')).toHaveLength(2)
+  expect(block.querySelectorAll('dd')).toHaveLength(2)
 })
 
-it('does not print the explainer sentences any more', () => {
-  const { container } = show()
-  const text = container.textContent!
-  expect(text).not.toContain('Assessable means')
-  expect(text).not.toContain('Weighted 70% content')
-  expect(text).not.toContain('The evidence is consistent with any value in that range')
-  expect(text).not.toContain('of prepared content weight')
-  expect(text).not.toContain('Scored rows by owner')
-  expect(text).not.toContain('Layout points assessed')
-})
-
-it('puts structure first and content second in the two tiles', () => {
-  const { container } = show()
-  const subscores = [...container.querySelectorAll('.subscore')]
-  expect(subscores.map(node => node.getAttribute('data-owner'))).toEqual(['structure', 'content'])
-  expect(subscores[0].textContent).toContain('81')
-  expect(subscores[0].textContent).not.toContain('Strong evidence')
-  expect(subscores[1].textContent).toContain('58')
-  expect(subscores[1].textContent).toContain('Range 46 to 69')
-})
-
-it('labels a content only total and keeps the layout reason in place', () => {
-  const { container } = show(contentOnlyReport)
-  const block = container.querySelector('.score') as HTMLElement
-  expect(block.getAttribute('data-mode')).toBe('content_only')
-  expect(block.textContent).toContain('Content only')
-  expect(block.textContent).toContain('Range 46 to 69')
-  expect(block.textContent).toContain('Layout is scored for PDF uploads only.')
-  expect(block.textContent).toContain('unsupported_format')
-
-  const structure = container.querySelector('.subscore[data-owner="structure"]') as HTMLElement
-  expect(structure.textContent).toContain('Not scored')
-  expect(structure.querySelector('.subscore__value')).toBeNull()
-  expect(structure.textContent).toContain('Layout is scored for PDF uploads only.')
-})
-
-it('says a layout check failed without hiding the content review', () => {
-  const { container } = show(structureProviderErrorReport)
-  const block = container.querySelector('.score') as HTMLElement
-  expect(block.textContent).toContain('Layout check failed, content review is complete.')
-  expect(block.textContent).toContain('58')
-})
-
-it('shows a layout only total when content could not be scored', () => {
-  const { container } = show(structureOnlyReport)
-  const block = container.querySelector('.score') as HTMLElement
-  expect(block.getAttribute('data-mode')).toBe('structure_only')
-  expect(block.textContent).toContain('Layout only')
-  expect(block.textContent).toContain('Only 40 of 100 content points could be decided.')
-  expect(block.querySelector('.score__range')).toBeNull()
-  const content = container.querySelector('.subscore[data-owner="content"]') as HTMLElement
-  expect(content.textContent).toContain('Not scored')
-})
-
-it('shows no number at all when nothing could be scored', () => {
+it('shows a null total as the words Not scored, in ink, with no number', () => {
   const { container } = show(unavailableReport)
-  const block = container.querySelector('.score') as HTMLElement
-  expect(block.getAttribute('data-mode')).toBe('unavailable')
-  expect(block.querySelector('.score__value')).toBeNull()
-  expect(block.querySelector('.score__none')!.textContent).toBe('Not scored')
-  expect(block.textContent).toContain('The layout check could not read the pages.')
-  expect(block.textContent).not.toMatch(/\b0\/ 100\b/)
-})
-
-it('lists the absent answers as short fix rows that select the finding', async () => {
-  const user = userEvent.setup()
-  const onSelect = vi.fn()
-  const { container } = show(multiReport, null, onSelect)
-
-  const fixes = [...container.querySelectorAll('.fix')]
-  expect(fixes).toHaveLength(1)
-  expect(fixes[0].textContent).toContain('Work clarity')
-  expect(fixes[0].textContent).toContain('Page 1')
-
-  await user.click(within(fixes[0] as HTMLElement).getByRole('button'))
-  expect(onSelect).toHaveBeenCalledWith('q-ownership')
-})
-
-it('says so when no answer is absent, and keeps the jump path', () => {
-  show(report)
-  expect(screen.getByText('No absent answers.')).toBeTruthy()
-  expect(screen.getByRole('button', { name: 'Jump to finding' })).toBeTruthy()
-})
-
-it('groups content findings by dimension with three visible', async () => {
-  const user = userEvent.setup()
-  const { container } = show()
-  const findings = [...container.querySelectorAll('.finding')]
-  expect(findings).toHaveLength(3)
-  expect(container.querySelectorAll('.groups .group__title')[0].textContent).toBe('Work clarity')
-  expect(container.querySelectorAll('.groups .group__title').length).toBe(2)
-
-  const more = screen.getByRole('button', { name: 'Show all 4 findings' })
-  expect(more.getAttribute('aria-expanded')).toBe('false')
-  await user.click(more)
-  expect(container.querySelectorAll('.finding')).toHaveLength(4)
-  const titles = [...container.querySelectorAll('.groups .group__title')].map(node => node.textContent)
-  expect(titles).toEqual(['Work clarity', 'Scope', 'Responsibility alignment'])
-  expect(container.textContent).toContain('Job posting · 1 of 1')
-  expect(screen.getByRole('button', { name: 'Show fewer findings' })).toBeTruthy()
-})
-
-it('shows every answer state as a word plus a shape', () => {
-  const { container } = show()
-  const states = [...container.querySelectorAll('.state')]
-  expect(states.map(el => el.textContent!.trim())).toEqual([
-    '\u25A0Present',
-    '\u25A1Absent',
-    '\u2212Not applicable',
-  ])
-  expect(states.map(el => el.querySelector('.state__glyph')!.textContent)).toEqual([
-    '\u25A0',
-    '\u25A1',
-    '\u2212',
+  const line = total(container)
+  expect(line.textContent).toBe('Not scored')
+  expect(line.querySelector('.score__value')).toBeNull()
+  expect(line.querySelector('.score__none')!.getAttribute('data-band')).toBeNull()
+  expect(line.textContent).not.toContain('0')
+  expect(halves(container).map(cell => cell.textContent)).toEqual([
+    'StructureNot scored',
+    'ContentNot scored',
   ])
 })
 
-it('opens one finding on tap to its question, criteria, answer and distribution', async () => {
+it('keeps a scored half when the other could not be scored', () => {
+  const { container } = show(contentOnlyReport)
+  expect(total(container).textContent).toBe('58/100Partial evidence')
+  const cells = halves(container)
+  expect(cells[0].textContent).toBe('StructureNot scored')
+  expect(cells[1].textContent).toBe('Content58/100Partial evidence')
+})
+
+it('lists every content finding, grouped by dimension, with no show all control', () => {
+  const { container } = show()
+  const rows = [...container.querySelectorAll('.frow')]
+  expect(rows).toHaveLength(4)
+  expect([...container.querySelectorAll('.group__title')].map(node => node.textContent)).toEqual([
+    'Work clarity',
+    'Scope',
+    'Responsibility alignmentJob posting',
+  ])
+  expect(screen.queryByRole('button', { name: /Show all/ })).toBeNull()
+})
+
+it('gives every row its own score and its own stake in points', () => {
+  const { container } = show()
+  const rows = [...container.querySelectorAll('.frow')] as HTMLElement[]
+  expect(rows.map(row => row.querySelector('.frow__score')!.textContent)).toEqual([
+    '100', '0', '\u2014', '\u2014',
+  ])
+  expect(rows.map(row => row.querySelector('.frow__stake')!.textContent)).toEqual([
+    '20 of 20 pts',
+    '0 of 20 pts',
+    '\u2014 of 25 pts',
+    '\u2014 of 35 pts',
+  ])
+  expect(rows.map(row => row.querySelector('.frow__state')!.textContent)).toEqual([
+    'Present', 'Absent', 'Not applicable', 'Unable to assess',
+  ])
+  expect(rows[0].querySelector('.frow__score')!.getAttribute('data-band')).toBe('good')
+  expect(rows[1].querySelector('.frow__score')!.getAttribute('data-band')).toBe('poor')
+  // A dash is a dash: no zero stands in for an undecided answer.
+  expect(rows[2].querySelector('.frow__score')!.getAttribute('data-band')).toBeNull()
+})
+
+it('opens one row in place to its question, criteria, answer and probabilities', async () => {
   const user = userEvent.setup()
   const { container } = show()
-  const first = container.querySelector('.finding') as HTMLElement
+  const first = container.querySelector('.frow') as HTMLElement
   const row = within(first).getByRole('button')
-  const detail = first.querySelector('.finding__detail') as HTMLElement
+  const detail = first.querySelector('.fdetail') as HTMLElement
+
+  expect(row.getAttribute('aria-expanded')).toBe('false')
+  expect(row.getAttribute('aria-controls')).toBe(detail.id)
   expect(detail.hasAttribute('hidden')).toBe(true)
 
   await user.click(row)
@@ -175,138 +132,81 @@ it('opens one finding on tap to its question, criteria, answer and distribution'
   expect(detail.textContent).toContain('SYNTHETIC: is the work described clearly?')
   expect(detail.textContent).toContain('SYNTHETIC criterion A.')
   expect(detail.textContent).toContain('SYNTHETIC criterion B.')
+  expect(detail.textContent).toContain('Present')
   expect(detail.textContent).toContain('62.0%')
-  expect(detail.textContent).toContain('SYNTHETIC source passage one.')
-  expect(detail.textContent).toContain('Page 1')
+  // Four facts, nothing else.
+  expect([...detail.querySelectorAll('.label')].map(node => node.textContent)).toEqual([
+    'Question', 'Criteria', 'Answer', 'Probability per answer',
+  ])
 
   await user.click(row)
   expect(detail.hasAttribute('hidden')).toBe(true)
 })
 
-it('keeps a missing distribution and confidence explicit', async () => {
+it('keeps a missing distribution explicit', async () => {
   const user = userEvent.setup()
-  const { container } = show(multiReport)
-  await user.click(screen.getByRole('button', { name: 'Show all 4 findings' }))
-  const last = [...container.querySelectorAll('.finding')].at(-1) as HTMLElement
-  const row = within(last).getByRole('button')
-  expect(row.getAttribute('aria-label')).toContain('Unable to assess')
-
-  await user.click(row)
-  const detail = last.querySelector('.finding__detail') as HTMLElement
-  expect(detail.textContent).toContain('Not reported by the provider.')
-  expect(detail.textContent).toContain('Provider confidenceNot reported')
-  expect(last.querySelector('.dist')).toBeNull()
+  const { container } = show()
+  const rows = [...container.querySelectorAll('.frow')] as HTMLElement[]
+  await user.click(within(rows[3]).getByRole('button'))
+  expect(rows[3].querySelector('.fdetail')!.textContent).toContain('Not reported by the provider.')
+  expect(rows[3].querySelector('.dist')).toBeNull()
 })
 
-it('selects a finding from its row and marks the located ones', async () => {
+it('selects a finding from its row and keeps the whole list reachable', async () => {
   const user = userEvent.setup()
   const onSelect = vi.fn()
   const { container } = show(multiReport, null, onSelect)
 
-  await user.click(screen.getAllByRole('button', { name: /^Work clarity:/ })[0])
+  await user.click(within(container.querySelector('.frow') as HTMLElement).getByRole('button'))
   expect(onSelect).toHaveBeenCalledWith('q-clarity')
-  expect((screen.getAllByRole('button', { name: /^Work clarity:/ })[0]).getAttribute('aria-label'))
-    .toContain('Page 1')
-
-  const rows = [...container.querySelectorAll('.finding')]
-  expect(rows[0].querySelector('.finding__page')!.textContent).toBe('Page 1')
-  // The not applicable finding has no page, so the slot stays empty.
-  expect(rows[2].querySelector('.finding__page')!.getAttribute('data-empty')).toBe('true')
 })
 
-it('marks the selected finding in the list', () => {
+it('marks the finding that the document pane selected', () => {
   const { container } = show(multiReport, 'q-clarity')
-  const first = container.querySelector('.finding') as HTMLElement
+  const first = container.querySelector('.frow') as HTMLElement
   expect(first.getAttribute('data-selected')).toBe('true')
   expect(within(first).getByRole('button').getAttribute('aria-current')).toBe('true')
 })
 
-it('keeps structure checks behind one disclosure that states the count and the score', async () => {
-  const user = userEvent.setup()
-  const { container } = show(multiReport)
+it('shows structure findings without a disclosure: severity, points, page, score', () => {
+  const { container } = show()
+  expect(screen.queryByRole('button', { name: /Structure findings/ })).toBeNull()
 
-  const toggle = screen.getByRole('button', { name: /Structure findings/ })
-  expect(toggle.getAttribute('aria-expanded')).toBe('false')
-  expect(toggle.textContent).toContain('4 checks · 81 / 100')
-  const section = container.querySelector('#structure-body') as HTMLElement
-  expect(section.hasAttribute('hidden')).toBe(true)
-
-  await user.click(toggle)
-  expect(section.hasAttribute('hidden')).toBe(false)
-  const rows = [...section.querySelectorAll('.sfind')]
+  const rows = [...container.querySelectorAll('.srow')] as HTMLElement[]
   expect(rows).toHaveLength(4)
-  expect(rows.map(row => row.querySelector('.sfind__label')!.textContent)).toEqual([
+  expect(rows.map(row => row.querySelector('.srow__name')!.textContent)).toEqual([
     'Section order follows the rubric',
     'Two column layout is dense',
     'Section breaks across pages',
     'Font sizes are inconsistent',
   ])
+  expect(rows.map(row => row.querySelector('.srow__score')!.textContent)).toEqual([
+    '100', '88', '96', '\u2014',
+  ])
   expect(rows[0].textContent).toContain('Pass')
-  expect(rows[0].querySelector('button')).toBeNull()
-  expect(rows[2].textContent).toContain('Page 2')
-  expect(section.textContent).toContain('12 points lost')
-  expect(section.textContent).toContain('SYNTHETIC: column gap is below the body text size.')
+  expect(rows[0].textContent).toContain('No points lost')
+  expect(rows[1].textContent).toContain('Major issue')
+  expect(rows[1].textContent).toContain('12 points lost')
+  expect(rows[1].textContent).toContain('Page 1')
+  expect(rows[1].querySelector('.srow__score')!.getAttribute('data-band')).toBe('good')
+  expect(rows[3].querySelector('.srow__score')!.getAttribute('data-band')).toBeNull()
 })
 
-it('selects a structure check and opens its disclosure', async () => {
+it('selects a located structure check and leaves a pass alone', async () => {
   const user = userEvent.setup()
   const onSelect = vi.fn()
   const { container } = show(multiReport, null, onSelect)
-  await user.click(screen.getByRole('button', { name: /Structure findings/ }))
-  await user.click(screen.getByRole('button', { name: 'Two column layout is dense. Major issue. Page 1.' }))
+  const rows = [...container.querySelectorAll('.srow')] as HTMLElement[]
+
+  expect(within(rows[0]).queryByRole('button')).toBeNull()
+  await user.click(within(rows[1]).getByRole('button'))
   expect(onSelect).toHaveBeenCalledWith('structure:dense-columns')
-  expect(container.querySelectorAll('.sfind').length).toBeGreaterThan(0)
 })
 
-it('marks a selected structure finding and opens its group', () => {
-  const { container } = show(multiReport, 'structure:dense-columns')
-  const selected = container.querySelector('.sfind[data-selected="true"]') as HTMLElement
-  expect(selected.querySelector('.sfind__label')!.textContent).toBe('Two column layout is dense')
-  expect(selected.querySelector('button')!.getAttribute('aria-pressed')).toBe('true')
-})
-
-it('keeps an empty structure list visible instead of hiding it', () => {
+it('says when a section came back empty instead of hiding it', () => {
   show(contentOnlyReport)
-  expect(
-    screen.getByText('No structure checks were returned for this report.'),
-  ).toBeTruthy()
-  expect(screen.getByRole('button', { name: /Structure findings/ }).textContent).toContain('Not scored')
-})
-
-it('hides dimension rows behind All dimensions and keeps a null a word', async () => {
-  const user = userEvent.setup()
-  const { container } = show()
-  const toggle = screen.getByRole('button', { name: /All dimensions/ })
-  expect(toggle.textContent).toContain('5 rows')
-  const body = container.querySelector('#dims-body') as HTMLElement
-  expect(body.hasAttribute('hidden')).toBe(true)
-
-  await user.click(toggle)
-  expect(body.hasAttribute('hidden')).toBe(false)
-  const groups = [...container.querySelectorAll('.dim-group')]
-  expect(groups.map(group => group.getAttribute('data-owner'))).toEqual(['content', 'structure'])
-
-  const content = [...groups[0].querySelectorAll('.dim')]
-  expect(content.map(row => row.querySelector('.dim__name')!.textContent)).toEqual([
-    'Work clarity',
-    'Scope',
-    'Responsibility alignment',
-  ])
-  expect(content[0].textContent).toContain('40 of 100 points')
-  expect(content[1].textContent).toContain('Not scored')
-  expect(content[1].querySelector('.dim__value')!.className).toContain('dim__value--none')
-
-  const structure = [...groups[1].querySelectorAll('.dim')]
-  expect(structure.map(row => row.querySelector('.dim__name')!.textContent)).toEqual([
-    'Layout order',
-    'Page budget',
-  ])
-  expect(structure[0].querySelector('.dim__value span')!.textContent).toBe('88')
-})
-
-it('opens the dimensions block when the report has no rows', () => {
-  show(unavailableReport)
-  expect(screen.getByText('No dimension rows were returned for this report.')).toBeTruthy()
+  expect(screen.getByText('No structure checks were returned for this report.')).toBeTruthy()
+  expect(screen.getByRole('heading', { name: 'Structure findings' })).toBeTruthy()
 })
 
 it('says fewer findings when none were returned', () => {
@@ -314,22 +214,28 @@ it('says fewer findings when none were returned', () => {
   expect(screen.getByText('No findings were returned.')).toBeTruthy()
 })
 
-it('keeps the analysis limitation without a raw code', () => {
-  show()
-  expect(screen.getByRole('heading', { name: 'Analysis limitations' })).toBeTruthy()
-  expect(screen.queryByText('partial_response')).toBeNull()
+/* Everything the last pass carried that hid the report or padded it. */
+it('keeps the removed sections and helper sentences out', () => {
+  const { container } = show()
+  const text = container.textContent!
+  for (const gone of [
+    'Covered', 'Decided', 'Layout', 'Top fixes', 'All dimensions',
+    'Analysis limitations', 'Request details', 'Rubric explanation',
+    'Provider confidence', 'Jump to finding', 'Show all',
+  ]) {
+    expect(text).not.toContain(gone)
+  }
+  expect(container.querySelectorAll('details')).toHaveLength(0)
+  expect(container.querySelectorAll('[aria-expanded="true"]')).toHaveLength(0)
 })
 
-it('renders the report blocks in the reading order', () => {
+it('renders the two sections in reading order', () => {
   const { container } = show()
   const headings = [...container.querySelectorAll('h2')].map(node => node.textContent)
-  expect(headings).toEqual([
-    'Total score',
-    'Sub-scores',
-    'Top fixes',
-    'All dimensions5 rows',
-    'Findings',
-    'Structure findings4 checks · 81 / 100',
-    'Analysis limitations',
-  ])
+  expect(headings).toEqual(['Content findings', 'Structure findings'])
+})
+
+it('names the score region for assistive tech', () => {
+  show(report)
+  expect(screen.getByRole('region', { name: 'Score' })).toBeTruthy()
 })

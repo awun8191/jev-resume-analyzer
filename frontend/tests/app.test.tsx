@@ -48,7 +48,6 @@ it('preserves edited text and posting after a failure, reports, edits and resets
   const cv = await screen.findByLabelText('CV text')
   await user.clear(cv)
   await user.type(cv, 'Edited synthetic CV')
-  await user.click(screen.getByText('Add a job posting'))
   await user.type(screen.getByLabelText('Job posting'), 'Synthetic posting')
   await user.click(screen.getByRole('button', { name: 'Analyse CV' }))
 
@@ -60,7 +59,7 @@ it('preserves edited text and posting after a failure, reports, edits and resets
   await user.click(screen.getByRole('button', { name: 'Analyse CV' }))
   await screen.findByRole('heading', { name: 'Report' })
   expect(screen.getByText('71')).toBeTruthy()
-  await user.click(screen.getAllByRole('button', { name: /^Work clarity:/ })[0])
+  await user.click(screen.getAllByRole('button', { name: /clarity/i })[0])
   expect(screen.getByText('70.0%')).toBeTruthy()
 
   const stored = JSON.parse(sessionStorage.getItem('jev.state.v1')!)
