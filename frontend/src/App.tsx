@@ -5,6 +5,7 @@ import { failureFromUnknown } from './failures'
 import StageBar from './components/StageBar'
 import DocumentPane from './features/document/DocumentPane'
 import { previewPages } from './features/document/previewSource'
+import type { PagePreview } from './features/document/types'
 import UploadStage from './features/upload/UploadStage'
 import ReviewStage from './features/preview/ReviewStage'
 import ResultStage from './features/results/ResultStage'
@@ -42,7 +43,17 @@ export default function App() {
     main.current?.querySelector<HTMLElement>('h1')?.focus()
   }, [s.stage])
 
-  const pages = useMemo(() => previewPages(s.file), [s.file])
+  /* The PDF is read in this tab. A reload keeps the text and report but not
+   * the file, so the pane falls back to its attached state. */
+  const [pages, setPages] = useState<PagePreview[]>([])
+  useEffect(() => {
+    let active = true
+    setPages([])
+    if (!s.file) return () => { active = false }
+    previewPages(s.file).then(next => { if (active) setPages(next) })
+    return () => { active = false }
+  }, [s.file])
+
   const boxes = useMemo(() => boxFindings(s.report?.findings ?? []), [s.report])
 
   async function upload(file: File) {

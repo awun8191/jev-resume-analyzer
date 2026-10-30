@@ -1,10 +1,60 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import type { FindingBox } from '../../api/schema'
+import { sectionKey } from './pdfLayout'
 import type { BoxFinding, PagePreview } from './types'
 import './document.css'
 
 const ZOOMS = [1, 1.25, 1.5]
 
 const pct = (n: number) => `${(n * 100).toFixed(3)}%`
+
+interface DrawableBox extends BoxFinding {
+  page: number
+  box: FindingBox
+  source: 'section' | 'reported'
+}
+
+/* A finding with a section uses the exact text layer box. A finding without
+ * one keeps the reported box. Nothing is drawn unless one of the two exists. */
+export function resolveBoxes(findings: BoxFinding[], pages: PagePreview[]): DrawableBox[] {
+  const byPage = new Map<number, Map<string, { page: number; box: FindingBox }>>()
+  const anywhere = new Map<string, Array<{ page: number; box: FindingBox }>>()
+
+  pages.forEach((page, index) => {
+    for (const section of page.sections ?? []) {
+      const pageIndex = Number.isFinite(section.page) ? section.page : index
+      const entry = { page: pageIndex, box: section.box }
+      const onPage = byPage.get(pageIndex) ?? new Map<string, { page: number; box: FindingBox }>()
+      onPage.set(section.id, entry)
+      byPage.set(pageIndex, onPage)
+      const list = anywhere.get(section.id) ?? []
+      list.push(entry)
+      anywhere.set(section.id, list)
+    }
+  })
+
+  const resolved: DrawableBox[] = []
+  for (const finding of findings) {
+    if (finding.section) {
+      const key = sectionKey(finding.section)
+      let hit = finding.page == null ? undefined : byPage.get(finding.page)?.get(key)
+      if (!hit) {
+        const list = anywhere.get(key)
+        /* A section that continues across pages is only unambiguous when it
+         * appears on a single page. Otherwise the finding needs its own page. */
+        if (list?.length === 1) hit = list[0]
+      }
+      if (hit) {
+        resolved.push({ ...finding, page: hit.page, box: hit.box, source: 'section' })
+        continue
+      }
+    }
+    if (finding.page != null && finding.box) {
+      resolved.push({ ...finding, page: finding.page, box: finding.box, source: 'reported' })
+    }
+  }
+  return resolved
+}
 
 function initialCollapsed() {
   if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false
@@ -39,14 +89,15 @@ export default function DocumentPane({
   const total = pages.length
   const page = pages[pageIndex]
   const hasImage = Boolean(page?.imageUrl)
-  const pageBoxes = boxes.filter(box => box.page === pageIndex)
-  const numbers = new Map(boxes.map((box, index) => [box.id, index + 1]))
+  const drawable = useMemo(() => resolveBoxes(boxes, pages), [boxes, pages])
+  const pageBoxes = drawable.filter(box => box.page === pageIndex)
+  const numbers = new Map(drawable.map((box, index) => [box.id, index + 1]))
 
   /* Selecting a finding opens the pane, turns to its page and brings the box
    * into view. Focus stays on the finding: scrolling is the only movement. */
   useEffect(() => {
     if (!selectedId) return
-    const target = boxes.find(box => box.id === selectedId)
+    const target = drawable.find(box => box.id === selectedId)
     if (!target) return
     setPageIndex(target.page)
     setShowBoxes(true)
@@ -59,7 +110,7 @@ export default function DocumentPane({
       return () => cancelAnimationFrame(frame)
     }
     scroll()
-  }, [selectedId, boxes])
+  }, [selectedId, drawable])
 
   return (
     <section className="docpane" aria-labelledby="docpane-title">
@@ -148,6 +199,7 @@ export default function DocumentPane({
                   ref={node => { boxRefs.current[box.id] = node }}
                   type="button"
                   className="box"
+                  data-source={box.source}
                   aria-pressed={box.id === selectedId}
                   aria-label={`Finding ${numbers.get(box.id)}: ${box.label}, ${box.answer.replace(/_/g, ' ')}, page ${box.page + 1}`}
                   style={{
@@ -183,7 +235,7 @@ export default function DocumentPane({
               </p>
               <p className="help">
                 {attached
-                  ? 'This build does not draw the document page. The file stays in this tab and is never uploaded for previewing.'
+                  ? 'This file has no page preview. PDF pages are drawn in this tab only, and a scanned PDF or a DOCX has no page image.'
                   : 'The text and this report were restored from this tab. The file itself is not kept, so the page cannot be drawn.'}
               </p>
               {!attached && (
@@ -204,11 +256,11 @@ export default function DocumentPane({
             </div>
           )}
 
-          {!hasImage && boxes.length > 0 && (
+          {!hasImage && drawable.length > 0 && (
             <div className="docpane__index">
               <p className="label">Boxes reported</p>
               <ul className="docpane__list">
-                {boxes.map(box => (
+                {drawable.map(box => (
                   <li key={box.id}>
                     <button
                       type="button"

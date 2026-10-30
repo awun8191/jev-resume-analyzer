@@ -30,15 +30,18 @@ export interface DimensionRow {
   counts: Record<AnswerCategory, number>
 }
 
-/* Only findings that actually carry page geometry get a box. */
+/* Only findings with page geometry or an identifiable section get a box. A
+ * section can be resolved later from the PDF text layer. */
 export function boxFindings(findings: Finding[]): BoxFinding[] {
   const boxes: BoxFinding[] = []
   for (const finding of findings) {
-    if (finding.page == null || !finding.box) continue
+    if (finding.page == null && !finding.section) continue
+    if (finding.page != null && !finding.box && !finding.section) continue
     boxes.push({
       id: finding.question_id,
-      page: finding.page,
-      box: finding.box,
+      page: finding.page ?? null,
+      box: finding.box ?? null,
+      section: finding.section ?? null,
       label: finding.dimension,
       answer: finding.answer,
       severity: finding.severity ?? null,

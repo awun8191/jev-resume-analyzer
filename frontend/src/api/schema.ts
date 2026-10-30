@@ -46,6 +46,8 @@ export const FindingSchema = z.object({
   // without a location still renders, it just has nothing to highlight.
   page: z.number().int().nonnegative().nullable().optional(),
   box: FindingBoxSchema.nullable().optional(),
+  // Section key from the provider, matched to a layout span on the page.
+  section: z.string().min(1).nullable().optional(),
   severity: z.string().min(1).nullable().optional(),
 })
 export const RatingSchema = z.object({
