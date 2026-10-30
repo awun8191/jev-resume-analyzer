@@ -187,7 +187,10 @@ export function useAppState() {
     jobText: state.jobText,
     setJobText: (jobText: string) => update({ jobText }),
     report: state.report as AnalysisReport | null,
-    setReport: (report: AnalysisReport | null) => update({ report }),
+    setReport: (report: AnalysisReport | null) => {
+      setRestoreNotice(null)
+      update({ report })
+    },
     selectedId: state.selectedId,
     selectFinding,
     error,

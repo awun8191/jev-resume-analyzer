@@ -86,12 +86,6 @@ export function groupDimensions(rows: Dimension[]): { content: Dimension[]; stru
   }
 }
 
-/* The score block speaks in words when a score is missing. A null is never a
- * zero and never a dash that could be read as one. */
-export function scoreText(value: number | null): string {
-  return value === null ? 'Not scored' : String(value)
-}
-
 /* Total mode labels. The label is part of the score, not a caption. */
 export const MODE_LABEL: Record<ScoreMode, string> = {
   combined: 'Content and layout',
