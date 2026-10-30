@@ -8,9 +8,10 @@ Built on [TypeSafe](https://typesafe.ai) (System One model, `jev-latest`): struc
 
 - **Full-document CV review**: work clarity, personal contribution, interpretability, outputs/results, scope, and optional-summary specificity, each as a typed judgment over the whole document.
 - **Optional job alignment**: paste a posting; two document-level questions assess how the CV evidences relevant responsibilities and qualifications.
+- **One workspace**: after upload the document pane sits on the left and the text or report on the right. Findings can draw a hairline box on their page, and selecting either side selects the other.
 - **Honest uncertainty**: four answer outcomes (`present`, `absent`, `not_applicable`, `unable_to_assess`) with real probability distributions. "No summary" is not a defect; "unable to assess" is not a zero.
 - **Traceable findings**: expand any finding to see the evaluated question, its criteria, the answer, and per-option probabilities. Explanations are predefined rubric text, clearly labelled: never generated advice.
-- **Privacy-first demo**: no accounts, no database, no localStorage for CV text, no client-side keys. One Jev request per analysis; failed requests never produce fabricated reports.
+- **Local demo**: no accounts, no database, no localStorage. CV text and any report live in this tab's sessionStorage and are cleared when the tab closes or on reset. One Jev request per analysis; failed requests never produce fabricated reports.
 
 ## Stack
 
@@ -47,7 +48,7 @@ The Vite dev server proxies `/api` to the backend on `127.0.0.1:8017`.
 # Backend: 69 synthetic tests + lint (live test is gated behind JEV_RUN_LIVE=1 and a running API)
 cd backend && uv run pytest -q && uv run ruff check app tests
 
-# Frontend: 30 tests, typecheck, build
+# Frontend: 50 tests, typecheck, build
 cd frontend && npm test && npm run typecheck && npm run build
 
 # Browser flows (needs Chromium; see docs/frontend-contract.md)
