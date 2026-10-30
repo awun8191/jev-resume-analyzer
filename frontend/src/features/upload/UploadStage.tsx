@@ -85,12 +85,6 @@ export default function UploadStage({ onFile }: { onFile: (file: File) => Promis
           <p className="help" id="upload-help">PDF or DOCX. Up to 4 MB. One file at a time.</p>
           {error && <p className="drop__error" id="upload-error" role="alert">{error}</p>}
         </div>
-
-        <dl className="specs">
-          <div><dt className="label">Accepts</dt><dd>PDF, DOCX</dd></div>
-          <div><dt className="label">Limit</dt><dd>4 MB</dd></div>
-          <div><dt className="label">Files</dt><dd>One per run</dd></div>
-        </dl>
       </div>
 
       <section className="notes" aria-labelledby="notes-title">

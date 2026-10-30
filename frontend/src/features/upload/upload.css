@@ -7,23 +7,25 @@
   gap: var(--s5);
   padding: var(--s5);
   border: 1px solid var(--rule);
-  border-radius: var(--r-card);
+  border-radius: var(--r);
   background: var(--paper);
   transition: border-color var(--dur) var(--ease);
 }
 
 .drop.is-dragging {
   border-color: var(--accent);
-  box-shadow: inset 0 0 0 1px var(--accent);
+  outline: 1px solid var(--accent);
+  outline-offset: -1px;
 }
 
 .drop__title {
   margin-top: var(--s2);
+  font-family: var(--serif);
   font-size: var(--fs-4);
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.15;
-  letter-spacing: -0.025em;
-  max-width: 24ch;
+  letter-spacing: -0.015em;
+  max-width: 26ch;
 }
 
 .drop__lead .help {
@@ -59,46 +61,6 @@
   font-size: 11px;
 }
 
-.specs {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--s3);
-  padding-top: var(--s4);
-  border-top: 1px solid var(--rule);
-}
-
-.specs dd {
-  margin-top: 2px;
-  font-size: var(--fs-2);
-}
-
-.specs div + div {
-  padding-left: var(--s3);
-  border-left: 1px solid var(--rule);
-}
-
-.notes {
-  display: grid;
-  gap: var(--s3);
-  margin-top: var(--s6);
-}
-
-.notes ul {
-  display: grid;
-  gap: var(--s3);
-  padding: 0;
-  list-style: none;
-  font-size: var(--fs-2);
-  line-height: 1.55;
-  color: var(--ink-2);
-  max-width: 62ch;
-}
-
-.notes b {
-  color: var(--ink);
-  font-weight: 600;
-}
-
 @media (min-width: 720px) {
   .drop {
     padding: var(--s6);
@@ -114,19 +76,5 @@
   .notes {
     grid-template-columns: minmax(0, 3fr) minmax(0, 9fr);
     gap: var(--s5);
-  }
-}
-
-@media (max-width: 560px) {
-  .specs {
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--s2);
-  }
-
-  .specs div + div {
-    padding-left: 0;
-    padding-top: var(--s2);
-    border-left: 0;
-    border-top: 1px solid var(--rule);
   }
 }

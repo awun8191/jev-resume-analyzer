@@ -16,9 +16,8 @@
   justify-content: space-between;
   gap: var(--s2) var(--s3);
   min-height: var(--tap);
-  border: 1px solid var(--rule);
-  border-radius: var(--r-panel);
-  padding: var(--s2) var(--s2) var(--s2) var(--s3);
+  border-bottom: 1px solid var(--rule);
+  padding: var(--s2) 0;
 }
 
 .docpane__bar > div {
@@ -77,7 +76,7 @@
   width: var(--tap);
   height: var(--tap);
   border: 1px solid var(--rule-2);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   background: var(--paper);
   color: var(--ink);
   font-size: var(--fs-3);
@@ -145,16 +144,19 @@
 .docpane__scroll {
   flex: 1;
   min-height: 0;
+  display: grid;
+  align-content: safe center;
   overflow: auto;
-  padding-block: var(--s4);
-  background: var(--paper);
+  margin-top: var(--s3);
+  padding: var(--s3);
+  background: var(--paper-sunk);
 }
 
 .docpane__page {
   position: relative;
   width: 100%;
   border: 1px solid var(--rule-2);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   background: var(--paper-sunk);
   overflow: hidden;
 }
@@ -169,15 +171,15 @@
   display: flex;
   flex-direction: column;
   gap: var(--s2);
-  padding: var(--s4);
-  border: 1px solid var(--rule);
-  border-radius: var(--r-panel);
+  padding: var(--s3) 0 var(--s4);
+  border-top: 1px solid var(--ink);
   background: var(--paper);
 }
 
 .docpane__empty-title {
+  font-family: var(--serif);
   font-size: var(--fs-4);
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: -0.01em;
 }
 
@@ -337,9 +339,8 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  border: 1px solid var(--rule);
-  border-radius: var(--r-panel);
-  overflow: hidden;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
 }
 
 .docpane__list li + li button {

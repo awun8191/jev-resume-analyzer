@@ -1,7 +1,7 @@
 /*
- * Base layer: reset, typography, and the few primitives shared by every stage.
- * Rules stay hairlines. Panels are rounded. Only the score block carries a
- * shadow.
+ * Base layer: reset, type, and the few primitives shared by every stage.
+ * Rules are hairlines, corners are square, no element casts a shadow. The serif
+ * carries display type and numerals; Inter carries controls, labels and body.
  */
 *,
 *::before,
@@ -20,11 +20,9 @@ html {
 body {
   background: var(--paper);
   color: var(--ink);
-  font-family: var(--font);
+  font-family: var(--sans);
   font-size: var(--fs-3);
   line-height: var(--lh-body);
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: 'kern' 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -33,10 +31,12 @@ h1,
 h2,
 h3,
 h4 {
-  font-weight: 600;
+  font-family: var(--serif);
+  font-weight: 500;
   line-height: var(--lh-head);
-  letter-spacing: -0.015em;
+  letter-spacing: -0.02em;
   text-wrap: balance;
+  font-optical-sizing: auto;
 }
 
 p {
@@ -67,23 +67,16 @@ a {
   color: var(--paper);
 }
 
-/* Small caps label. The only uppercase voice in the interface, 12px. */
+/* Small sans label. The only uppercase voice, 12px. */
 .label {
   display: block;
+  font-family: var(--sans);
   font-size: var(--fs-1);
   font-weight: 600;
   line-height: 1.25;
   letter-spacing: var(--track-label);
   text-transform: uppercase;
   color: var(--ink-2);
-}
-
-/* Panel and chip primitives. A panel is a hairline box with a soft radius; a
- * chip is a fully rounded label for a state or a mode. */
-.panel {
-  border: 1px solid var(--rule);
-  border-radius: var(--r-panel);
-  padding: var(--s4);
 }
 
 .help {
@@ -94,6 +87,27 @@ a {
 
 .measure {
   max-width: var(--measure);
+}
+
+/* Band colour. The number takes the colour; the word beside it says the same
+ * thing in plain text. */
+[data-band='good'] {
+  color: var(--band-good);
+}
+
+[data-band='fair'] {
+  color: var(--band-fair);
+}
+
+[data-band='poor'] {
+  color: var(--band-poor);
+}
+
+/* The stage heading takes focus on every stage change so the new content is
+ * announced. It is not a control, so it takes no focus ring. */
+[tabindex='-1']:focus,
+[tabindex='-1']:focus-visible {
+  outline: none;
 }
 
 .sr-only {
@@ -108,7 +122,7 @@ a {
   border: 0;
 }
 
-/* Buttons. 10px corners, 44px tall, black fill for the one primary action. */
+/* Buttons. Square, 44px tall, one black fill for the primary action. */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -117,14 +131,15 @@ a {
   min-height: var(--tap);
   padding: 0 20px;
   border: 1px solid var(--ink);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   background: var(--paper);
   color: var(--ink);
+  font-family: var(--sans);
   font-size: var(--fs-2);
   font-weight: 600;
   letter-spacing: 0.01em;
   cursor: pointer;
-  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease);
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
 }
 
 .btn--primary {
@@ -139,8 +154,8 @@ a {
 
 @media (hover: hover) {
   .btn--primary:not(:disabled):hover {
-    background: var(--accent);
-    border-color: var(--accent);
+    background: var(--paper);
+    color: var(--ink);
   }
 
   .btn--quiet:not(:disabled):hover {
@@ -149,7 +164,7 @@ a {
   }
 
   .btn:not(.btn--primary):not(.btn--quiet):not(:disabled):hover {
-    background: var(--paper-sunk);
+    border-color: var(--ink);
   }
 }
 
@@ -158,7 +173,7 @@ a {
   cursor: not-allowed;
 }
 
-/* Text fields. Hairline border, 10px corners, no inner shadow. */
+/* Text fields. Hairline border, square corners, no inset shading. */
 .field-label {
   display: flex;
   flex-wrap: wrap;
@@ -183,13 +198,13 @@ textarea {
   display: block;
   width: 100%;
   min-height: 180px;
-  padding: var(--s4);
+  padding: var(--s3) var(--s4);
   border: 1px solid var(--rule-2);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   background: var(--paper);
   color: var(--ink);
-  font-size: var(--fs-3);
-  line-height: 1.5;
+  font-size: var(--fs-2);
+  line-height: 1.6;
   resize: vertical;
   scroll-margin-block: var(--s6) var(--s7);
   transition: border-color var(--dur) var(--ease);
@@ -201,13 +216,17 @@ textarea {
   }
 }
 
+textarea:focus-visible {
+  border-color: var(--ink);
+}
+
 textarea:disabled {
   background: var(--paper-sunk);
   border-color: var(--rule);
   color: var(--ink-2);
 }
 
-/* Native file input. The picker button is a black block, not a pill. */
+/* Native file input. Square, ruled, 44px. */
 input[type='file'] {
   display: block;
   width: 100%;
@@ -215,8 +234,8 @@ input[type='file'] {
   min-height: var(--tap);
   padding: 6px;
   border: 1px solid var(--rule-2);
-  border-radius: var(--r-control);
-  background: var(--paper-sunk);
+  border-radius: var(--r);
+  background: var(--paper);
   font-size: var(--fs-2);
   color: var(--ink-2);
 }
@@ -226,45 +245,30 @@ input[type='file']::file-selector-button {
   margin-right: var(--s4);
   padding: 10px 20px;
   border: 1px solid var(--ink);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   background: var(--ink);
   color: var(--paper);
   font: inherit;
   font-weight: 600;
   cursor: pointer;
-  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease);
 }
 
-@media (hover: hover) {
-  input[type='file']::file-selector-button:hover {
-    background: var(--accent);
-    border-color: var(--accent);
-  }
-}
-
-/* Native disclosure, restyled. The marker is a plus or minus, not a chevron. */
+/* Native disclosure, restyled for the extraction appendix. Hairline rows, a
+ * plus or minus mark, no box. */
 .disclosure {
   border-top: 1px solid var(--rule);
   border-bottom: 1px solid var(--rule);
-}
-
-/* A disclosure that carries a whole section reads as a panel. */
-.disclosure--panel {
-  border: 1px solid var(--rule);
-  border-radius: var(--r-panel);
-  padding-inline: var(--s4);
 }
 
 .disclosure > summary {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--s4);
+  gap: var(--s3);
   min-height: var(--tap);
-  padding-block: var(--s3);
   cursor: pointer;
-  font-size: var(--fs-3);
-  font-weight: 600;
+  font-size: var(--fs-2);
+  font-weight: 500;
   list-style: none;
 }
 
@@ -272,15 +276,19 @@ input[type='file']::file-selector-button {
   display: none;
 }
 
-.disclosure > summary:hover {
-  color: var(--accent);
+.summary-note {
+  margin-left: auto;
+  font-size: var(--fs-1);
+  color: var(--ink-3);
+  white-space: nowrap;
 }
 
 .disclosure__mark {
   position: relative;
-  width: 12px;
-  height: 12px;
   flex: none;
+  width: 11px;
+  height: 11px;
+  color: var(--ink-3);
 }
 
 .disclosure__mark::before,
@@ -292,13 +300,13 @@ input[type='file']::file-selector-button {
 
 .disclosure__mark::before {
   inset: 5px 0 auto;
-  height: 2px;
+  height: 1px;
 }
 
 .disclosure__mark::after {
   inset: 0 5px auto;
-  width: 2px;
-  height: 12px;
+  width: 1px;
+  height: 11px;
 }
 
 .disclosure[open] > summary .disclosure__mark::after {
@@ -308,18 +316,16 @@ input[type='file']::file-selector-button {
 .disclosure__body {
   display: grid;
   gap: var(--s3);
-  padding-block: var(--s2) var(--s5);
+  padding-block: var(--s2) var(--s4);
   font-size: var(--fs-2);
   line-height: 1.6;
   color: var(--ink-2);
 }
 
-/* Warning block. Hairline panel, square marker, text carries the meaning. */
+/* Warning block. A rule and a word, not a panel. */
 .notice {
-  border: 1px solid var(--rule);
-  border-left: 2px solid var(--ink);
-  border-radius: var(--r-panel);
-  padding: var(--s4);
+  border-top: 1px solid var(--rule);
+  padding-top: var(--s3);
   margin-block: var(--s5);
 }
 
@@ -330,7 +336,7 @@ input[type='file']::file-selector-button {
 .notice ul {
   display: grid;
   gap: var(--s2);
-  margin-top: var(--s3);
+  margin-top: var(--s2);
   padding: 0;
   list-style: none;
   font-size: var(--fs-2);
@@ -338,27 +344,11 @@ input[type='file']::file-selector-button {
   color: var(--ink-2);
 }
 
-.notice li {
-  display: grid;
-  grid-template-columns: 6px minmax(0, 1fr);
-  gap: var(--s3);
-  align-items: baseline;
-}
-
-.notice li::before {
-  content: '';
-  width: 6px;
-  height: 6px;
-  background: var(--ink);
-  transform: translateY(-1px);
-}
-
-/* Request failure. Accent rule plus the words "Request failed". */
+/* Request failure. The accent rule marks it; the words name it. */
 .alert {
-  border: 1px solid var(--rule);
+  border-top: 1px solid var(--ink);
   border-left: 2px solid var(--accent);
-  border-radius: var(--r-panel);
-  padding: var(--s4);
+  padding: var(--s3) 0 0 var(--s4);
   margin-bottom: var(--s5);
 }
 
@@ -379,19 +369,13 @@ input[type='file']::file-selector-button {
 }
 
 code {
-  font-family: var(--font);
+  font-family: var(--sans);
   font-size: 0.95em;
   letter-spacing: 0.02em;
   overflow-wrap: anywhere;
 }
 
-.notice code {
-  font-size: var(--fs-1);
-  letter-spacing: 0.04em;
-  color: var(--ink-3);
-}
-
-/* Status line with a square marker. Text, not colour, carries the meaning. */
+/* Status line with a square marker. */
 .busy {
   display: flex;
   align-items: baseline;

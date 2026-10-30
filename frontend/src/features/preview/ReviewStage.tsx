@@ -81,27 +81,24 @@ export default function ReviewStage(p: Props) {
           )}
         </div>
 
-        <details className="disclosure">
-          <summary>
-            <span>Add a job posting</span>
-            <span className="summary-note">Optional</span>
-            <span className="disclosure__mark" aria-hidden="true" />
-          </summary>
-          <div className="disclosure__body job-body">
-            <p className="help">
-              Adds document-level alignment questions. It is not an exhaustive requirements match.
-            </p>
+        <div className="field">
+          <div className="field-label">
             <label className="label" htmlFor="job-text">Job posting</label>
-            <textarea
-              id="job-text"
-              rows={7}
-              disabled={p.busy}
-              value={p.jobText}
-              autoComplete="off"
-              onChange={event => p.onJobChange(event.target.value)}
-            />
+            <span className="field-meta">Optional</span>
           </div>
-        </details>
+          <textarea
+            id="job-text"
+            rows={7}
+            disabled={p.busy}
+            value={p.jobText}
+            autoComplete="off"
+            aria-describedby="job-help"
+            onChange={event => p.onJobChange(event.target.value)}
+          />
+          <p className="help measure" id="job-help">
+            Adds document-level alignment questions. It is not an exhaustive requirements match.
+          </p>
+        </div>
 
         <div className="actions">
           <p className="actions__note">

@@ -1,7 +1,7 @@
 /*
- * Page shell. A 12 column grid for reading pages, and a split workspace for
- * the document and the report. Rules mark the rhythm; panels carry radius. On a
- * phone the report summary comes first, then the document row, then the rest.
+ * Page shell. A 12 column reading page and a two pane workspace: document on
+ * the left, report on the right. Rules mark the rhythm; nothing is a card. On a
+ * phone the score comes first, then the document, then the findings.
  */
 .app {
   display: flex;
@@ -22,7 +22,6 @@
   top: -120px;
   z-index: 20;
   padding: var(--s3) var(--s4);
-  border-radius: var(--r-control);
   background: var(--ink);
   color: var(--paper);
   font-size: var(--fs-2);
@@ -34,7 +33,7 @@
 
 /* Masthead */
 .masthead {
-  border-bottom: 1px solid var(--rule);
+  border-bottom: 1px solid var(--ink);
 }
 
 .masthead__row {
@@ -49,21 +48,25 @@
 .wordmark {
   display: flex;
   align-items: baseline;
-  gap: var(--s2);
-  font-size: var(--fs-2);
-  letter-spacing: 0.01em;
+  gap: var(--s3);
 }
 
 .wordmark strong {
+  font-family: var(--serif);
   font-size: var(--fs-4);
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1;
 }
 
 .wordmark span {
-  color: var(--ink-2);
   padding-left: var(--s3);
   border-left: 1px solid var(--rule-2);
+  font-size: var(--fs-1);
+  font-weight: 600;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--ink-2);
 }
 
 .masthead__tools {
@@ -73,14 +76,13 @@
 }
 
 .health {
-  font-size: 0.75rem;
+  font-size: var(--fs-1);
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--accent);
 }
 
-/* The one persistent escape hatch. It stays 44px tall on every stage. */
 .newreview {
   min-height: var(--tap);
   padding: 0 var(--s4);
@@ -99,7 +101,10 @@
   justify-content: space-between;
   gap: var(--s1) var(--s5);
   padding-block: var(--s2);
-  font-size: var(--fs-2);
+  font-size: var(--fs-1);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-3);
 }
 
 .progress__steps {
@@ -112,17 +117,10 @@
 
 .progress__steps li {
   display: inline-flex;
-  align-items: baseline;
+  align-items: center;
   gap: var(--s2);
   min-height: 32px;
-  align-items: center;
   padding: 2px 0;
-  color: var(--ink-3);
-}
-
-.progress__n {
-  font-size: var(--fs-1);
-  letter-spacing: 0.06em;
 }
 
 .progress__steps li[aria-current='step'] {
@@ -130,22 +128,16 @@
   font-weight: 600;
 }
 
-.progress__steps li[aria-current='step'] .progress__n {
-  color: var(--accent);
-  font-weight: 600;
-}
-
 .progress__mark {
   width: 6px;
   height: 6px;
-  border-radius: var(--r-pill);
   background: var(--accent);
 }
 
 .progress__file {
   max-width: 42ch;
-  font-size: var(--fs-1);
-  color: var(--ink-3);
+  letter-spacing: 0;
+  text-transform: none;
   overflow-wrap: anywhere;
 }
 
@@ -154,7 +146,7 @@
   display: grid;
   grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
   column-gap: var(--gutter);
-  padding-block: var(--s5) var(--s7);
+  padding-block: var(--s6) var(--s8);
 }
 
 main:focus {
@@ -168,7 +160,7 @@ main:focus {
 
 @media (min-width: 960px) {
   .page {
-    padding-block: var(--s7) var(--s8);
+    padding-block: var(--s7) var(--s9);
   }
 
   .stage {
@@ -176,8 +168,7 @@ main:focus {
   }
 }
 
-/* Split workspace. On a phone the order is summary, document row, report. The
- * summary is the score, so the number is the first thing on the screen. */
+/* Split workspace. Phone order: score, document, report. */
 .workspace {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -186,7 +177,7 @@ main:focus {
     'doc'
     'report';
   padding-block: var(--s4) var(--s6);
-  row-gap: var(--s4);
+  row-gap: var(--s5);
 }
 
 .workspace__summary {
@@ -210,14 +201,14 @@ main:focus {
 
 @media (min-width: 900px) {
   .workspace {
-    grid-template-columns: minmax(0, 54fr) minmax(0, 46fr);
+    grid-template-columns: minmax(0, 52fr) minmax(0, 48fr);
     grid-template-areas:
       'doc summary'
       'doc report';
     grid-template-rows: auto 1fr;
     align-items: start;
     padding-block: 0;
-    row-gap: var(--s5);
+    row-gap: 0;
   }
 
   .workspace__doc {
@@ -226,9 +217,14 @@ main:focus {
     height: 100dvh;
     display: flex;
     flex-direction: column;
-    padding: var(--s5) var(--s5) var(--s4) 0;
+    padding: var(--s5) var(--s6) var(--s4) 0;
     border-right: 1px solid var(--rule);
     overflow: hidden;
+  }
+
+  .workspace__summary,
+  .workspace__report {
+    padding-left: var(--s6);
   }
 
   .workspace__summary {
@@ -236,15 +232,15 @@ main:focus {
   }
 
   .workspace__report {
-    padding: 0 0 var(--s8) 0;
+    padding-bottom: var(--s8);
   }
 }
 
 /* Stage furniture */
 .stage__head {
-  border-top: 2px solid var(--ink);
+  border-top: 1px solid var(--ink);
   padding-top: var(--s3);
-  margin-bottom: var(--s4);
+  margin-bottom: var(--s5);
 }
 
 .stage__head-row {
@@ -256,11 +252,13 @@ main:focus {
 }
 
 .stage__title {
+  font-family: var(--serif);
   font-size: var(--fs-6);
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: -0.03em;
   line-height: var(--lh-tight);
-  max-width: 22ch;
+  max-width: 24ch;
+  font-optical-sizing: auto;
 }
 
 .stage__lead {
@@ -278,32 +276,23 @@ main:focus {
 }
 
 .section {
-  margin-top: var(--s6);
-}
-
-.section + .section {
-  margin-top: var(--s6);
+  margin-top: var(--s7);
 }
 
 .section__head {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
   gap: var(--s3);
   margin-bottom: var(--s3);
 }
 
 .section__title {
-  font-size: var(--fs-4);
-  font-weight: 600;
-  letter-spacing: -0.015em;
-}
-
-.section__note {
-  font-size: var(--fs-1);
-  color: var(--ink-3);
-  text-align: right;
-  white-space: nowrap;
+  font-family: var(--serif);
+  font-size: var(--fs-5);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
 }
 
 .actions {
@@ -312,7 +301,9 @@ main:focus {
   align-items: center;
   justify-content: space-between;
   gap: var(--s3) var(--s5);
-  margin-top: var(--s6);
+  margin-top: var(--s7);
+  border-top: 1px solid var(--rule);
+  padding-top: var(--s4);
 }
 
 .actions__note {
@@ -326,9 +317,9 @@ main:focus {
 .confirm {
   display: grid;
   gap: var(--s2);
-  margin-top: var(--s3);
+  margin-block: var(--s4);
   border: 1px solid var(--ink);
-  border-radius: var(--r-panel);
+  border-radius: var(--r);
   padding: var(--s3) var(--s4);
 }
 
@@ -343,31 +334,12 @@ main:focus {
   gap: var(--s2);
 }
 
-.reset {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--s3) var(--s5);
-  margin-top: var(--s5);
-  border: 1px solid var(--rule);
-  border-radius: var(--r-panel);
-  padding: var(--s3) var(--s4);
-}
-
-.reset__note {
-  font-size: var(--fs-1);
-  color: var(--ink-3);
-}
-
 .storage {
   display: flex;
   gap: var(--s3);
   margin-block: var(--s4);
-  border: 1px solid var(--rule);
-  border-left: 2px solid var(--accent);
-  border-radius: var(--r-panel);
-  padding: var(--s3) var(--s4);
+  border-left: 2px solid var(--ink);
+  padding-left: var(--s4);
   font-size: var(--fs-2);
   line-height: 1.5;
   color: var(--ink-2);
@@ -379,19 +351,11 @@ main:focus {
     border-left: 0;
   }
 
-  .masthead__row {
-    align-items: center;
-  }
-
   .progress__file {
     width: 100%;
   }
 
-  .section__head {
-    align-items: baseline;
-  }
-
-  .footer {
-    padding-bottom: calc(var(--s6) + var(--safe-b));
+  .stage__title {
+    font-size: 36px;
   }
 }

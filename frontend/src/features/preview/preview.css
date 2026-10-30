@@ -1,37 +1,35 @@
 /*
- * Preview stage. Document facts read as a specimen label, then the editable
- * text, then the single send action.
+ * Preview stage. Document facts read as a specimen strip, then the editable
+ * text, then the single send action. Everything is ruled; nothing is a card.
  */
 .doc {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0;
-  border: 1px solid var(--rule);
-  border-radius: var(--r-panel);
-  overflow: hidden;
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--rule);
 }
 
 .doc > div {
-  padding: var(--s3);
+  padding: var(--s3) 0;
   min-width: 0;
 }
 
 .doc > div + div {
   border-left: 1px solid var(--rule);
+  padding-left: var(--s3);
 }
 
 .doc dd {
   margin-top: 2px;
-  font-size: var(--fs-3);
+  font-family: var(--serif);
+  font-size: var(--fs-4);
+  line-height: 1.2;
   overflow-wrap: anywhere;
 }
 
 .doc__file {
   grid-column: 1 / -1;
-}
-
-.doc__file dd {
-  font-weight: 600;
 }
 
 @media (min-width: 700px) {
@@ -48,9 +46,7 @@
   margin-top: var(--s6);
 }
 
-.field + .field,
-.field + .disclosure,
-.disclosure + .field {
+.field + .field {
   margin-top: var(--s5);
 }
 
@@ -68,24 +64,6 @@
   color: var(--ink-2);
 }
 
-.summary-note {
-  margin-left: auto;
-  font-size: var(--fs-1);
-  font-weight: 400;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-}
-
-.job-body {
-  display: grid;
-  gap: var(--s3);
-}
-
-.job-body textarea {
-  min-height: 168px;
-}
-
 /* Document evidence panel */
 .evidence {
   margin-top: var(--s6);
@@ -98,6 +76,7 @@
 
 .evidence h3 {
   margin-top: var(--s3);
+  font-family: var(--sans);
   font-size: var(--fs-1);
   font-weight: 600;
   letter-spacing: var(--track-label);
