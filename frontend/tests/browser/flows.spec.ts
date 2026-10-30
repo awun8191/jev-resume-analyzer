@@ -122,7 +122,8 @@ for (const width of [375, 1280]) {
 
     // A box selects its finding; a finding selects its box.
     await page.locator('.docpane__list button').first().click()
-    await expect(page.getByRole('button', { name: /^Work clarity:/ })).toHaveAttribute('aria-current', 'true')
+    await expect(page.getByRole('button', { name: /^Work clarity:/ }).first())
+      .toHaveAttribute('aria-current', 'true')
 
     // A row is one line and opens its detail on tap.
     const row = page.getByRole('button', { name: /^Work clarity:/ }).first()
