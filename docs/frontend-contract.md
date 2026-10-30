@@ -4,7 +4,7 @@ Status: implemented frontend contract, awaiting backend implementation. Binding 
 
 ## Local runtime
 
-- Frontend: React 18, Vite 8, TypeScript 5.6, Zod 3. White surfaces, thin grey borders, blue actions. Self-hosted fonts, no CDN.
+- Frontend: React 18, Vite 8, TypeScript 5.6, Zod 3. Swiss layout: a 12 column grid, one grotesque family (self-hosted Inter), hairline rules, tabular numerals, one red accent. No CDN.
 - From `frontend`: `npm ci`, `npm run dev`. Open `http://127.0.0.1:5273`.
 - Browser requests relative `/api/v1/...`; Vite proxies `/api` to `http://127.0.0.1:8017`. Both are loopback-only. `strictPort` prevents silently changing the frontend port.
 - Port choice is deliberate: this host has unrelated servers on 5173 through 5190, and workspace-mcp owns 8000. Do not kill them or send documents to them. The subsequent backend should listen on 127.0.0.1:8017. No backend application currently exists and none was started for this card.
@@ -82,6 +82,11 @@ JSON input:
 | probabilities | null, or object containing all four answer keys with numbers 0..1 |
 | confidence | provider-reported value 0..1, or null |
 | rubric_explanation | null, or `{kind: "rubric", template_ref: text, text: text}` |
+| page | 0-based page index, or null/omitted. Optional until the backend sends page geometry. |
+| box | null/omitted, or `{top, bottom, left, right}` as fractions of page width and height. Bottom must sit below top, and right to the right of left. A box without a page is rejected. |
+| severity | optional provider or rubric label. The vocabulary is not fixed yet, so the UI only echoes it as text in the finding detail. |
+
+The overlay draws a rectangle only for a finding that carries both `page` and `box`. Nothing is placed by guesswork, and a finding without geometry still renders with a "No location" note. Page images are not part of this contract: no page image is uploaded, and the current branch has no rasteriser, so the document pane shows "No page preview" and lists the boxes instead.
 
 Answer meanings: `present` = evidence meeting the question criteria is identifiable across the document; `absent` = that evidence is absent; `not_applicable` = rubric question does not apply; `unable_to_assess` = insufficiently reliable interpretation. The latter two are not treated as weak CV evidence or zero scores.
 
@@ -117,16 +122,18 @@ Every non-2xx, including FastAPI validation failures:
 
 Expected statuses: 413 limits, 415 unsupported format, 422 unreadable/invalid input, 429 capacity, 502 upstream/invalid response, 503 unconfigured provider, 504 timeout. Generic non-JSON errors yield safe HTTP-status copy, not raw server HTML. A malformed 2xx yields `RESPONSE_INVALID` and no report. Network failures yield `NETWORK_UNREACHABLE`. Client timeout yields `REQUEST_TIMEOUT`.
 
-## UI state and privacy
+## UI state and storage
 
-Upload -> extracting -> preview -> analysing -> report. Extraction failure returns to upload with error; analysis failure returns to preview with error and both edited inputs preserved. Optional posting stays in application memory. Native file input and keyboard-accessible disclosures are the baseline; drop is an enhancement. Main focus moves on stage changes, errors/statuses are announced, actions have 44px minimum height, and reduced motion is respected. Results render server strings as React text, never HTML.
+Upload -> extracting -> check text -> analysing -> report. After extraction the page becomes a two pane workspace: the document pane on the left, the editable text or the report on the right, with no page change between them. Below 900px the panes stack and the document pane collapses. Extraction failure returns to upload with an error; analysis failure returns to check text with the error and both edited inputs preserved. Native file input and keyboard-accessible disclosures are the baseline; drop is an enhancement. Focus moves to the stage heading on a stage change, errors and statuses are announced, actions have 44px minimum height, and reduced motion is respected. Results render server strings as React text, never HTML.
 
-Edit text from report clears the report and returns to preview. Clear document & start over clears CV, extraction, job posting, filename, error and report from application state. Reload loses state. No localStorage/sessionStorage for CVs. Clearing browser state does not imply provider deletion. Before submission the UI discloses TypeSafe transfer and unverified retention terms.
+Session state lives in sessionStorage under one versioned key, `jev.state.v1`: stage, file name, extraction, CV text, job posting, report and the selected finding. The file bytes are never stored, so after a reload the text and report return and the document pane asks for the file again instead of showing an empty page. Writes are wrapped in try/catch: on a quota failure the app keeps working in memory and shows a short notice. Reset and a new upload clear every `jev.` key. No localStorage, IndexedDB, cookie or service worker cache is used, and there is no account or database.
+
+Edit text from the report clears the report and returns to check text. Clear document and start over clears CV, extraction, job posting, filename, error, report, selected finding and stored keys. Clearing this tab does not imply provider deletion. Before submission the UI discloses TypeSafe transfer and unverified retention terms.
 
 ## Verification and integration gaps
 
 - `npm run build`, `npm run typecheck`, `npm test` verify implementation and synthetic contracts.
-- Browser tests: start `npm run dev`, then `CHROMIUM_PATH=<installed Chromium executable> npx playwright test`. Existing host binary: `/home/admin/.cache/ms-playwright/chromium_headless_shell-1208/chrome-headless-shell-linux64/chrome-headless-shell`. No extra browser installation was needed.
-- Browser suite asserts title before flow actions; prevents accidentally testing another service. First test requires backend absent and checks the real Vite 502 error path using only a synthetic upload. Two further tests intercept APIs with explicitly labelled synthetic fixtures at 375 and 1280px, check keyboard interaction, provider-error text preservation, result details, reset, empty browser storage, no JS exceptions, no horizontal overflow, and axe WCAG A/AA checks.
+- Browser tests: start `npm run dev`, then `CHROMIUM_PATH=<installed Chromium executable> npx playwright test`. Verified here with `/root/.cache/ms-playwright/chromium_headless_shell-1208/chrome-headless-shell-linux64/chrome-headless-shell`; the shell installs with `npx playwright install chromium-headless-shell`.
+- Browser suite asserts title before flow actions; prevents accidentally testing another service. First test requires backend absent and checks the real Vite 502 error path using only a synthetic upload, tabbing from the skip link to the file input. Two further tests intercept APIs with explicitly labelled synthetic fixtures at 375 and 1280px, check the two pane workspace, box selection in both directions, provider-error text preservation, finding details, session storage, reset, no JS exceptions, no horizontal overflow, 44px targets and axe WCAG A/AA checks.
 - Real PDF/DOCX parsing, provider output mapping, billing/retention, backend budgets, and real upload-to-TypeSafe-to-report integration remain untested because the backend does not exist yet. No test fixture claims to be live output.
-- Screenshot files are under `frontend/test-results`. Automated visual-image analysis was unavailable (vision tool returned authentication error). Independent reviewer should inspect the screenshots visually; DOM geometry and axe checks are not a substitute for that review.
+- Screenshot files are under `frontend/test-results`. They are synthetic fixtures only. A visual review at 375 and 1280 was done against those files, with the document pane's overlay checked against a local harness; DOM geometry and axe checks are not a substitute for a real design review.

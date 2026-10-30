@@ -22,6 +22,12 @@ export const AnalysisRequestSchema = z.object({
   job_text: z.string().trim().min(1).optional(), mode: z.literal('review'),
 }).strict()
 export const AnswerCategorySchema = z.enum(['present', 'absent', 'not_applicable', 'unable_to_assess'])
+// Page geometry arrives as fractions of page width and height, page index is 0-based.
+const fraction = z.number().finite().min(0).max(1)
+export const FindingBoxSchema = z
+  .object({ top: fraction, bottom: fraction, left: fraction, right: fraction })
+  .refine(box => box.bottom > box.top, 'Box bottom must sit below its top')
+  .refine(box => box.right > box.left, 'Box right must sit right of its left')
 export const DistributionSchema = z.object({
   present: probability, absent: probability,
   not_applicable: probability, unable_to_assess: probability,
@@ -36,6 +42,11 @@ export const FindingSchema = z.object({
   criteria: z.array(text).min(1), answer: AnswerCategorySchema,
   probabilities: DistributionSchema.nullable(), confidence: probability.nullable(),
   rubric_explanation: z.object({ kind: z.literal('rubric'), template_ref: text, text }).nullable(),
+  // Page location is optional: the backend does not send it yet. A finding
+  // without a location still renders, it just has nothing to highlight.
+  page: z.number().int().nonnegative().nullable().optional(),
+  box: FindingBoxSchema.nullable().optional(),
+  severity: z.string().min(1).nullable().optional(),
 })
 export const RatingSchema = z.object({
   value: z.number().finite(), scale_min: z.number().finite(), scale_max: z.number().finite(),
@@ -60,6 +71,8 @@ export const AnalysisReportSchema = z.object({
   for (const f of r.findings) {
     if (f.assessment_level === 'bullet' && !f.source_text?.trim())
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Bullet findings need source text' })
+    if (f.box && f.page == null)
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'A box needs a page index' })
   }
   const assessable = r.findings.filter(f => f.answer === 'present' || f.answer === 'absent').length
   if (r.overview.questions_answered !== r.findings.length || r.overview.questions_assessable !== assessable)
@@ -74,6 +87,7 @@ export const AnalysisReportSchema = z.object({
 export type AnalysisRequest = z.infer<typeof AnalysisRequestSchema>
 export type AnalysisReport = z.infer<typeof AnalysisReportSchema>
 export type Finding = z.infer<typeof FindingSchema>
+export type FindingBox = z.infer<typeof FindingBoxSchema>
 export type AnswerCategory = z.infer<typeof AnswerCategorySchema>
 export type Extraction = z.infer<typeof ExtractionSchema>
 export type Health = z.infer<typeof HealthSchema>
