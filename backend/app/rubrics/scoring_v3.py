@@ -8,7 +8,14 @@ from dataclasses import dataclass
 from math import floor
 from typing import Iterable, Literal, Mapping
 
-from app.rubrics.cv_review_v3 import DIMENSIONS, IDS, QUESTIONS, WEIGHTS
+from app.rubrics.cv_review_v3 import (
+    DIMENSIONS,
+    IDS,
+    QUESTIONS,
+    WEIGHTS,
+    Section,
+    section_for,
+)
 
 ANSWERS = ("present", "absent", "not_applicable", "unable_to_assess")
 
@@ -51,9 +58,18 @@ def _round_half_up(value: float) -> int:
     return int(floor(value + 0.5))
 
 
+def _dimension_section(dimension: str) -> Section:
+    """One section when every question in the dimension agrees, else ``all``."""
+    sections: set[Section] = {
+        question.section for question in QUESTIONS if question.dimension == dimension
+    }
+    return sections.pop() if len(sections) == 1 else "all"
+
+
 @dataclass(frozen=True)
 class DimensionScore:
     dimension: str
+    section: Section
     weight: int
     assessed_weight: int
     earned_weight: int
@@ -64,6 +80,7 @@ class DimensionScore:
 class Fix:
     dimension: str
     question_id: str
+    section: Section
     prompt: str
     lost_points: float
 
@@ -142,6 +159,7 @@ def score_content(
         rows.append(
             DimensionScore(
                 dimension=dimension,
+                section=_dimension_section(dimension),
                 weight=dim_weight,
                 assessed_weight=dim_assessed,
                 earned_weight=dim_earned,
@@ -177,6 +195,7 @@ def _fixes(
         Fix(
             dimension=dimension,
             question_id=question.id,
+            section=section_for(question.id),
             prompt=question.prompt,
             lost_points=round(-negative_lost, 2),
         )
@@ -246,6 +265,7 @@ def as_dict(result: ScoreResult) -> dict:
         "dimensions": [
             {
                 "dimension": row.dimension,
+                "section": row.section,
                 "weight": row.weight,
                 "assessed_weight": row.assessed_weight,
                 "earned_weight": row.earned_weight,
@@ -257,6 +277,7 @@ def as_dict(result: ScoreResult) -> dict:
             {
                 "dimension": fix.dimension,
                 "question_id": fix.question_id,
+                "section": fix.section,
                 "prompt": fix.prompt,
                 "lost_points": fix.lost_points,
             }
