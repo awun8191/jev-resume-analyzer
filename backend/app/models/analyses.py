@@ -5,6 +5,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 from app.models.documents import WarningItem
 from app.models.evidence import DocumentEvidence
 from app.models.questions import Answer, Count, Distribution, Probability
+from app.rubrics.cv_review_v3 import Section
 
 Text = Annotated[str, Field(strict=True, min_length=1)]
 
@@ -34,6 +35,7 @@ class RubricExplanation(BaseModel):
 class Finding(BaseModel):
     question_id: Text
     dimension: Text
+    section: Section | None = None
     scope: Literal["general_review", "job_alignment"]
     assessment_level: Literal["full_document", "bullet"] = "full_document"
     source_text: str | None = None

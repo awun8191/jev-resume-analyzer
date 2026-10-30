@@ -24,6 +24,7 @@ def build_report(
             Finding(
                 question_id=question.id,
                 dimension=question.dimension,
+                section=getattr(question, "section", None),
                 scope=question.scope,
                 question=question.instructions,
                 criteria=[f"{key}: {value}" for key, value in question.criteria.items()],
