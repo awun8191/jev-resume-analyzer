@@ -9,6 +9,8 @@ from time import perf_counter
 import httpx
 import pytest
 
+from app.rubrics.cv_review_v3 import IDS
+from app.rubrics.scoring_v3 import band_for
 from tests.integration.test_documents import docx_bytes
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -50,7 +52,18 @@ def test_authorized_resume_through_running_api():
         elapsed = (perf_counter() - start) * 1000
         require(report.status_code == 200, f"Analysis returned HTTP {report.status_code}")
         body = report.json()
-        require(len(body["findings"]) == 14, "Expected fourteen real provider findings")
+        require(len(body["findings"]) == len(IDS), "Expected one finding per rubric question")
+        content = body["scores"]["content"]["value"]
+        if content is not None:
+            require(
+                body["scores"]["content"]["band"] == band_for(content),
+                "Content band does not follow the reported content score",
+            )
+        total_score = body["scores"]["total"]["value"]
+        require(
+            body["scores"]["total"]["band"] == band_for(total_score),
+            "Total band does not follow the reported total score",
+        )
         require(body["rubric_version"] == "v3", "Rubric version is not v3")
         require(
             body["scores"]["total"]["mode"] == "content_only",

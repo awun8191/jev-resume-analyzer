@@ -15,6 +15,7 @@ from app.config import Settings
 from app.dependencies import get_gateway, get_settings
 from app.errors import AppError
 from app.main import app
+from app.rubrics.cv_review_v3 import IDS
 from app.services import structure_review
 from app.services.page_render import RenderError
 from tests.fakes import FakeGateway, blank_pdf, page_image
@@ -64,7 +65,7 @@ def test_content_and_structure_are_two_calls_on_one_report(harness):
     assert len(gateway.image_calls) == 1
     assert gateway.text_calls[0]["state"]["cv_text"] == BODY["cv_text"]
     assert "job_text" not in gateway.text_calls[0]["state"]
-    assert len(gateway.text_calls[0]["questions"]) == 14
+    assert len(gateway.text_calls[0]["questions"]) == len(IDS)
     assert gateway.image_calls[0].body["model"] == "jev-1.14.0"
     assert gateway.image_calls[0].headers == {"TypeSafe-Danger-Zone-Images": "true"}
     assert gateway.image_calls[0].body["state"]["page_count"] == 2
@@ -93,7 +94,7 @@ def test_content_and_structure_are_two_calls_on_one_report(harness):
     assert report["metrics"]["input_tokens"] == 123 + 900
     assert report["metrics"]["output_tokens"] == 45 + 30
     assert report["metrics"]["cost_usd"] is None
-    assert report["overview"]["questions_total"] == 14
+    assert report["overview"]["questions_total"] == len(IDS)
 
 
 def test_a_partial_structure_score_combines_at_the_documented_share(harness):
@@ -183,11 +184,11 @@ def test_six_pages_are_one_image_call_and_a_seventh_adds_a_warning(harness, monk
     assert "first 6 of 9 pages" in warning["message"]
 
 
-def test_no_job_text_still_asks_all_fourteen_questions(harness):
+def test_no_job_text_still_asks_every_question(harness):
     client, gateway = harness
     report = post_text_only(client, payload()).json()
     assert "job_text" not in gateway.text_calls[0]["state"]
-    assert len(gateway.text_calls[0]["questions"]) == 14
+    assert len(gateway.text_calls[0]["questions"]) == len(IDS)
     assert "alignment_scope" not in {warning["code"] for warning in report["warnings"]}
 
 

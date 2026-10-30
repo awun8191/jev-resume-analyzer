@@ -9,6 +9,7 @@ from app.config import Settings
 from app.dependencies import get_gateway, get_settings
 from app.gateways.typesafe import TypeSafeGateway
 from app.main import app
+from app.rubrics.cv_review_v3 import IDS
 
 OPTIONS = ["present", "absent", "not_applicable", "unable_to_assess"]
 
@@ -64,7 +65,7 @@ def test_full_document_one_call(harness, with_job):
     # The v3 flow sends the text and nothing else. No bullet preparation.
     expected_state = {"cv_text", "job_text"} if with_job else {"cv_text"}
     assert set(calls[0]["state"]) == expected_state
-    assert len(calls[0]["questions"]) == 14
+    assert len(calls[0]["questions"]) == len(IDS)
     for finding in report["findings"]:
         actual = calls[0]["questions"][finding["question_id"]]
         assert actual["type"] == "choice"
@@ -75,9 +76,9 @@ def test_full_document_one_call(harness, with_job):
         assert finding["source"] == "provider"
         assert finding["probabilities"] == dict(zip(OPTIONS, [0.7, 0.1, 0.1, 0.1]))
     assert report["overview"] == {
-        "questions_total": 14,
-        "questions_answered": 14,
-        "questions_assessable": 14,
+        "questions_total": len(IDS),
+        "questions_answered": len(IDS),
+        "questions_assessable": len(IDS),
         "rating": None,
     }
     assert report["rubric_version"] == "v3"

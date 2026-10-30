@@ -16,6 +16,9 @@ from time import perf_counter
 import httpx
 import pytest
 
+from app.rubrics.cv_review_v3 import IDS
+from app.rubrics.scoring_v3 import band_for
+
 ROOT = Path(__file__).resolve().parents[2]
 FIXTURE = ROOT / "tests" / "fixtures" / "two_page_resume.pdf"
 BASE_URL = "http://127.0.0.1:8017"
@@ -79,7 +82,15 @@ def test_the_two_page_fixture_returns_a_combined_score():
         total == round(0.7 * content + 0.3 * structure),
         "Total does not follow the 0.7 content and 0.3 structure rule",
     )
-    require(len(body["findings"]) == 14, "Expected fourteen content findings")
+    require(len(body["findings"]) == len(IDS), "Expected one finding per rubric question")
+    require(
+        scores["content"]["band"] == band_for(content),
+        "Content band does not follow the reported content score",
+    )
+    require(
+        scores["total"]["band"] == band_for(total),
+        "Total band does not follow the reported total score",
+    )
     require(len(body["structure_findings"]) == 11, "Expected eleven structure checks")
     require(body["overview"]["rating"] is None, "Rating must remain null")
     require(body["metrics"]["cost_usd"] is None, "Cost must remain null")
