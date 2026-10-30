@@ -1,0 +1,237 @@
+{
+  "generated_by": "backend/scripts/image_spike.py",
+  "model_requested": "jev-1.14.0",
+  "model_returned": "jev-1.14.0",
+  "endpoint": "https://api.typesafe.ai/v1/systemone",
+  "pages": [
+    {
+      "page": 1,
+      "page_size_pt": [
+        612.0,
+        792.0
+      ],
+      "image_px": [
+        1212,
+        1568
+      ],
+      "content_px": [
+        1212,
+        1568
+      ],
+      "offset_px": [
+        0,
+        0
+      ],
+      "scale_px_per_pt": 1.9798,
+      "padded": false,
+      "bytes": 161627
+    }
+  ],
+  "request": {
+    "transport": "multipart",
+    "headers": {
+      "TypeSafe-Danger-Zone-Images": "true"
+    },
+    "body": {
+      "model": "jev-1.14.0",
+      "state": {
+        "document": "Each entry under pages is one rendered page of a single resume, in reading order. The images are the only record of the document layout.",
+        "page_count": 1,
+        "pages": {
+          "p1": "35efa092-876c-4298-9c46-869cde70d354"
+        }
+      },
+      "assets": {
+        "35efa092-876c-4298-9c46-869cde70d354": {
+          "type": "image",
+          "part": "page-1"
+        }
+      },
+      "questions": {
+        "layout_structure": {
+          "type": "choice",
+          "instructions": "How is the body text of the resume in `pages.p1` arranged?",
+          "criteria": {
+            "one_column": "All body text sits in one vertical column.",
+            "two_columns": "Body text is arranged in two vertical columns.",
+            "three_or_more_columns": "Body text is arranged in three or more vertical columns.",
+            "table": "Body text sits in ruled or aligned table cells.",
+            "mixed": "The page mixes columns, tables or full-width blocks."
+          }
+        },
+        "p1_header_box": {
+          "type": "box",
+          "instructions": "the applicant name and contact block at the top of the resume in `pages.p1`"
+        },
+        "p1_header_present": {
+          "type": "noul",
+          "instructions": "Does `pages.p1` show the applicant name and contact block at the top of the resume?"
+        },
+        "p1_summary_box": {
+          "type": "box",
+          "instructions": "the section heading SUMMARY and the paragraph under it in `pages.p1`"
+        },
+        "p1_summary_present": {
+          "type": "noul",
+          "instructions": "Does `pages.p1` show the section heading SUMMARY and the paragraph under it?"
+        },
+        "p1_experience_box": {
+          "type": "box",
+          "instructions": "the section heading EXPERIENCE and the employment entries under it in `pages.p1`"
+        },
+        "p1_experience_present": {
+          "type": "noul",
+          "instructions": "Does `pages.p1` show the section heading EXPERIENCE and the employment entries under it?"
+        },
+        "p1_education_box": {
+          "type": "box",
+          "instructions": "the section heading EDUCATION and the entries under it in `pages.p1`"
+        },
+        "p1_education_present": {
+          "type": "noul",
+          "instructions": "Does `pages.p1` show the section heading EDUCATION and the entries under it?"
+        },
+        "p1_skills_box": {
+          "type": "box",
+          "instructions": "the section heading SKILLS and the list under it in `pages.p1`"
+        },
+        "p1_skills_present": {
+          "type": "noul",
+          "instructions": "Does `pages.p1` show the section heading SKILLS and the list under it?"
+        },
+        "p1_projects_box": {
+          "type": "box",
+          "instructions": "the section heading PROJECTS and the entries under it in `pages.p1`"
+        },
+        "p1_projects_present": {
+          "type": "noul",
+          "instructions": "Does `pages.p1` show the section heading PROJECTS and the entries under it?"
+        }
+      }
+    },
+    "assets": [
+      {
+        "reference": "35efa092-876c-4298-9c46-869cde70d354",
+        "part": "page-1",
+        "content_type": "image/png",
+        "bytes": 161627
+      }
+    ],
+    "reference_uses": {
+      "35efa092-876c-4298-9c46-869cde70d354": 1
+    },
+    "json_bytes": 2417,
+    "total_image_bytes": 161627
+  },
+  "response": {
+    "model": "jev-1.14.0",
+    "answers": {
+      "layout_structure": {
+        "type": "choice",
+        "choice": "one_column",
+        "confidence": 1.0,
+        "probabilities": {
+          "one_column": 1.0,
+          "two_columns": 0.0,
+          "three_or_more_columns": 0.0,
+          "table": 0.0,
+          "mixed": 0.0
+        }
+      },
+      "p1_header_box": {
+        "type": "box",
+        "box": {
+          "top": 0.07,
+          "bottom": 0.1,
+          "left": 0.08,
+          "right": 0.34
+        },
+        "confidence": 0.37
+      },
+      "p1_header_present": {
+        "type": "noul",
+        "noul": 0.99
+      },
+      "p1_summary_box": {
+        "type": "box",
+        "box": {
+          "top": 0.15,
+          "bottom": 0.21,
+          "left": 0.08,
+          "right": 0.94
+        },
+        "confidence": 0.43
+      },
+      "p1_summary_present": {
+        "type": "noul",
+        "noul": 1.0
+      },
+      "p1_experience_box": {
+        "type": "box",
+        "box": {
+          "top": 0.2,
+          "bottom": 0.27,
+          "left": 0.08,
+          "right": 0.93
+        },
+        "confidence": 0.35
+      },
+      "p1_experience_present": {
+        "type": "noul",
+        "noul": 0.99
+      },
+      "p1_education_box": {
+        "type": "box",
+        "box": {
+          "top": 0.05,
+          "bottom": 0.95,
+          "left": 0.06,
+          "right": 0.93
+        },
+        "confidence": 0.05
+      },
+      "p1_education_present": {
+        "type": "noul",
+        "noul": 0.01
+      },
+      "p1_skills_box": {
+        "type": "box",
+        "box": {
+          "top": 0.04,
+          "bottom": 0.54,
+          "left": 0.07,
+          "right": 0.92
+        },
+        "confidence": 0.07
+      },
+      "p1_skills_present": {
+        "type": "noul",
+        "noul": 0.01
+      },
+      "p1_projects_box": {
+        "type": "box",
+        "box": {
+          "top": 0.04,
+          "bottom": 0.55,
+          "left": 0.06,
+          "right": 0.93
+        },
+        "confidence": 0.08
+      },
+      "p1_projects_present": {
+        "type": "noul",
+        "noul": 0.01
+      }
+    },
+    "usage": {
+      "input_tokens": 5720,
+      "output_tokens": 300
+    }
+  },
+  "structure": null,
+  "elapsed_ms": 258.9,
+  "usage": {
+    "input_tokens": 5720,
+    "output_tokens": 300
+  }
+}

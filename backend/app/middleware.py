@@ -45,7 +45,10 @@ class RequestBoundary:
             )
             return await response(scope, receive, send)
         self.active += 1
-        limit = 10485760 + 65536 if scope["path"].endswith("/documents/extract") else 512000
+        if scope["path"].endswith(("/documents/extract", "/analyses")):
+            limit = 10485760 + 65536
+        else:
+            limit = 512000
         try:
             # Prebuffering is bounded and avoids partial multipart temporary-file leaks.
             body = bytearray()

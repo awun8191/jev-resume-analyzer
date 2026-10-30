@@ -1,0 +1,948 @@
+{
+  "generated_by": "backend/scripts/image_spike.py",
+  "model_requested": "jev-1.14.0",
+  "model_returned": "jev-1.14.0",
+  "endpoint": "https://api.typesafe.ai/v1/systemone",
+  "pages": [
+    {
+      "page": 1,
+      "page_size_pt": [
+        612.0,
+        792.0
+      ],
+      "image_px": [
+        1212,
+        1568
+      ],
+      "content_px": [
+        1212,
+        1568
+      ],
+      "offset_px": [
+        0,
+        0
+      ],
+      "scale_px_per_pt": 1.9798,
+      "padded": false,
+      "bytes": 161627
+    },
+    {
+      "page": 2,
+      "page_size_pt": [
+        612.0,
+        792.0
+      ],
+      "image_px": [
+        1212,
+        1568
+      ],
+      "content_px": [
+        1212,
+        1568
+      ],
+      "offset_px": [
+        0,
+        0
+      ],
+      "scale_px_per_pt": 1.9798,
+      "padded": false,
+      "bytes": 73219
+    }
+  ],
+  "request": {
+    "transport": "multipart",
+    "headers": {
+      "TypeSafe-Danger-Zone-Images": "true"
+    },
+    "body": {
+      "model": "jev-1.14.0",
+      "state": {
+        "document": "Each entry under pages is one rendered page of a single resume, in reading order. The images are the only record of the document layout.",
+        "page_count": 2,
+        "pages": {
+          "p1": "5044c429-fbd0-48e3-b997-d6c4e8e0bc93",
+          "p2": "7ec4b470-a971-47d8-b686-2d7a9c8ed32f"
+        }
+      },
+      "assets": {
+        "5044c429-fbd0-48e3-b997-d6c4e8e0bc93": {
+          "type": "image",
+          "part": "page-1"
+        },
+        "7ec4b470-a971-47d8-b686-2d7a9c8ed32f": {
+          "type": "image",
+          "part": "page-2"
+        }
+      },
+      "questions": {
+        "layout": {
+          "type": "choice",
+          "instructions": "How is the body text of the resume in `pages.p1` arranged?",
+          "criteria": {
+            "one_column": "All body text sits in one vertical column.",
+            "two_columns": "Body text is arranged in two vertical columns.",
+            "three_or_more_columns": "Body text is arranged in three or more vertical columns.",
+            "table": "Body text sits in ruled or aligned table cells.",
+            "mixed": "The page mixes columns, tables or full-width blocks."
+          }
+        },
+        "readable": {
+          "type": "noul",
+          "instructions": "Is every part of this resume page readable at this resolution, with no blur, clipping or unreadable text?"
+        },
+        "content_present": {
+          "type": "noul",
+          "instructions": "Does this resume page show any visible text at all?"
+        },
+        "p1_margins": {
+          "type": "choice",
+          "instructions": "Judge only the margins of the resume page in `pages.p1`.",
+          "criteria": {
+            "pass": "Content keeps a clear margin on all four sides and nothing touches an edge.",
+            "minor": "One margin is tight or uneven, but no content touches an edge.",
+            "major": "Content touches or crosses a page edge, or the margins are very uneven.",
+            "unable_to_assess": "The page is unreadable or does not show this property."
+          }
+        },
+        "p1_margins_box": {
+          "type": "box",
+          "instructions": "the part of the resume in `pages.p1` that shows the margins"
+        },
+        "p1_alignment": {
+          "type": "choice",
+          "instructions": "Judge only the alignment of the resume page in `pages.p1`.",
+          "criteria": {
+            "pass": "Text blocks share few left edges and line up on a clear vertical grid.",
+            "minor": "One block is misaligned or indented differently from the rest.",
+            "major": "Several blocks use different left edges, so the page looks ragged.",
+            "unable_to_assess": "The page is unreadable or does not show this property."
+          }
+        },
+        "p1_alignment_box": {
+          "type": "box",
+          "instructions": "the part of the resume in `pages.p1` that shows the alignment"
+        },
+        "p1_hierarchy": {
+          "type": "choice",
+          "instructions": "Judge only the hierarchy of the resume page in `pages.p1`.",
+          "criteria": {
+            "pass": "Section headings are clearly larger or bolder than body text, consistently.",
+            "minor": "One heading breaks the size or weight pattern used by the other headings.",
+            "major": "Headings are hard to tell apart from body text, or the pattern changes often.",
+            "unable_to_assess": "The page is unreadable or does not show this property."
+          }
+        },
+        "p1_hierarchy_box": {
+          "type": "box",
+          "instructions": "the part of the resume in `pages.p1` that shows the hierarchy"
+        },
+        "p1_spacing": {
+          "type": "choice",
+          "instructions": "Judge only the spacing of the resume page in `pages.p1`.",
+          "criteria": {
+            "pass": "Space between sections and entries follows a repeatable rhythm.",
+            "minor": "One gap is clearly larger or smaller than the rest.",
+            "major": "Spacing is erratic, or entries run together with no gap.",
+            "unable_to_assess": "The page is unreadable or does not show this property."
+          }
+        },
+        "p1_spacing_box": {
+          "type": "box",
+          "instructions": "the part of the resume in `pages.p1` that shows the spacing"
+        },
+        "p1_density": {
+          "type": "choice",
+          "instructions": "Judge only the density of the resume page in `pages.p1`.",
+          "criteria": {
+            "pass": "Line length and white space keep the page easy to read.",
+            "minor": "Some lines run long or the text is slightly crowded.",
+            "major": "Lines span the full page width or the text is packed with no breathing room.",
+            "unable_to_assess": "The page is unreadable or does not show this property."
+          }
+        },
+        "p1_density_box": {
+          "type": "box",
+          "instructions": "the part of the resume in `pages.p1` that shows the density"
+        },
+        "p1_entry_format": {
+          "type": "choice",
+          "instructions": "Judge only the entry format of the resume page in `pages.p1`.",
+          "criteria": {
+            "pass": "Every entry in a section uses the same title, date and bullet pattern.",
+            "minor": "One entry breaks the pattern used by its neighbours.",
+            "major": "Entries in the same section follow two or more different patterns.",
+            "unable_to_assess": "The page is unreadable or does not show this property."
+          }
+        },
+        "p1_entry_format_box": {
+          "type": "box",
+          "instructions": "the part of the resume in `pages.p1` that shows the entry format"
+        },
+        "p1_page_balance": {
+          "type": "choice",
+          "instructions": "Judge only the page balance of the resume page in `pages.p1`.",
+          "criteria": {
+            "pass": "Content fills the page evenly without a large empty area.",
+            "minor": "The page ends with a noticeable empty area, or is slightly crowded.",
+            "major": "A large part of the page is empty, or the page is badly overcrowded.",
+            "unable_to_assess": "The page is unreadable or does not show this property."
+          }
+        },
+        "p1_page_balance_box": {
+          "type": "box",
+          "instructions": "the part of the resume in `pages.p1` that shows the page balance"
+        },
+        "p1_header_present": {
+          "type": "noul",
+          "instructions": "Does `pages.p1` contain the applicant name and contact details at the top?"
+        },
+        "p1_header_box": {
+          "type": "box",
+          "instructions": "the applicant name and contact details at the top in `pages.p1`"
+        },
+        "p1_summary_present": {
+          "type": "noul",
+          "instructions": "Does `pages.p1` contain a short summary or profile paragraph?"
+        },
+        "p1_summary_box": {
+          "type": "box",
+          "instructions": "a short summary or profile paragraph in `pages.p1`"
+        },
+        "p1_experience_present": {
+          "type": "noul",
+          "instructions": "Does `pages.p1` contain the employment history section?"
+        },
+        "p1_experience_box": {
+          "type": "box",
+          "instructions": "the employment history section in `pages.p1`"
+        },
+        "p1_education_present": {
+          "type": "noul",
+          "instructions": "Does `pages.p1` contain the education section?"
+        },
+        "p1_education_box": {
+          "type": "box",
+          "instructions": "the education section in `pages.p1`"
+        },
+        "p1_skills_present": {
+          "type": "noul",
+          "instructions": "Does `pages.p1` contain the skills list?"
+        },
+        "p1_skills_box": {
+          "type": "box",
+          "instructions": "the skills list in `pages.p1`"
+        },
+        "p1_projects_present": {
+          "type": "noul",
+          "instructions": "Does `pages.p1` contain the projects section?"
+        },
+        "p1_projects_box": {
+          "type": "box",
+          "instructions": "the projects section in `pages.p1`"
+        },
+        "p2_margins": {
+          "type": "choice",
+          "instructions": "Judge only the margins of the resume page in `pages.p2`.",
+          "criteria": {
+            "pass": "Content keeps a clear margin on all four sides and nothing touches an edge.",
+            "minor": "One margin is tight or uneven, but no content touches an edge.",
+            "major": "Content touches or crosses a page edge, or the margins are very uneven.",
+            "unable_to_assess": "The page is unreadable or does not show this property."
+          }
+        },
+        "p2_margins_box": {
+          "type": "box",
+          "instructions": "the part of the resume in `pages.p2` that shows the margins"
+        },
+        "p2_alignment": {
+          "type": "choice",
+          "instructions": "Judge only the alignment of the resume page in `pages.p2`.",
+          "criteria": {
+            "pass": "Text blocks share few left edges and line up on a clear vertical grid.",
+            "minor": "One block is misaligned or indented differently from the rest.",
+            "major": "Several blocks use different left edges, so the page looks ragged.",
+            "unable_to_assess": "The page is unreadable or does not show this property."
+          }
+        },
+        "p2_alignment_box": {
+          "type": "box",
+          "instructions": "the part of the resume in `pages.p2` that shows the alignment"
+        },
+        "p2_hierarchy": {
+          "type": "choice",
+          "instructions": "Judge only the hierarchy of the resume page in `pages.p2`.",
+          "criteria": {
+            "pass": "Section headings are clearly larger or bolder than body text, consistently.",
+            "minor": "One heading breaks the size or weight pattern used by the other headings.",
+            "major": "Headings are hard to tell apart from body text, or the pattern changes often.",
+            "unable_to_assess": "The page is unreadable or does not show this property."
+          }
+        },
+        "p2_hierarchy_box": {
+          "type": "box",
+          "instructions": "the part of the resume in `pages.p2` that shows the hierarchy"
+        },
+        "p2_spacing": {
+          "type": "choice",
+          "instructions": "Judge only the spacing of the resume page in `pages.p2`.",
+          "criteria": {
+            "pass": "Space between sections and entries follows a repeatable rhythm.",
+            "minor": "One gap is clearly larger or smaller than the rest.",
+            "major": "Spacing is erratic, or entries run together with no gap.",
+            "unable_to_assess": "The page is unreadable or does not show this property."
+          }
+        },
+        "p2_spacing_box": {
+          "type": "box",
+          "instructions": "the part of the resume in `pages.p2` that shows the spacing"
+        },
+        "p2_density": {
+          "type": "choice",
+          "instructions": "Judge only the density of the resume page in `pages.p2`.",
+          "criteria": {
+            "pass": "Line length and white space keep the page easy to read.",
+            "minor": "Some lines run long or the text is slightly crowded.",
+            "major": "Lines span the full page width or the text is packed with no breathing room.",
+            "unable_to_assess": "The page is unreadable or does not show this property."
+          }
+        },
+        "p2_density_box": {
+          "type": "box",
+          "instructions": "the part of the resume in `pages.p2` that shows the density"
+        },
+        "p2_entry_format": {
+          "type": "choice",
+          "instructions": "Judge only the entry format of the resume page in `pages.p2`.",
+          "criteria": {
+            "pass": "Every entry in a section uses the same title, date and bullet pattern.",
+            "minor": "One entry breaks the pattern used by its neighbours.",
+            "major": "Entries in the same section follow two or more different patterns.",
+            "unable_to_assess": "The page is unreadable or does not show this property."
+          }
+        },
+        "p2_entry_format_box": {
+          "type": "box",
+          "instructions": "the part of the resume in `pages.p2` that shows the entry format"
+        },
+        "p2_page_balance": {
+          "type": "choice",
+          "instructions": "Judge only the page balance of the resume page in `pages.p2`.",
+          "criteria": {
+            "pass": "Content fills the page evenly without a large empty area.",
+            "minor": "The page ends with a noticeable empty area, or is slightly crowded.",
+            "major": "A large part of the page is empty, or the page is badly overcrowded.",
+            "unable_to_assess": "The page is unreadable or does not show this property."
+          }
+        },
+        "p2_page_balance_box": {
+          "type": "box",
+          "instructions": "the part of the resume in `pages.p2` that shows the page balance"
+        },
+        "p2_header_present": {
+          "type": "noul",
+          "instructions": "Does `pages.p2` contain the applicant name and contact details at the top?"
+        },
+        "p2_header_box": {
+          "type": "box",
+          "instructions": "the applicant name and contact details at the top in `pages.p2`"
+        },
+        "p2_summary_present": {
+          "type": "noul",
+          "instructions": "Does `pages.p2` contain a short summary or profile paragraph?"
+        },
+        "p2_summary_box": {
+          "type": "box",
+          "instructions": "a short summary or profile paragraph in `pages.p2`"
+        },
+        "p2_experience_present": {
+          "type": "noul",
+          "instructions": "Does `pages.p2` contain the employment history section?"
+        },
+        "p2_experience_box": {
+          "type": "box",
+          "instructions": "the employment history section in `pages.p2`"
+        },
+        "p2_education_present": {
+          "type": "noul",
+          "instructions": "Does `pages.p2` contain the education section?"
+        },
+        "p2_education_box": {
+          "type": "box",
+          "instructions": "the education section in `pages.p2`"
+        },
+        "p2_skills_present": {
+          "type": "noul",
+          "instructions": "Does `pages.p2` contain the skills list?"
+        },
+        "p2_skills_box": {
+          "type": "box",
+          "instructions": "the skills list in `pages.p2`"
+        },
+        "p2_projects_present": {
+          "type": "noul",
+          "instructions": "Does `pages.p2` contain the projects section?"
+        },
+        "p2_projects_box": {
+          "type": "box",
+          "instructions": "the projects section in `pages.p2`"
+        }
+      }
+    },
+    "assets": [
+      {
+        "reference": "5044c429-fbd0-48e3-b997-d6c4e8e0bc93",
+        "part": "page-1",
+        "content_type": "image/png",
+        "bytes": 161627
+      },
+      {
+        "reference": "7ec4b470-a971-47d8-b686-2d7a9c8ed32f",
+        "part": "page-2",
+        "content_type": "image/png",
+        "bytes": 73219
+      }
+    ],
+    "reference_uses": {
+      "5044c429-fbd0-48e3-b997-d6c4e8e0bc93": 1,
+      "7ec4b470-a971-47d8-b686-2d7a9c8ed32f": 1
+    },
+    "json_bytes": 11551,
+    "total_image_bytes": 234846
+  },
+  "response": {
+    "model": "jev-1.14.0",
+    "answers": {
+      "layout": {
+        "type": "choice",
+        "choice": "one_column",
+        "confidence": 0.99,
+        "probabilities": {
+          "one_column": 0.99,
+          "two_columns": 0.0,
+          "three_or_more_columns": 0.0,
+          "table": 0.0,
+          "mixed": 0.01
+        }
+      },
+      "readable": {
+        "type": "noul",
+        "noul": 0.97
+      },
+      "content_present": {
+        "type": "noul",
+        "noul": 0.95
+      },
+      "p1_margins": {
+        "type": "choice",
+        "choice": "pass",
+        "confidence": 0.81,
+        "probabilities": {
+          "pass": 0.86,
+          "minor": 0.11,
+          "major": 0.03,
+          "unable_to_assess": 0.0
+        }
+      },
+      "p1_margins_box": {
+        "type": "box",
+        "box": {
+          "top": 0.2,
+          "bottom": 0.97,
+          "left": 0.06,
+          "right": 0.95
+        },
+        "confidence": 0.15
+      },
+      "p1_alignment": {
+        "type": "choice",
+        "choice": "pass",
+        "confidence": 0.83,
+        "probabilities": {
+          "pass": 0.87,
+          "minor": 0.12,
+          "major": 0.01,
+          "unable_to_assess": 0.0
+        }
+      },
+      "p1_alignment_box": {
+        "type": "box",
+        "box": {
+          "top": 0.2,
+          "bottom": 0.54,
+          "left": 0.07,
+          "right": 0.94
+        },
+        "confidence": 0.17
+      },
+      "p1_hierarchy": {
+        "type": "choice",
+        "choice": "pass",
+        "confidence": 0.85,
+        "probabilities": {
+          "pass": 0.89,
+          "minor": 0.08,
+          "major": 0.03,
+          "unable_to_assess": 0.0
+        }
+      },
+      "p1_hierarchy_box": {
+        "type": "box",
+        "box": {
+          "top": 0.21,
+          "bottom": 0.44,
+          "left": 0.08,
+          "right": 0.93
+        },
+        "confidence": 0.27
+      },
+      "p1_spacing": {
+        "type": "choice",
+        "choice": "pass",
+        "confidence": 0.8,
+        "probabilities": {
+          "pass": 0.85,
+          "minor": 0.14,
+          "major": 0.01,
+          "unable_to_assess": 0.0
+        }
+      },
+      "p1_spacing_box": {
+        "type": "box",
+        "box": {
+          "top": 0.21,
+          "bottom": 0.56,
+          "left": 0.07,
+          "right": 0.94
+        },
+        "confidence": 0.22
+      },
+      "p1_density": {
+        "type": "choice",
+        "choice": "pass",
+        "confidence": 0.84,
+        "probabilities": {
+          "pass": 0.88,
+          "minor": 0.1,
+          "major": 0.02,
+          "unable_to_assess": 0.0
+        }
+      },
+      "p1_density_box": {
+        "type": "box",
+        "box": {
+          "top": 0.22,
+          "bottom": 0.33,
+          "left": 0.08,
+          "right": 0.93
+        },
+        "confidence": 0.15
+      },
+      "p1_entry_format": {
+        "type": "choice",
+        "choice": "pass",
+        "confidence": 0.97,
+        "probabilities": {
+          "pass": 0.98,
+          "minor": 0.02,
+          "major": 0.0,
+          "unable_to_assess": 0.0
+        }
+      },
+      "p1_entry_format_box": {
+        "type": "box",
+        "box": {
+          "top": 0.23,
+          "bottom": 0.35,
+          "left": 0.07,
+          "right": 0.93
+        },
+        "confidence": 0.22
+      },
+      "p1_page_balance": {
+        "type": "choice",
+        "choice": "major",
+        "confidence": 0.37,
+        "probabilities": {
+          "pass": 0.05,
+          "minor": 0.42,
+          "major": 0.53,
+          "unable_to_assess": 0.0
+        }
+      },
+      "p1_page_balance_box": {
+        "type": "box",
+        "box": {
+          "top": 0.21,
+          "bottom": 0.55,
+          "left": 0.06,
+          "right": 0.94
+        },
+        "confidence": 0.1
+      },
+      "p1_header_present": {
+        "type": "noul",
+        "noul": 1.0
+      },
+      "p1_header_box": {
+        "type": "box",
+        "box": {
+          "top": 0.05,
+          "bottom": 0.1,
+          "left": 0.08,
+          "right": 0.34
+        },
+        "confidence": 0.18
+      },
+      "p1_summary_present": {
+        "type": "noul",
+        "noul": 1.0
+      },
+      "p1_summary_box": {
+        "type": "box",
+        "box": {
+          "top": 0.15,
+          "bottom": 0.2,
+          "left": 0.08,
+          "right": 0.94
+        },
+        "confidence": 0.45
+      },
+      "p1_experience_present": {
+        "type": "noul",
+        "noul": 0.99
+      },
+      "p1_experience_box": {
+        "type": "box",
+        "box": {
+          "top": 0.21,
+          "bottom": 0.97,
+          "left": 0.08,
+          "right": 0.94
+        },
+        "confidence": 0.21
+      },
+      "p1_education_present": {
+        "type": "noul",
+        "noul": 0.01
+      },
+      "p1_education_box": {
+        "type": "box",
+        "box": {
+          "top": 0.22,
+          "bottom": 0.95,
+          "left": 0.06,
+          "right": 0.93
+        },
+        "confidence": 0.06
+      },
+      "p1_skills_present": {
+        "type": "noul",
+        "noul": 0.02
+      },
+      "p1_skills_box": {
+        "type": "box",
+        "box": {
+          "top": 0.33,
+          "bottom": 0.95,
+          "left": 0.07,
+          "right": 0.93
+        },
+        "confidence": 0.06
+      },
+      "p1_projects_present": {
+        "type": "noul",
+        "noul": 0.01
+      },
+      "p1_projects_box": {
+        "type": "box",
+        "box": {
+          "top": 0.23,
+          "bottom": 0.95,
+          "left": 0.07,
+          "right": 0.94
+        },
+        "confidence": 0.06
+      },
+      "p2_margins": {
+        "type": "choice",
+        "choice": "pass",
+        "confidence": 0.83,
+        "probabilities": {
+          "pass": 0.87,
+          "minor": 0.1,
+          "major": 0.03,
+          "unable_to_assess": 0.0
+        }
+      },
+      "p2_margins_box": {
+        "type": "box",
+        "box": {
+          "top": 0.11,
+          "bottom": 0.54,
+          "left": 0.06,
+          "right": 0.93
+        },
+        "confidence": 0.21
+      },
+      "p2_alignment": {
+        "type": "choice",
+        "choice": "pass",
+        "confidence": 0.84,
+        "probabilities": {
+          "pass": 0.88,
+          "minor": 0.11,
+          "major": 0.01,
+          "unable_to_assess": 0.0
+        }
+      },
+      "p2_alignment_box": {
+        "type": "box",
+        "box": {
+          "top": 0.13,
+          "bottom": 0.22,
+          "left": 0.07,
+          "right": 0.93
+        },
+        "confidence": 0.29
+      },
+      "p2_hierarchy": {
+        "type": "choice",
+        "choice": "pass",
+        "confidence": 0.95,
+        "probabilities": {
+          "pass": 0.96,
+          "minor": 0.03,
+          "major": 0.01,
+          "unable_to_assess": 0.0
+        }
+      },
+      "p2_hierarchy_box": {
+        "type": "box",
+        "box": {
+          "top": 0.19,
+          "bottom": 0.23,
+          "left": 0.07,
+          "right": 0.93
+        },
+        "confidence": 0.11
+      },
+      "p2_spacing": {
+        "type": "choice",
+        "choice": "pass",
+        "confidence": 0.83,
+        "probabilities": {
+          "pass": 0.87,
+          "minor": 0.12,
+          "major": 0.01,
+          "unable_to_assess": 0.0
+        }
+      },
+      "p2_spacing_box": {
+        "type": "box",
+        "box": {
+          "top": 0.13,
+          "bottom": 0.55,
+          "left": 0.06,
+          "right": 0.93
+        },
+        "confidence": 0.18
+      },
+      "p2_density": {
+        "type": "choice",
+        "choice": "pass",
+        "confidence": 0.99,
+        "probabilities": {
+          "pass": 0.99,
+          "minor": 0.01,
+          "major": 0.0,
+          "unable_to_assess": 0.0
+        }
+      },
+      "p2_density_box": {
+        "type": "box",
+        "box": {
+          "top": 0.19,
+          "bottom": 0.46,
+          "left": 0.07,
+          "right": 0.93
+        },
+        "confidence": 0.15
+      },
+      "p2_entry_format": {
+        "type": "choice",
+        "choice": "pass",
+        "confidence": 0.76,
+        "probabilities": {
+          "pass": 0.82,
+          "minor": 0.1,
+          "major": 0.07,
+          "unable_to_assess": 0.01
+        }
+      },
+      "p2_entry_format_box": {
+        "type": "box",
+        "box": {
+          "top": 0.12,
+          "bottom": 0.32,
+          "left": 0.07,
+          "right": 0.93
+        },
+        "confidence": 0.16
+      },
+      "p2_page_balance": {
+        "type": "choice",
+        "choice": "major",
+        "confidence": 0.99,
+        "probabilities": {
+          "pass": 0.0,
+          "minor": 0.01,
+          "major": 0.99,
+          "unable_to_assess": 0.0
+        }
+      },
+      "p2_page_balance_box": {
+        "type": "box",
+        "box": {
+          "top": 0.2,
+          "bottom": 0.55,
+          "left": 0.07,
+          "right": 0.93
+        },
+        "confidence": 0.1
+      },
+      "p2_header_present": {
+        "type": "noul",
+        "noul": 0.01
+      },
+      "p2_header_box": {
+        "type": "box",
+        "box": {
+          "top": 0.05,
+          "bottom": 0.96,
+          "left": 0.07,
+          "right": 0.33
+        },
+        "confidence": 0.03
+      },
+      "p2_summary_present": {
+        "type": "noul",
+        "noul": 0.01
+      },
+      "p2_summary_box": {
+        "type": "box",
+        "box": {
+          "top": 0.05,
+          "bottom": 0.95,
+          "left": 0.05,
+          "right": 0.92
+        },
+        "confidence": 0.03
+      },
+      "p2_experience_present": {
+        "type": "noul",
+        "noul": 0.01
+      },
+      "p2_experience_box": {
+        "type": "box",
+        "box": {
+          "top": 0.22,
+          "bottom": 0.95,
+          "left": 0.06,
+          "right": 0.95
+        },
+        "confidence": 0.05
+      },
+      "p2_education_present": {
+        "type": "noul",
+        "noul": 1.0
+      },
+      "p2_education_box": {
+        "type": "box",
+        "box": {
+          "top": 0.09,
+          "bottom": 0.12,
+          "left": 0.06,
+          "right": 0.93
+        },
+        "confidence": 0.3
+      },
+      "p2_skills_present": {
+        "type": "noul",
+        "noul": 1.0
+      },
+      "p2_skills_box": {
+        "type": "box",
+        "box": {
+          "top": 0.18,
+          "bottom": 0.23,
+          "left": 0.07,
+          "right": 0.93
+        },
+        "confidence": 0.36
+      },
+      "p2_projects_present": {
+        "type": "noul",
+        "noul": 1.0
+      },
+      "p2_projects_box": {
+        "type": "box",
+        "box": {
+          "top": 0.25,
+          "bottom": 0.32,
+          "left": 0.08,
+          "right": 0.93
+        },
+        "confidence": 0.4
+      }
+    },
+    "usage": {
+      "input_tokens": 13050,
+      "output_tokens": 1521
+    }
+  },
+  "structure": {
+    "rubric_version": "structure-1",
+    "score": 94,
+    "reason": "scored",
+    "assessable_weight": 94,
+    "lost_points": 6,
+    "findings": [
+      {
+        "key": "section_order",
+        "page": 0,
+        "box": {
+          "left": 0.0,
+          "top": 0.0,
+          "right": 1.0,
+          "bottom": 1.0
+        },
+        "severity": "unverified",
+        "points_lost": 0,
+        "evidence": "Sections follow the conventional order for a CV. Section boxes were below the confidence threshold. Not assessed: no usable answer for this check.",
+        "box_confidence": null
+      },
+      {
+        "key": "page_balance",
+        "page": 0,
+        "box": {
+          "left": 0.0,
+          "top": 0.0,
+          "right": 1.0,
+          "bottom": 1.0
+        },
+        "severity": "major",
+        "points_lost": 6,
+        "evidence": "Content fills each page without a large empty tail or a crowded top.",
+        "box_confidence": 0.1
+      }
+    ],
+    "limitations": [
+      "1 finding boxes were below the 0.5 confidence threshold, so they are shown as the whole page."
+    ]
+  },
+  "elapsed_ms": 409.0,
+  "usage": {
+    "input_tokens": 13050,
+    "output_tokens": 1521
+  }
+}

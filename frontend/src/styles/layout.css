@@ -1,0 +1,374 @@
+/*
+ * Page shell. A 12 column grid for reading pages, and a split workspace for
+ * the document and the report. Rules mark the rhythm; nothing floats.
+ */
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+.shell {
+  width: 100%;
+  max-width: var(--page-max);
+  margin-inline: auto;
+  padding-inline: var(--page-pad);
+}
+
+.skip {
+  position: absolute;
+  left: var(--page-pad);
+  top: -120px;
+  z-index: 20;
+  padding: var(--s3) var(--s4);
+  background: var(--ink);
+  color: var(--paper);
+  font-size: var(--fs-2);
+}
+
+.skip:focus {
+  top: 8px;
+}
+
+/* Masthead */
+.masthead {
+  border-bottom: 1px solid var(--ink);
+}
+
+.masthead__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s2) var(--s5);
+  padding-block: var(--s4);
+}
+
+.wordmark {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s3);
+  font-size: var(--fs-2);
+  letter-spacing: 0.01em;
+}
+
+.wordmark strong {
+  font-size: var(--fs-4);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.wordmark span {
+  color: var(--ink-2);
+  padding-left: var(--s3);
+  border-left: 1px solid var(--rule-2);
+}
+
+.health {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  font-size: var(--fs-1);
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.health__mark {
+  display: block;
+  width: 8px;
+  height: 8px;
+  border: 1px solid var(--ink-2);
+}
+
+.health--ok .health__mark {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+.health--down .health__mark {
+  border-color: var(--accent);
+  background: var(--paper);
+}
+
+.health--down {
+  color: var(--ink);
+}
+
+/* Stage bar */
+.progressbar {
+  border-bottom: 1px solid var(--rule);
+}
+
+.progress {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s2) var(--s5);
+  padding-block: var(--s3);
+  font-size: var(--fs-2);
+}
+
+.progress__steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2) var(--s5);
+  padding: 0;
+  list-style: none;
+}
+
+.progress__steps li {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s2);
+  color: var(--ink-3);
+}
+
+.progress__n {
+  font-size: var(--fs-1);
+  letter-spacing: 0.06em;
+}
+
+.progress__steps li[aria-current='step'] {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.progress__steps li[aria-current='step'] .progress__n {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.progress__mark {
+  width: 6px;
+  height: 6px;
+  background: var(--accent);
+}
+
+.progress__file {
+  max-width: 42ch;
+  font-size: var(--fs-1);
+  color: var(--ink-3);
+  overflow-wrap: anywhere;
+}
+
+/* Reading page */
+.page {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  column-gap: var(--gutter);
+  padding-block: var(--s6) var(--s8);
+}
+
+main:focus {
+  outline: none;
+}
+
+.stage {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+@media (min-width: 960px) {
+  .page {
+    padding-block: var(--s7) var(--s9);
+  }
+
+  .stage {
+    grid-column: 1 / span 8;
+  }
+}
+
+/* Split workspace: document left, report right, one scroll for the page. */
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  padding-block: var(--s5) var(--s7);
+}
+
+.workspace__doc,
+.workspace__report {
+  min-width: 0;
+}
+
+.workspace__report {
+  padding-top: var(--s6);
+  border-top: 1px solid var(--ink);
+}
+
+@media (min-width: 900px) {
+  .workspace {
+    grid-template-columns: minmax(0, 54fr) minmax(0, 46fr);
+    align-items: start;
+    padding-block: 0;
+  }
+
+  .workspace__doc {
+    position: sticky;
+    top: 0;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    padding: var(--s6) var(--s6) var(--s5) 0;
+    border-right: 1px solid var(--rule);
+    overflow: hidden;
+  }
+
+  .workspace__report {
+    padding: var(--s6) 0 var(--s8) var(--s6);
+    border-top: 0;
+  }
+}
+
+/* Stage furniture */
+.stage__head {
+  border-top: 2px solid var(--ink);
+  padding-top: var(--s3);
+  margin-bottom: var(--s6);
+}
+
+.stage__index {
+  display: block;
+  margin-bottom: var(--s4);
+  font-size: var(--fs-1);
+  font-weight: 600;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.stage__title {
+  font-size: var(--fs-6);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: var(--lh-tight);
+  max-width: 22ch;
+}
+
+.stage__lead {
+  margin-top: var(--s4);
+  max-width: 46ch;
+  font-size: var(--fs-4);
+  line-height: 1.4;
+  letter-spacing: -0.005em;
+  color: var(--ink-2);
+}
+
+.stage__file {
+  margin-top: var(--s3);
+  overflow-wrap: anywhere;
+}
+
+.section {
+  margin-top: var(--s7);
+}
+
+.score + .section {
+  margin-top: var(--s6);
+}
+
+.section__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s4);
+  border-top: 1px solid var(--ink);
+  padding-top: var(--s2);
+  margin-bottom: var(--s4);
+}
+
+.section__title {
+  font-size: var(--fs-2);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.section__note {
+  font-size: var(--fs-1);
+  color: var(--ink-3);
+  text-align: right;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s4) var(--s5);
+  margin-top: var(--s6);
+  border-top: 2px solid var(--ink);
+  padding-top: var(--s4);
+}
+
+.actions__note {
+  max-width: 42ch;
+  font-size: var(--fs-2);
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+.reset {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3) var(--s5);
+  margin-top: var(--s6);
+  border-top: 1px solid var(--rule);
+  padding-top: var(--s4);
+}
+
+.storage {
+  display: flex;
+  gap: var(--s3);
+  margin-block: var(--s4) var(--s5);
+  border-top: 2px solid var(--accent);
+  padding-top: var(--s2);
+  font-size: var(--fs-2);
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+/* Footer */
+.footer {
+  border-top: 1px solid var(--ink);
+  padding-block: var(--s5) var(--s7);
+  color: var(--ink-2);
+  font-size: var(--fs-1);
+  line-height: 1.55;
+}
+
+.footer__grid {
+  display: grid;
+  gap: var(--s3);
+  max-width: 62ch;
+}
+
+.footer p {
+  max-width: 62ch;
+}
+
+.footer .label {
+  color: var(--ink);
+}
+
+@media (max-width: 599px) {
+  .wordmark span {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .masthead__row {
+    align-items: center;
+  }
+
+  .stage__lead {
+    font-size: var(--fs-3);
+  }
+
+  .progress__file {
+    width: 100%;
+  }
+}

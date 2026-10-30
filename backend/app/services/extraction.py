@@ -3,7 +3,7 @@ import json
 import os
 import sys
 
-from fastapi import UploadFile
+from starlette.datastructures import UploadFile
 
 from app.config import ROOT, Settings
 from app.errors import AppError

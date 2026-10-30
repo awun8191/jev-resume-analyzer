@@ -21,6 +21,24 @@ describe('binding contract, synthetic fixtures only', () => {
     const requests = { 'empty text': { cv_text: '  ', mode: 'review' }, 'alignment mode': { cv_text: 'x', mode: 'alignment_only' }, 'empty posting': { cv_text: 'x', job_text: ' ', mode: 'review' } }
     expect(AnalysisRequestSchema.safeParse(requests[key as keyof typeof requests]).success).toBe(false)
   })
+  it('accepts a page box and rejects impossible geometry', () => {
+    const r = structuredClone(report)
+    r.findings[0].page = 0
+    r.findings[0].box = { top: 0.1, bottom: 0.2, left: 0.1, right: 0.9 }
+    expect(AnalysisReportSchema.safeParse(r).success).toBe(true)
+
+    const inverted = structuredClone(r)
+    inverted.findings[0].box = { top: 0.4, bottom: 0.2, left: 0.1, right: 0.9 }
+    expect(AnalysisReportSchema.safeParse(inverted).success).toBe(false)
+
+    const outside = structuredClone(r)
+    outside.findings[0].box = { top: -0.1, bottom: 0.2, left: 0.1, right: 1.4 }
+    expect(AnalysisReportSchema.safeParse(outside).success).toBe(false)
+
+    const orphan = structuredClone(r)
+    orphan.findings[0].page = null
+    expect(AnalysisReportSchema.safeParse(orphan).success).toBe(false)
+  })
   it.each(['coverage', 'duplicate', 'probabilities', 'scope', 'rating', 'partial', 'cost'])('rejects inconsistent %s', key => {
     const r = structuredClone(report)
     if (key === 'coverage') r.overview.questions_answered = 3

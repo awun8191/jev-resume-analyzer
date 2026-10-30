@@ -1,69 +1,73 @@
 /*
  * JEV Resume Analyzer design tokens.
- * Direction (user-approved): white surfaces, thin grey borders, blue accents,
- * clean minimal professional register. Neutrals are tinted toward the blue
- * accent; no pure black, no pure white.
+ *
+ * Swiss / International Typographic Style. One neo-grotesque family, six type
+ * sizes, hairline rules, one accent. Status is never carried by colour alone:
+ * every state also has a glyph and a word.
  */
 :root {
-  /* Color */
-  --paper: oklch(98.9% 0.003 250);
-  --surface: oklch(99.8% 0.001 250);
-  --surface-sunken: oklch(97.4% 0.004 250);
-  --ink: oklch(23% 0.016 256);
-  --ink-secondary: oklch(44% 0.02 256);
-  --ink-muted: oklch(48% 0.016 256);
-  --border: oklch(90.6% 0.008 256);
-  --border-strong: oklch(82.5% 0.013 256);
+  /* Colour. Monochrome plus one accent. */
+  --paper: #ffffff;
+  --paper-sunk: #f4f4f1;
+  --ink: #121212;
+  --ink-2: #565656;
+  --ink-3: #6e6e6e;
+  --rule: #dededa;
+  --rule-2: #b8b8b3;
+  --accent: #d0021b;
+  --focus: #121212;
 
-  --accent: oklch(52% 0.196 261);
-  --accent-hover: oklch(45% 0.185 261);
-  --accent-soft: oklch(95.6% 0.021 261);
-  --accent-ink: oklch(38% 0.14 261);
-  --focus-ring: oklch(60% 0.16 261);
+  /* Type. One family. Sizes map to label, meta, body, lead, section, title. */
+  --font: 'Inter Variable', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --fs-1: 0.6875rem;
+  --fs-2: 0.8125rem;
+  --fs-3: 0.9375rem;
+  --fs-4: 1.1875rem;
+  --fs-5: 1.75rem;
+  --fs-6: clamp(2.125rem, 4.4vw, 3rem);
+  --fs-display: clamp(2.75rem, 4.5vw, 3.75rem);
 
-  /* Status colors. Never the sole signal: always paired with text labels. */
-  --ok: oklch(52% 0.12 155);
-  --ok-soft: oklch(96.2% 0.03 155);
-  --ok-ink: oklch(37% 0.08 155);
-  --amber: oklch(66% 0.13 75);
-  --amber-soft: oklch(97.2% 0.045 85);
-  --amber-ink: oklch(43% 0.1 75);
-  --rose: oklch(54% 0.185 22);
-  --rose-soft: oklch(96.4% 0.02 22);
-  --rose-ink: oklch(41% 0.15 22);
+  /* Report hierarchy: rating, two sub-scores, counts, findings. */
+  --score-value: var(--fs-display);
+  --subscore-value: var(--fs-4);
 
-  /* Typography */
-  --font-display: 'Bricolage Grotesque Variable', 'Hanken Grotesk Variable', ui-sans-serif, sans-serif;
-  --font-body: 'Hanken Grotesk Variable', ui-sans-serif, system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
+  --lh-tight: 1.05;
+  --lh-head: 1.14;
+  --lh-body: 1.55;
+  --track-label: 0.09em;
 
-  --text-xs: 0.75rem;
-  --text-sm: 0.875rem;
-  --text-md: 1rem;
-  --text-lg: 1.125rem;
-  --text-xl: 1.375rem;
-  --text-2xl: 1.75rem;
+  /* Space. 4px base. */
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 24px;
+  --s6: 32px;
+  --s7: 48px;
+  --s8: 64px;
+  --s9: 96px;
 
-  /* Space (4px base) */
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 24px;
-  --space-6: 32px;
-  --space-7: 48px;
-  --space-8: 64px;
+  /* Grid and measure. */
+  --cols: 12;
+  --gutter: 24px;
+  --page-max: 1360px;
+  --page-pad: 20px;
+  --tap: 44px;
+  --measure: 64ch;
 
-  /* Shape */
-  --radius-sm: 6px;
-  --radius-md: 10px;
+  /* Motion. Short, interruptible, never decorative. */
+  --dur: 120ms;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+}
 
-  /* Motion (interruptible CSS transitions, not keyframes) */
-  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-  --dur-fast: 120ms;
-  --dur: 180ms;
+@media (min-width: 768px) {
+  :root {
+    --page-pad: 32px;
+  }
+}
 
-  /* Layout */
-  --content-width: 720px;
-  --wide-width: 880px;
+@media (min-width: 1200px) {
+  :root {
+    --page-pad: 48px;
+  }
 }

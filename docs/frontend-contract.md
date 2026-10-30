@@ -1,10 +1,10 @@
 # JEV frontend contract v1
 
-Status: implemented frontend contract, awaiting backend implementation. Binding definition: `frontend/src/api/schema.ts` (Zod runtime validation and inferred TypeScript types). This supersedes the proposed field details in architecture section 5, without changing that document. No actual provider output or live extraction has been verified. Synthetic fixtures live only under `frontend/tests/contract/fixtures`.
+Status: implemented frontend contract. The frontend sends the multipart request, renders `scores`, `dimensions` and `structure_findings`, and draws structure boxes on the document pane. Binding definition: `frontend/src/api/schema.ts` (Zod runtime validation and inferred TypeScript types). This supersedes the proposed field details in architecture section 5, without changing that document. The score fields below are from a verified live analysis of the synthetic two page fixture. Synthetic fixtures live only under `frontend/tests/contract/fixtures`.
 
 ## Local runtime
 
-- Frontend: React 18, Vite 8, TypeScript 5.6, Zod 3. White surfaces, thin grey borders, blue actions. Self-hosted fonts, no CDN.
+- Frontend: React 18, Vite 8, TypeScript 5.6, Zod 3. Swiss layout: a 12 column grid, one grotesque family (self-hosted Inter), hairline rules, tabular numerals, one red accent. No CDN.
 - From `frontend`: `npm ci`, `npm run dev`. Open `http://127.0.0.1:5273`.
 - Browser requests relative `/api/v1/...`; Vite proxies `/api` to `http://127.0.0.1:8017`. Both are loopback-only. `strictPort` prevents silently changing the frontend port.
 - Port choice is deliberate: this host has unrelated servers on 5173 through 5190, and workspace-mcp owns 8000. Do not kill them or send documents to them. The subsequent backend should listen on 127.0.0.1:8017. No backend application currently exists and none was started for this card.
@@ -48,6 +48,17 @@ Timeout: 60 seconds, covering headers and body consumption. No automatic retries
 
 ## POST /api/v1/analyses
 
+Multipart input, the shape the workspace uses:
+
+| Part | Content |
+| --- | --- |
+| `request` | The JSON body below, as a field or as an uploaded part named `request` |
+| `file` | Optional. The uploaded PDF. Required for a structure score |
+
+The frontend always sends this shape. `request` is a JSON blob. `file` is the original PDF, kept in memory for the request only, and it is sent only when the upload was a PDF. A DOCX sends `request` alone. The bytes are never stored. If a server answers 415 for multipart, the client makes one fallback attempt with a plain JSON body. There is no setting for this and no retry loop.
+
+A JSON body with no file still works and returns a content only report. An upload that is not a PDF gets no structure score and a `structure_unavailable` warning; the content report is still returned.
+
 JSON input:
 
 ```json
@@ -67,6 +78,59 @@ JSON input:
 | overview | Overview below |
 | warnings | array of `{code: text, message: text}` |
 | metrics | Metrics below, or null |
+| scores | Scores below. Always present |
+| dimensions | array of Dimension below. Always present, possibly empty |
+| structure_findings | array of StructureFinding below. Always present, possibly empty |
+
+### Scores
+
+`scores.content`:
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| value | integer 0..100 or null | Weighted percentage over the checks that could be decided. Null when fewer than 50 of 100 points were decidable |
+| band | text or null | One of the five band labels below |
+| range | `[integer, integer]` or null | Low and high score still consistent with the evidence. Null when no check was applicable |
+| coverage | number 0..1 | Decided weight over prepared weight |
+| assessed_weight | integer 0..100 | Points that could be decided. `unable_to_assess` and `not_applicable` are not decided points |
+
+`scores.structure`:
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| value | integer 0..100 or null | Layout score. Null when the route could not run |
+| band | text or null | Same five labels |
+| reason | text or null | `scored`, `page_not_readable`, `page_empty`, `insufficient_evidence`, `no_file`, `unsupported_format`, `render_failed` or `provider_error` |
+| assessed_weight | integer 0..100 | Structure points that could be assessed |
+
+A null structure score is never zero. Render "Not scored" with the reason, never a number.
+
+`scores.total`: `value` integer or null, `band` text or null, `mode` one of `combined`, `content_only`, `structure_only`, `unavailable`. The rule is `round(0.7 * content + 0.3 * structure)`. A missing structure score renormalises to content only, and the mode says so.
+
+Bands, highest first: `Very strong evidence` at 90, `Strong evidence` at 75, `Adequate evidence` at 60, `Partial evidence` at 40, `Thin evidence` at 0.
+
+### How the UI renders the scores
+
+The report shows, in this order: total, then the Structure and Content sub-scores, then dimension rows grouped by owner, then content findings, then structure findings, then warnings.
+
+- The total block shows the integer value, `/ 100`, the band, the mode, the coverage and the decided weight. A range is shown only when the total is the content score itself (`content_only`), because a combined total has no range in the contract.
+- `content_only` is labelled "Content only" and carries the structure reason in plain words. `structure_only` is labelled "Layout only" and says how much content weight could be decided. `unavailable` shows "Not scored" and no number.
+- A null score is never rendered as zero, and never as a dash that could be read as zero. The band line says "Not scored" in that case.
+- Known structure reasons map to fixed sentences: `unsupported_format` is "Layout is scored for PDF uploads only", `provider_error` is "Layout check failed, content review is complete", `render_failed` and `page_not_readable` each get their own line. An unknown reason still says the layout was not scored, and the raw code stays visible in small type.
+- Dimension rows keep server order inside their owner group. A null row value says "Not scored".
+- The two sub-score slots stack below 520px. The total stays above them at 375px.
+
+`frontend/tests/contract/scores.test.ts` covers each mode, null scores and unknown extra fields. `frontend/tests/report.test.tsx` covers the rendered blocks, the order and the grouping.
+
+### Dimension
+
+`key` text, `label` text, `owner` `content` or `structure`, `weight` integer, `value` integer or null, `section` section key or null. Content rows weigh 100 together, and so do structure rows. Structure rows exist only when the structure report was scored.
+
+### StructureFinding
+
+`id` text, `label` text, `severity` `pass`, `minor`, `major` or `unassessable`, `points_lost` integer 0..100, `page` 0-based integer or null, `box` `{top, bottom, left, right}` fractions or null, `confidence` number 0..1 or null, `evidence` text. A pass row carries no page and no box, because the rubric does not report where a check passed. Below 0.5 box confidence the box is the whole page, and the finding says so in `evidence`.
+
+The UI draws a structure box on the matching page when `box` is present. A check with a `page` and no `box` outlines the whole page with a dashed rule. That outline is drawn behind the other boxes and is not a click target. A `pass` row has no location, so it gets no box and no click target in the report either. A structure finding with no page is listed and not drawn. Structure ids are namespaced as `structure:<id>` in selection state so a content `question_id` can never collide with a layout check.
 
 ### Finding
 
@@ -82,6 +146,14 @@ JSON input:
 | probabilities | null, or object containing all four answer keys with numbers 0..1 |
 | confidence | provider-reported value 0..1, or null |
 | rubric_explanation | null, or `{kind: "rubric", template_ref: text, text: text}` |
+| page | 0-based page index, or null/omitted. Optional. |
+| box | null/omitted, or `{top, bottom, left, right}` as fractions of page width and height. Bottom must sit below top, and right to the right of left. A box without a page is rejected. |
+| section | optional section key such as `experience`, `education`, `skills`, `summary`, `header` or `projects`. Case and spacing are ignored. |
+| severity | optional provider or rubric label. The vocabulary is not fixed yet, so the UI only echoes it as text in the finding detail. |
+
+The overlay draws a rectangle only when data supports it. A finding with a `section` prefers the exact box derived from the PDF text layer on its page. A finding without a section keeps its reported `page` and `box`. A finding with neither is not drawn, and still renders with a "No location" note. No rectangle is placed by guesswork.
+
+The document pane rasterises the uploaded PDF in this tab with pdf.js and reads the same document's text layer. Page images and section boxes are built in memory, never uploaded and never stored. A scanned PDF has no text layer, so it yields no sections and the pane keeps the reported boxes or its empty state.
 
 Answer meanings: `present` = evidence meeting the question criteria is identifiable across the document; `absent` = that evidence is absent; `not_applicable` = rubric question does not apply; `unable_to_assess` = insufficiently reliable interpretation. The latter two are not treated as weak CV evidence or zero scores.
 
@@ -103,7 +175,9 @@ All fields required when metrics is not null:
 - `input_tokens`, `output_tokens`: nonnegative integer or null, provider-reported.
 - `cost_usd`: finite nonnegative number or null. Supply only from verified pricing or trustworthy provider reporting. UI does not estimate cost.
 
-Timeout: 120 seconds covering response headers and body. There are no automatic retries. Timeout can leave server-side processing running; UI warns a manual retry may incur another charge. No cancellation/deletion guarantee. Reset is disabled while a request is pending to prevent late responses repopulating cleared state.
+A structure request reviews at most the first six pages of the PDF, in groups of at most three. When the document is longer, warnings include `structure_page_budget` and the structure score covers the first six pages only. Warnings may also include `structure_unavailable` when the structure score is null, and `partial_response` when the provider answered fewer questions than the rubric asks.
+
+Timeout: 120 seconds covering both provider calls, response headers and body. There are no automatic retries. Timeout can leave server-side processing running; UI warns a manual retry may incur another charge. No cancellation/deletion guarantee. Reset is disabled while a request is pending to prevent late responses repopulating cleared state.
 
 ## Error envelope
 
@@ -117,16 +191,26 @@ Every non-2xx, including FastAPI validation failures:
 
 Expected statuses: 413 limits, 415 unsupported format, 422 unreadable/invalid input, 429 capacity, 502 upstream/invalid response, 503 unconfigured provider, 504 timeout. Generic non-JSON errors yield safe HTTP-status copy, not raw server HTML. A malformed 2xx yields `RESPONSE_INVALID` and no report. Network failures yield `NETWORK_UNREACHABLE`. Client timeout yields `REQUEST_TIMEOUT`.
 
-## UI state and privacy
+## UI state and storage
 
-Upload -> extracting -> preview -> analysing -> report. Extraction failure returns to upload with error; analysis failure returns to preview with error and both edited inputs preserved. Optional posting stays in application memory. Native file input and keyboard-accessible disclosures are the baseline; drop is an enhancement. Main focus moves on stage changes, errors/statuses are announced, actions have 44px minimum height, and reduced motion is respected. Results render server strings as React text, never HTML.
+Upload -> extracting -> check text -> analysing -> report. After extraction the page becomes a two pane workspace: the document pane on the left, the editable text or the report on the right, with no page change between them. Below 900px the panes stack and the document pane collapses. Extraction failure returns to upload with an error; analysis failure returns to check text with the error and both edited inputs preserved. Native file input and keyboard-accessible disclosures are the baseline; drop is an enhancement. Focus moves to the stage heading on a stage change, errors and statuses are announced, actions have 44px minimum height, and reduced motion is respected. Results render server strings as React text, never HTML.
 
-Edit text from report clears the report and returns to preview. Clear document & start over clears CV, extraction, job posting, filename, error and report from application state. Reload loses state. No localStorage/sessionStorage for CVs. Clearing browser state does not imply provider deletion. Before submission the UI discloses TypeSafe transfer and unverified retention terms.
+Session state lives in sessionStorage under one versioned key, `jev.state.v1`: stage, file name, extraction, CV text, job posting, report and the selected finding. The file bytes are never stored, so after a reload the text and report return and the document pane asks for the file again instead of showing an empty page.
+
+The stored report is validated against `AnalysisReportSchema` on its own. A report written before `scores` existed fails that check, so it is discarded, its key removed, and the app returns to check text with the notice "The saved report was written by an older version and cannot be shown. Your text is kept. Run the analysis again for a fresh report." Text, job posting, file name and extraction are kept. A stored report in the current shape is restored as before. `frontend/tests/app.test.tsx` covers both.
+
+Page images and section boxes are derived from the in-memory File on every attach and are not persisted. Writes are wrapped in try/catch: on a quota failure the app keeps working in memory and shows a short notice. Reset and a new upload clear every `jev.` key. No localStorage, IndexedDB, cookie or service worker cache is used, and there is no account or database.
+
+### Exact section boxes
+
+pdf.js renders each page to a canvas at twice the point size and reads text items from the same document. Items are grouped into lines by baseline, and each line splits where the horizontal gap exceeds a word space, which keeps two columns apart. A heading is a short line that matches HEADER, SUMMARY or PROFILE, EXPERIENCE, EDUCATION, SKILLS, PROJECTS, or a listed variant, and whose glyph height is at or above the page body median. A section span runs from its heading top to the next heading top in the same column, or the page bottom. Spans are clamped to the page and sorted. A page that starts without a heading continues the previous page's last section, with one box per section per page. `frontend/tests/pdfLayout.test.ts` covers a single column, two columns, a page without headings, two heading sizes and a continuation page.
+
+Edit text from the report clears the report and returns to check text. Clear document and start over clears CV, extraction, job posting, filename, error, report, selected finding and stored keys. Clearing this tab does not imply provider deletion. Before submission the UI discloses TypeSafe transfer and unverified retention terms.
 
 ## Verification and integration gaps
 
 - `npm run build`, `npm run typecheck`, `npm test` verify implementation and synthetic contracts.
-- Browser tests: start `npm run dev`, then `CHROMIUM_PATH=<installed Chromium executable> npx playwright test`. Existing host binary: `/home/admin/.cache/ms-playwright/chromium_headless_shell-1208/chrome-headless-shell-linux64/chrome-headless-shell`. No extra browser installation was needed.
-- Browser suite asserts title before flow actions; prevents accidentally testing another service. First test requires backend absent and checks the real Vite 502 error path using only a synthetic upload. Two further tests intercept APIs with explicitly labelled synthetic fixtures at 375 and 1280px, check keyboard interaction, provider-error text preservation, result details, reset, empty browser storage, no JS exceptions, no horizontal overflow, and axe WCAG A/AA checks.
-- Real PDF/DOCX parsing, provider output mapping, billing/retention, backend budgets, and real upload-to-TypeSafe-to-report integration remain untested because the backend does not exist yet. No test fixture claims to be live output.
-- Screenshot files are under `frontend/test-results`. Automated visual-image analysis was unavailable (vision tool returned authentication error). Independent reviewer should inspect the screenshots visually; DOM geometry and axe checks are not a substitute for that review.
+- Browser tests: start `npm run dev`, then `CHROMIUM_PATH=<installed Chromium executable> npx playwright test`. Verified here with `/root/.cache/ms-playwright/chromium_headless_shell-1208/chrome-headless-shell-linux64/chrome-headless-shell`; the shell installs with `npx playwright install chromium-headless-shell`.
+- Browser suite asserts title before flow actions; prevents accidentally testing another service. First test requires backend absent and checks the real Vite 502 error path using only a synthetic upload, tabbing from the skip link to the file input. Two further tests intercept APIs with explicitly labelled synthetic fixtures at 375 and 1280px, check the two pane workspace, box selection in both directions, provider-error text preservation, finding details, session storage, reset, no JS exceptions, no horizontal overflow, 44px targets and axe WCAG A/AA checks.
+- PDF rendering and text layout were checked manually in Chromium against a synthetic two page PDF generated outside the repo; no fixture is committed. DOCX pages are not rendered. Provider output mapping, billing/retention, backend budgets, and real upload-to-TypeSafe-to-report integration remain untested because the backend does not exist yet. No test fixture claims to be live output.
+- Screenshot files are under `frontend/test-results`. They are synthetic fixtures only. A visual review at 375 and 1280 was done against those files, with the document pane's overlay checked against a local harness; DOM geometry and axe checks are not a substitute for a real design review.

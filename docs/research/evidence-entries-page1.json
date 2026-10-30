@@ -1,0 +1,148 @@
+{
+  "generated_by": "backend/scripts/image_spike.py",
+  "model_requested": "jev-1.14.0",
+  "model_returned": "jev-1.14.0",
+  "endpoint": "https://api.typesafe.ai/v1/systemone",
+  "pages": [
+    {
+      "page": 1,
+      "page_size_pt": [
+        612.0,
+        792.0
+      ],
+      "image_px": [
+        1212,
+        1568
+      ],
+      "content_px": [
+        1212,
+        1568
+      ],
+      "offset_px": [
+        0,
+        0
+      ],
+      "scale_px_per_pt": 1.9798,
+      "padded": false,
+      "bytes": 161627
+    }
+  ],
+  "request": {
+    "transport": "multipart",
+    "headers": {
+      "TypeSafe-Danger-Zone-Images": "true"
+    },
+    "body": {
+      "model": "jev-1.14.0",
+      "state": {
+        "document": "Each entry under pages is one rendered page of a single resume, in reading order. The images are the only record of the document layout.",
+        "page_count": 1,
+        "pages": {
+          "p1": "7f66cc8f-a4b6-4384-acb0-d37217a833a5"
+        }
+      },
+      "assets": {
+        "7f66cc8f-a4b6-4384-acb0-d37217a833a5": {
+          "type": "image",
+          "part": "page-1"
+        }
+      },
+      "questions": {
+        "p1_job_1_box": {
+          "type": "box",
+          "instructions": "the first employment entry, the block that starts with 'Senior Backend Engineer' in `pages.p1`"
+        },
+        "p1_job_1_present": {
+          "type": "noul",
+          "instructions": "Does `pages.p1` show the first employment entry, the block that starts with 'Senior Backend Engineer'?"
+        },
+        "p1_job_2_box": {
+          "type": "box",
+          "instructions": "the second employment entry, the block that starts with 'Kestrel Payments' in `pages.p1`"
+        },
+        "p1_job_2_present": {
+          "type": "noul",
+          "instructions": "Does `pages.p1` show the second employment entry, the block that starts with 'Kestrel Payments'?"
+        },
+        "p1_job_3_box": {
+          "type": "box",
+          "instructions": "the third employment entry, the block that starts with 'Junior Developer' in `pages.p1`"
+        },
+        "p1_job_3_present": {
+          "type": "noul",
+          "instructions": "Does `pages.p1` show the third employment entry, the block that starts with 'Junior Developer'?"
+        }
+      }
+    },
+    "assets": [
+      {
+        "reference": "7f66cc8f-a4b6-4384-acb0-d37217a833a5",
+        "part": "page-1",
+        "content_type": "image/png",
+        "bytes": 161627
+      }
+    ],
+    "reference_uses": {
+      "7f66cc8f-a4b6-4384-acb0-d37217a833a5": 1
+    },
+    "json_bytes": 1259,
+    "total_image_bytes": 161627
+  },
+  "response": {
+    "model": "jev-1.14.0",
+    "answers": {
+      "p1_job_1_box": {
+        "type": "box",
+        "box": {
+          "top": 0.23,
+          "bottom": 0.3,
+          "left": 0.08,
+          "right": 0.62
+        },
+        "confidence": 0.32
+      },
+      "p1_job_1_present": {
+        "type": "noul",
+        "noul": 0.96
+      },
+      "p1_job_2_box": {
+        "type": "box",
+        "box": {
+          "top": 0.34,
+          "bottom": 0.37,
+          "left": 0.08,
+          "right": 0.64
+        },
+        "confidence": 0.29
+      },
+      "p1_job_2_present": {
+        "type": "noul",
+        "noul": 0.98
+      },
+      "p1_job_3_box": {
+        "type": "box",
+        "box": {
+          "top": 0.41,
+          "bottom": 0.45,
+          "left": 0.08,
+          "right": 0.33
+        },
+        "confidence": 0.3
+      },
+      "p1_job_3_present": {
+        "type": "noul",
+        "noul": 0.99
+      }
+    },
+    "usage": {
+      "input_tokens": 5446,
+      "output_tokens": 130
+    }
+  },
+  "structure": null,
+  "elapsed_ms": 259.2,
+  "usage": {
+    "input_tokens": 5446,
+    "output_tokens": 130
+  }
+}

@@ -1,0 +1,379 @@
+/*
+ * Document pane. One page at a time, findings drawn as hairline rectangles on
+ * top. Boxes come only from the API response: nothing is drawn by guesswork.
+ */
+.docpane {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.docpane__bar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s3);
+  border-top: 2px solid var(--ink);
+  padding-top: var(--s2);
+  padding-bottom: var(--s3);
+}
+
+.docpane__file {
+  margin-top: 2px;
+  font-size: var(--fs-2);
+  overflow-wrap: anywhere;
+}
+
+.docpane__collapse {
+  flex: none;
+}
+
+.docpane__body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+
+.docpane__body[hidden] {
+  display: none;
+}
+
+.docpane__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s2) var(--s3);
+  padding-block: var(--s2);
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  font-size: var(--fs-2);
+}
+
+.docpane__group {
+  display: flex;
+  align-items: center;
+  gap: var(--s1);
+}
+
+.docpane__step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--tap);
+  height: var(--tap);
+  border: 1px solid var(--rule-2);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: var(--fs-3);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.docpane__step:disabled {
+  color: #c2c2bd;
+  border-color: var(--rule);
+  background: var(--paper-sunk);
+  cursor: not-allowed;
+}
+
+@media (hover: hover) {
+  .docpane__step:not(:disabled):hover {
+    border-color: var(--ink);
+  }
+}
+
+.docpane__count {
+  padding-inline: var(--s2);
+  font-size: var(--fs-2);
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+.docpane__count b {
+  color: var(--ink);
+  font-size: var(--fs-3);
+  font-weight: 600;
+}
+
+.docpane__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  border: 0;
+  background: none;
+  padding-inline: var(--s1);
+  min-height: var(--tap);
+  font-size: var(--fs-2);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.docpane__toggle-mark {
+  display: block;
+  width: 8px;
+  height: 8px;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+}
+
+.docpane__toggle[aria-pressed='true'] .docpane__toggle-mark {
+  background: var(--paper);
+}
+
+.docpane__toggle[aria-pressed='true'] {
+  color: var(--ink-3);
+}
+
+.docpane__scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding-block: var(--s4);
+  background: var(--paper);
+}
+
+.docpane__page {
+  position: relative;
+  width: 100%;
+  border: 1px solid var(--rule-2);
+  background: var(--paper-sunk);
+}
+
+.docpane__page img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.docpane__empty {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+  padding: var(--s5);
+  border: 1px solid var(--rule-2);
+  border-top: 2px solid var(--ink);
+  background: var(--paper);
+}
+
+.docpane__empty-title {
+  font-size: var(--fs-4);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.docpane__empty .help {
+  max-width: 34ch;
+}
+
+.docpane__attach {
+  margin-top: var(--s2);
+  padding-top: var(--s3);
+  border-top: 1px solid var(--rule);
+}
+
+/* Boxes */
+.box {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--accent);
+  background: transparent;
+  cursor: pointer;
+  transition: border-width var(--dur) var(--ease);
+}
+
+.box__n {
+  position: absolute;
+  top: 0;
+  left: 0;
+  min-width: 20px;
+  height: 18px;
+  padding-inline: 5px;
+  border: 1px solid var(--accent);
+  background: var(--paper);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.02em;
+  text-align: center;
+}
+
+/* The selected box carries its finding name, so selection is never colour alone. */
+.box__sel {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  transform: translateY(100%);
+  z-index: 2;
+  max-width: 100%;
+  padding: 3px 6px;
+  background: var(--accent);
+  color: var(--paper);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.box__tip {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: -1px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: max-content;
+  max-width: 200px;
+  padding: var(--s1) var(--s2);
+  border: 1px solid var(--ink);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: var(--fs-1);
+  line-height: 1.35;
+  text-align: left;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur) var(--ease);
+}
+
+.box__tip strong {
+  font-weight: 600;
+}
+
+.box__tip span {
+  color: var(--ink-2);
+}
+
+.box:hover,
+.box:focus-visible {
+  border-width: 2px;
+}
+
+.box:hover .box__tip,
+.box:focus-visible .box__tip,
+.box:focus .box__tip {
+  opacity: 1;
+}
+
+.box:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.box[aria-pressed='true'] {
+  border-width: 2px;
+  outline: 1px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.box[aria-pressed='true'] .box__n {
+  background: var(--accent);
+  color: var(--paper);
+}
+
+/* A structure check with a page and no box. The whole page is outlined, it sits
+ * behind the other boxes and it is not a click target. */
+.box--page {
+  cursor: default;
+  pointer-events: none;
+  border-style: dashed;
+  border-color: var(--rule-2);
+  z-index: 0;
+}
+
+.box--page .box__n {
+  top: auto;
+  bottom: 0;
+  background: var(--paper);
+  color: var(--ink-2);
+  border: 1px solid var(--rule-2);
+}
+
+.box--page[data-selected='true'] {
+  border-width: 2px;
+  border-color: var(--accent);
+}
+
+.box[data-kind='structure']:not(.box--page) {
+  border-style: dashed;
+}
+
+/* Box index, used when a page image is not available */
+.docpane__index {
+  margin-top: var(--s4);
+  border-top: 1px solid var(--ink);
+  padding-top: var(--s2);
+}
+
+.docpane__list {
+  padding: 0;
+  list-style: none;
+}
+
+.docpane__list button {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s3);
+  width: 100%;
+  min-height: var(--tap);
+  padding-block: var(--s2);
+  border: 0;
+  border-bottom: 1px solid var(--rule);
+  background: none;
+  text-align: left;
+  font-size: var(--fs-2);
+  cursor: pointer;
+}
+
+.docpane__list button[aria-pressed='true'] {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.docpane__list-label {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s2);
+  min-width: 0;
+}
+
+.docpane__list-n {
+  font-size: var(--fs-1);
+  color: var(--ink-3);
+  letter-spacing: 0.06em;
+}
+
+.docpane__list button > span:last-child {
+  flex: none;
+  font-size: var(--fs-1);
+  color: var(--ink-3);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+@media (min-width: 900px) {
+  .docpane__collapse {
+    display: none;
+  }
+
+  .docpane__body[hidden] {
+    display: flex;
+  }
+}
+
+@media (max-width: 899px) {
+  .docpane__scroll {
+    max-height: 58vh;
+  }
+}
