@@ -443,3 +443,33 @@ button.srow__head {
   outline: 2px solid var(--focus);
   outline-offset: 2px;
 }
+
+@media (max-width: 560px) {
+  .score__figure--total .score__value {
+    font-size: 64px;
+  }
+
+  .frow__name,
+  .srow__name {
+    font-size: 18px;
+  }
+
+  .frow__score,
+  .srow__score {
+    font-size: var(--fs-4);
+  }
+
+  .fdetail {
+    padding-right: var(--s3);
+  }
+}
+
+@media (max-width: 380px) {
+  .score__figure--total .score__value {
+    font-size: 56px;
+  }
+
+  .score__band {
+    font-size: var(--fs-2);
+  }
+}
