@@ -65,10 +65,44 @@ export const MetricsSchema = z.object({
   input_tokens: count.nullable(), output_tokens: count.nullable(),
   cost_usd: z.number().finite().nonnegative().nullable(),
 })
+// Every score is an integer 0..100 or null. Null means not scored, never zero.
+const scoreValue = z.number().int().min(0).max(100).nullable()
+const band = z.string().min(1).nullable()
+export const ContentScoreSchema = z.object({
+  value: scoreValue, band, coverage: z.number().finite().min(0).max(1),
+  assessed_weight: z.number().int().min(0).max(100),
+  range: z.tuple([z.number().int().min(0).max(100), z.number().int().min(0).max(100)])
+    .refine(([low, high]) => low <= high, 'Score range must be ordered').nullable(),
+})
+export const StructureScoreSchema = z.object({
+  value: scoreValue, band, reason: z.string().min(1).nullable(),
+  assessed_weight: z.number().int().min(0).max(100),
+})
+export const TotalScoreSchema = z.object({
+  value: scoreValue, band,
+  mode: z.enum(['combined', 'content_only', 'structure_only', 'unavailable']),
+})
+export const ScoresSchema = z.object({
+  content: ContentScoreSchema, structure: StructureScoreSchema, total: TotalScoreSchema,
+})
+export const DimensionSchema = z.object({
+  key: text, label: text, owner: z.enum(['content', 'structure']),
+  weight: z.number().int().min(0).max(100), value: scoreValue,
+  section: z.string().min(1).nullable().optional(),
+})
+export const StructureFindingSchema = z.object({
+  id: text, label: text, severity: z.enum(['pass', 'minor', 'major', 'unassessable']),
+  points_lost: z.number().int().min(0).max(100),
+  page: z.number().int().nonnegative().nullable().optional(),
+  box: FindingBoxSchema.nullable().optional(),
+  confidence: probability.nullable(), evidence: text,
+})
 export const AnalysisReportSchema = z.object({
   analysis_id: text, rubric_version: text, model: text,
   findings: z.array(FindingSchema), overview: OverviewSchema,
   warnings: z.array(WarningSchema), metrics: MetricsSchema.nullable(),
+  scores: ScoresSchema, dimensions: z.array(DimensionSchema).default([]),
+  structure_findings: z.array(StructureFindingSchema).default([]),
 }).superRefine((r, ctx) => {
   for (const f of r.findings) {
     if (f.assessment_level === 'bullet' && !f.source_text?.trim())
@@ -94,3 +128,10 @@ export type AnswerCategory = z.infer<typeof AnswerCategorySchema>
 export type Extraction = z.infer<typeof ExtractionSchema>
 export type Health = z.infer<typeof HealthSchema>
 export type Warning = z.infer<typeof WarningSchema>
+export type Scores = z.infer<typeof ScoresSchema>
+export type ContentScore = z.infer<typeof ContentScoreSchema>
+export type StructureScore = z.infer<typeof StructureScoreSchema>
+export type TotalScore = z.infer<typeof TotalScoreSchema>
+export type ScoreMode = TotalScore['mode']
+export type Dimension = z.infer<typeof DimensionSchema>
+export type StructureFinding = z.infer<typeof StructureFindingSchema>
