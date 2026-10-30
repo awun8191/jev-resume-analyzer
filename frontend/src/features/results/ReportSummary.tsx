@@ -76,18 +76,15 @@ export default function ReportSummary({
   return (
     <section aria-labelledby="report-title">
       <header className="stage__head">
-        <h1 className="stage__title" tabIndex={-1} id="report-title">The report.</h1>
+        <div className="stage__head-row">
+          <h1 className="stage__title" tabIndex={-1} id="report-title">The report.</h1>
+          <button type="button" className="startover" onClick={onStartOver}>Start over</button>
+        </div>
         <p className="stage__lead">Scores first. Every finding links to its page.</p>
       </header>
 
       <ScoreBlock scores={report.scores} overview={report.overview} />
       <SubScores report={report} />
-
-      <div className="summary__tools">
-        <button type="button" className="startover" onClick={onStartOver}>
-          Start over
-        </button>
-      </div>
 
       <section className="section" aria-labelledby="fixes-title">
         <div className="section__head">

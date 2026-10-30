@@ -129,8 +129,9 @@ export function totalRange(scores: Scores): [number, number] | null {
   return scores.content.range
 }
 
+/* A range with the same number twice is one value, not a spread. */
 export function rangeText(range: [number, number]): string {
-  return `${range[0]} to ${range[1]}`
+  return range[0] === range[1] ? `${range[0]}` : `${range[0]} to ${range[1]}`
 }
 
 /* Coverage is one number. The counts sit under it as one short line. */

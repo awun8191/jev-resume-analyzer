@@ -121,14 +121,10 @@
 
 /* Sub-scores: two tiles side by side. A null tile says so in words, in place,
  * never behind a disclosure. */
-.summary__tools {
-  display: flex;
-  justify-content: flex-start;
-  margin-top: var(--s3);
-}
-
 /* A utility action, not a card action. 44px tall, underlined, no box. */
 .startover {
+  flex: none;
+  align-self: flex-start;
   min-height: var(--tap);
   padding: 0;
   border: 0;

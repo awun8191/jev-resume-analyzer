@@ -287,6 +287,14 @@ main:focus {
   color: var(--accent);
 }
 
+.stage__head-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s2) var(--s3);
+}
+
 .stage__title {
   font-size: var(--fs-6);
   font-weight: 600;
