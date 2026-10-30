@@ -175,8 +175,8 @@ export function groupFindings(findings: Finding[]): FindingGroup[] {
  * and nothing is invented. */
 export function findingLabel(dimension: string, questionId: string): string {
   const slug = questionId.toLowerCase()
-  const prefix = `${dimension.toLowerCase().replace(/\s+/g, '_')}_`
-  const tail = slug.startsWith(prefix) ? slug.slice(prefix.length) : slug
+  const prefix = dimension.toLowerCase().replace(/\s+/g, '[_-]')
+  const tail = slug.replace(new RegExp(`^${prefix}[_-]`), '')
   const words = tail.replace(/[-_]+/g, ' ').trim()
   if (!words) return dimension
   return words.charAt(0).toUpperCase() + words.slice(1)

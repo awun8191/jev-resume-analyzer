@@ -8,9 +8,7 @@ export default function Warnings({ warnings, title }: { warnings: Warning[]; tit
       <ul>
         {warnings.map((warning, i) => (
           <li key={`${warning.code}-${i}`}>
-            <span>
-              {warning.message} <code>{warning.code}</code>
-            </span>
+            <span>{warning.message}</span>
           </li>
         ))}
       </ul>
