@@ -31,3 +31,10 @@ it('only turns findings with real page geometry into boxes', () => {
   expect(boxes[1].severity).toBe('high')
   expect(boxes[0].box.right).toBe(0.92)
 })
+
+it('keeps a finding that only names a section, for the layout to place', () => {
+  const base = multiReport.findings[0]
+  const boxes = boxFindings([{ ...base, page: null, box: null, section: 'Experience' }])
+  expect(boxes).toHaveLength(1)
+  expect(boxes[0]).toMatchObject({ id: base.question_id, page: null, box: null, section: 'Experience' })
+})
