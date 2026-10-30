@@ -1,7 +1,7 @@
 # Rubric v3: evidence review and content scoring model
 
-Status: proposed. Rubric v3 runs beside v2. No analysis flow, HTTP contract, or frontend
-code changes in this task.
+Status: proposed. Rubric v3 runs beside v2. No analysis flow or frontend code changes in this
+task. The one contract change is an optional `section` field, documented in section 10.1.
 
 Scope: the content score only. A second score covers structure, meaning layout, spacing,
 typography, alignment, and density. Another agent owns that score. This document defines
@@ -231,6 +231,37 @@ Applicability rules, stated inside each question:
 - The two relevance questions are not applicable when the posting is absent or states no
   identifiable item.
 
+### 10.1 Section identifiers
+
+Every question carries one `section`. The set is closed: `header`, `summary`, `experience`,
+`education`, `skills`, `projects`, `all`. Exactly one value per question.
+
+A question that reads two or more sections carries `all`. The interface then highlights the
+whole document instead of guessing a single box. `header` and `summary` exist in the set but
+no v3 question uses them, because the header and summary checks were dropped in section 11.
+
+The backend defines the mapping once, in `app/rubrics/cv_review_v3.py`: the `SECTIONS` map
+and the `section_for(question_id)` helper. `scoring_v3` repeats `section` on every fix and
+every dimension row. `as_dict` serializes it. A dimension row gets the section its questions
+share, or `all` when they differ. A finding carries an optional `section` field.
+
+| question id | section | Why |
+| --- | --- | --- |
+| impact_outcome | all | Reads experience and project entries |
+| impact_magnitude | all | A result can sit in experience or in a project |
+| scope_actors | all | Reads experience and project entries |
+| scope_size | all | Reads experience and project entries |
+| ownership_own_action | all | Reads experience and project entries |
+| ownership_decision | all | Reads experience and project entries |
+| relevance_responsibility | all | CV tasks can sit in experience or in a project |
+| relevance_requirement | all | A qualification can sit in education, skills, or experience |
+| clarity_concrete | all | Reads experience and project entries |
+| clarity_self_contained | all | Internal names can appear in any section |
+| complete_roles | experience | Only employment entries are judged |
+| complete_education | education | Only education and certification entries are judged |
+| complete_projects | projects | Only project entries are judged |
+| skills_evidence | skills | Reads the skills list against the work text |
+
 ## 11. What changed from v1 and v2
 
 The earlier rubrics hold 16 document-level checks, plus 3 checks generated for each bullet.
@@ -333,8 +364,9 @@ Order on the page:
    Ownership, Relevance, Clarity, Completeness, and Skills. Structure owns its own
    dimension list, supplied by the structure module.
 4. Findings, grouped under their dimension. Each finding carries an owner label, Content or
-   Structure, and shows the question, the criteria, the answer, and the answer distribution
-   when the provider returns one.
+   Structure, a section id, and shows the question, the criteria, the answer, and the answer
+   distribution when the provider returns one. The section id places the finding beside the
+   resume box it judges. `all` means the whole document.
 5. The top three content fixes.
 
 Band labels appear once, in a legend. The same five labels apply to the total, the content
@@ -388,9 +420,12 @@ rates by group [13].
 - Entry point: `score_report(answers, structure_score=None, prepared=None)`. `answers` maps
   question id to answer state. `prepared` defaults to all 14 ids; pass 12 ids when no
   posting exists.
-- `as_dict(result)` returns plain data for report assembly.
+- `as_dict(result)` returns plain data for report assembly. Each dimension row and each fix
+  carries `section`.
+- `SECTIONS` and `section_for(question_id)` in `cv_review_v3.py` are the only definition of
+  the question-to-section mapping. Do not copy the table into a second module.
 - Unknown ids, answers outside `prepared`, and invalid structure scores raise `ValueError`.
-  These are wiring faults, not user errors.
+  These are wiring faults, not user errors. `section_for` raises `KeyError` for an unknown id.
 - `not_applicable` and `unable_to_assess` keep their existing meanings from the frontend
   contract. Neither becomes zero.
 - The frontend contract reserves `rating` for an approved mapping and describes it as
