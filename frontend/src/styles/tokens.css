@@ -1,9 +1,10 @@
 /*
  * JEV Resume Analyzer design tokens.
  *
- * Swiss / International Typographic Style. One neo-grotesque family, six type
- * sizes, hairline rules, one accent. Status is never carried by colour alone:
- * every state also has a glyph and a word.
+ * Swiss / International Typographic Style, softened: one neo-grotesque family,
+ * four text steps plus two display clamps, hairline rules, one accent, rounded
+ * panels. Status is never carried by colour alone: every state also has a glyph
+ * and a word.
  */
 :root {
   /* Colour. Monochrome plus one accent. */
@@ -17,24 +18,33 @@
   --accent: #d0021b;
   --focus: #121212;
 
-  /* Type. One family. Sizes map to label, meta, body, lead, section, title. */
+  /* Type. One family. Steps: label, meta, body, tile, then the title clamp and
+   * the total score clamp. */
   --font: 'Inter Variable', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  --fs-1: 0.6875rem;
-  --fs-2: 0.8125rem;
-  --fs-3: 0.9375rem;
-  --fs-4: 1.1875rem;
-  --fs-5: 1.75rem;
-  --fs-6: clamp(2.125rem, 4.4vw, 3rem);
-  --fs-display: clamp(2.75rem, 4.5vw, 3.75rem);
+  --fs-1: 0.75rem;   /* label, meta: 12px */
+  --fs-2: 0.875rem;  /* secondary prose: 14px */
+  --fs-3: 1rem;      /* body: 16px */
+  --fs-4: 1.25rem;   /* tile value, small heading: 20px */
+  --fs-5: 2rem;      /* sub-score value: 32px */
+  --fs-6: clamp(1.75rem, 3.4vw, 2.375rem);
+  --fs-display: clamp(3rem, 5.4vw, 4.25rem);
 
-  /* Report hierarchy: rating, two sub-scores, counts, findings. */
   --score-value: var(--fs-display);
-  --subscore-value: var(--fs-4);
+  --subscore-value: var(--fs-5);
 
   --lh-tight: 1.05;
-  --lh-head: 1.14;
-  --lh-body: 1.55;
-  --track-label: 0.09em;
+  --lh-head: 1.16;
+  --lh-body: 1.5;
+  --track-label: 0.08em;
+
+  /* Geometry. Panels round, controls round a little, chips fully round. */
+  --r-card: 16px;
+  --r-panel: 12px;
+  --r-control: 10px;
+  --r-pill: 999px;
+
+  /* One soft shadow, for the score block only. */
+  --shadow-score: 0 1px 2px rgb(18 18 18 / 4%), 0 10px 28px rgb(18 18 18 / 6%);
 
   /* Space. 4px base. */
   --s1: 4px;
@@ -51,9 +61,10 @@
   --cols: 12;
   --gutter: 24px;
   --page-max: 1360px;
-  --page-pad: 20px;
+  --page-pad: 16px;
   --tap: 44px;
   --measure: 64ch;
+  --safe-b: env(safe-area-inset-bottom, 0px);
 
   /* Motion. Short, interruptible, never decorative. */
   --dur: 120ms;
