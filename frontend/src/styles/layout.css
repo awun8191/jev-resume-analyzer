@@ -31,9 +31,15 @@
   top: 8px;
 }
 
-/* Masthead */
+/* Masthead. A floating glass bar, so the page keeps its colour behind it. */
 .masthead {
-  border-bottom: 1px solid var(--ink);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1px solid rgba(185, 203, 224, 0.55);
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: saturate(160%) blur(14px);
+  -webkit-backdrop-filter: saturate(160%) blur(14px);
 }
 
 .masthead__row {
@@ -47,7 +53,7 @@
 
 .wordmark {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: var(--s3);
 }
 
@@ -55,7 +61,7 @@
   font-family: var(--serif);
   font-size: var(--fs-4);
   font-weight: 500;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
   line-height: 1;
 }
 
@@ -66,7 +72,7 @@
   font-weight: 600;
   letter-spacing: var(--track-label);
   text-transform: uppercase;
-  color: var(--ink-2);
+  color: var(--ink-3);
 }
 
 .masthead__tools {
@@ -76,11 +82,21 @@
 }
 
 .health {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
   font-size: var(--fs-1);
   font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--accent);
+  letter-spacing: 0.01em;
+  color: var(--ink-2);
+}
+
+.health::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: var(--r-pill);
+  background: var(--danger);
 }
 
 .newreview {
@@ -91,7 +107,7 @@
 
 /* Stage bar */
 .progressbar {
-  border-bottom: 1px solid var(--rule);
+  padding-block: var(--s2) var(--s3);
 }
 
 .progress {
@@ -120,18 +136,27 @@
   align-items: center;
   gap: var(--s2);
   min-height: 32px;
-  padding: 2px 0;
+  padding: 0 2px;
+  border-bottom: 2px solid transparent;
+  color: var(--ink-3);
+  transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease);
 }
 
 .progress__steps li[aria-current='step'] {
+  border-bottom-color: var(--brand);
   color: var(--ink);
-  font-weight: 600;
+}
+
+.progress__n {
+  font-variant-numeric: tabular-nums;
+  color: var(--brand);
 }
 
 .progress__mark {
-  width: 6px;
-  height: 6px;
-  background: var(--accent);
+  width: 5px;
+  height: 5px;
+  border-radius: var(--r-pill);
+  background: var(--brand);
 }
 
 .progress__file {
@@ -139,6 +164,15 @@
   letter-spacing: 0;
   text-transform: none;
   overflow-wrap: anywhere;
+}
+
+.progress__now {
+  display: none;
+  font-size: var(--fs-1);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink-2);
 }
 
 /* Reading page */
@@ -164,7 +198,7 @@ main:focus {
   }
 
   .stage {
-    grid-column: 1 / span 8;
+    grid-column: 1 / -1;
   }
 }
 
@@ -355,7 +389,23 @@ main:focus {
     width: 100%;
   }
 
+  .progress__steps {
+    gap: var(--s3);
+  }
+
+  .progress__steps li:not([aria-current='step']) .progress__label {
+    display: none;
+  }
+
+  .progress__steps {
+    display: none;
+  }
+
+  .progress__now {
+    display: block;
+  }
+
   .stage__title {
-    font-size: 36px;
+    font-size: clamp(32px, 6vw, 40px);
   }
 }

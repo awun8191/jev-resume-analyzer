@@ -215,7 +215,7 @@ The report reads in this order: total score, two sub-score tiles, top fixes, the
 - Top fixes lists the absent answers, at most three, in server order. Each row selects its finding and turns the document pane to the page. A visible Jump to finding control is always present.
 - Content findings are grouped by scope and dimension, with labels taken from the server question id. Three findings are visible; the rest sit behind Show all N findings. Each row is one line and opens its question, criteria, confidence and probability distribution on tap.
 - All dimensions and structure findings each sit behind one disclosure. The structure summary states the count and the score, including Not scored. An empty list opens by default so the empty sentence is never hidden.
-- Geometry: cards and panels use a 12 to 16px radius, controls 10px, chips a full pill. Hairline borders stay, one soft shadow belongs to the score block only, and there are no gradients. Body text is 16px with a 1.5 line height; labels are 12px uppercase.
+- Geometry: tiles and panels use a 20 to 28px radius, controls 12px, actions a full pill. Panels take one soft blue-tinted shadow; nothing takes a black shadow. No gradients inside panels, but the page carries a cool blue wash and one brand glow. Body text is 16px with a 1.55 line height; micro labels are 12px uppercase.
 
 ## Verification and integration gaps
 

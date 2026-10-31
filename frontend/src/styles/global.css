@@ -18,7 +18,11 @@ html {
 }
 
 body {
-  background: var(--paper);
+  background:
+    radial-gradient(1200px 620px at 12% -10%, rgba(56, 189, 248, 0.22), transparent 60%),
+    radial-gradient(900px 520px at 92% 0%, rgba(29, 78, 216, 0.12), transparent 58%),
+    var(--paper);
+  background-attachment: fixed;
   color: var(--ink);
   font-family: var(--sans);
   font-size: var(--fs-3);
@@ -33,8 +37,8 @@ h3,
 h4 {
   font-family: var(--serif);
   font-weight: 500;
-  line-height: var(--lh-head);
-  letter-spacing: -0.02em;
+  line-height: 1.05;
+  letter-spacing: -0.022em;
   text-wrap: balance;
   font-optical-sizing: auto;
 }
@@ -63,8 +67,8 @@ a {
 }
 
 ::selection {
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--brand-soft);
+  color: var(--brand-ink);
 }
 
 /* Small sans label. The only uppercase voice, 12px. */
@@ -72,11 +76,11 @@ a {
   display: block;
   font-family: var(--sans);
   font-size: var(--fs-1);
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.25;
   letter-spacing: var(--track-label);
   text-transform: uppercase;
-  color: var(--ink-2);
+  color: var(--ink-3);
 }
 
 .help {
@@ -122,49 +126,64 @@ a {
   border: 0;
 }
 
-/* Buttons. Square, 44px tall, one black fill for the primary action. */
+/* Buttons. Pills, one blue fill for the primary action, soft lift on hover. */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--s2);
   min-height: var(--tap);
-  padding: 0 20px;
-  border: 1px solid var(--ink);
-  border-radius: var(--r);
-  background: var(--paper);
+  padding: 0 22px;
+  border: 1px solid transparent;
+  border-radius: var(--r-pill);
+  background: var(--surface);
   color: var(--ink);
   font-family: var(--sans);
   font-size: var(--fs-2);
   font-weight: 600;
-  letter-spacing: 0.01em;
+  letter-spacing: -0.01em;
   cursor: pointer;
-  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+  box-shadow: var(--shadow-1);
+  transition:
+    transform var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease),
+    background var(--dur) var(--ease),
+    color var(--dur) var(--ease);
 }
 
 .btn--primary {
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--brand);
+  color: #fff;
+  box-shadow: var(--shadow-brand);
 }
 
 .btn--quiet {
   border-color: var(--rule-2);
+  background: var(--surface);
   color: var(--ink-2);
+  box-shadow: none;
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
 @media (hover: hover) {
   .btn--primary:not(:disabled):hover {
-    background: var(--paper);
-    color: var(--ink);
+    background: var(--brand-strong);
+    transform: translateY(-1px);
+    box-shadow: 0 16px 30px -12px rgba(29, 78, 216, 0.6);
   }
 
   .btn--quiet:not(:disabled):hover {
-    border-color: var(--ink);
-    color: var(--ink);
+    border-color: var(--brand);
+    color: var(--brand);
+    transform: translateY(-1px);
   }
 
   .btn:not(.btn--primary):not(.btn--quiet):not(:disabled):hover {
-    border-color: var(--ink);
+    border-color: var(--brand);
+    color: var(--brand);
   }
 }
 
@@ -344,16 +363,18 @@ input[type='file']::file-selector-button {
   color: var(--ink-2);
 }
 
-/* Request failure. The accent rule marks it; the words name it. */
+/* Request failure. A soft red panel, so the state is visible at a glance. */
 .alert {
-  border-top: 1px solid var(--ink);
-  border-left: 2px solid var(--accent);
-  padding: var(--s3) 0 0 var(--s4);
+  border: 1px solid #f3c6c1;
+  border-radius: var(--r-card);
+  background: #fff6f5;
+  padding: var(--s5);
   margin-bottom: var(--s5);
+  box-shadow: var(--shadow-1);
 }
 
 .alert > .label {
-  color: var(--accent);
+  color: var(--danger);
 }
 
 .alert h2 {
@@ -388,9 +409,10 @@ code {
 
 .busy::before {
   content: '';
-  width: 6px;
-  height: 6px;
-  background: var(--accent);
+  width: 8px;
+  height: 8px;
+  border-radius: var(--r-pill);
+  background: var(--brand);
   flex: none;
 }
 

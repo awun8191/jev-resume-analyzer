@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import type { MouseEvent } from 'react'
 import './upload.css'
 
 /* 4 MB, not 4 MiB: the API rejects a body above 4.5 MB before the app runs. */
@@ -15,6 +16,7 @@ export default function UploadStage({ onFile }: { onFile: (file: File) => Promis
   const [error, setError] = useState<string | null>(null)
   const [dragging, setDragging] = useState(false)
   const dragDepth = useRef(0)
+  const input = useRef<HTMLInputElement>(null)
 
   function select(files: File[]) {
     if (files.length !== 1) {
@@ -31,49 +33,78 @@ export default function UploadStage({ onFile }: { onFile: (file: File) => Promis
     if (dragDepth.current === 0) setDragging(false)
   }
 
+  /* The whole zone is the control. A click on the label opens the picker by
+   * itself, so only clicks on the surrounding area forward to the input. */
+  function open(event: MouseEvent<HTMLDivElement>) {
+    const target = event.target as HTMLElement
+    if (target.closest('label, input, button')) return
+    input.current?.click()
+  }
+
   return (
-    <section aria-labelledby="upload-title">
-      <header className="stage__head">
-        <h1 className="stage__title" tabIndex={-1} id="upload-title">Check what the document actually says.</h1>
-        <p className="stage__lead">
+    <section className="hero" aria-labelledby="upload-title">
+      <header className="hero__head">
+        <p className="hero__badge">
+          <span className="hero__dot" aria-hidden="true" />
+          Free demo. No account.
+        </p>
+        <h1 className="hero__title" tabIndex={-1} id="upload-title">
+          Check what the document actually says.
+        </h1>
+        <p className="hero__lead">
           Upload a PDF or DOCX, review the extracted text, then read a report built from the exact
           questions that were asked.
         </p>
       </header>
 
-      <div
-        className={`drop${dragging ? ' is-dragging' : ''}`}
-        onDragEnter={event => {
-          event.preventDefault()
-          dragDepth.current += 1
-          setDragging(true)
-        }}
-        onDragOver={event => event.preventDefault()}
-        onDragLeave={event => {
-          event.preventDefault()
-          leave()
-        }}
-        onDrop={event => {
-          event.preventDefault()
-          dragDepth.current = 0
-          setDragging(false)
-          select(Array.from(event.dataTransfer.files))
-        }}
-      >
-        <div className="drop__lead">
+      <div className="card">
+        <div className="card__bar">
           <p className="label">CV document</p>
-          <p className="drop__title">{dragging ? 'Release to upload.' : 'Drop a PDF or DOCX here.'}</p>
-          <p className="help">
-            {dragging
-              ? 'One document at a time. The file is read locally before anything else happens.'
-              : 'Text is read on the analysis server. No model request is made at this step.'}
-          </p>
+          <p className="card__meta">PDF or DOCX, up to 4 MB</p>
         </div>
 
-        <div className="drop__control">
-          <label className="label" htmlFor="cv-file">Choose CV file</label>
+        <div
+          className={`drop${dragging ? ' is-dragging' : ''}`}
+          onClick={open}
+          onDragEnter={event => {
+            event.preventDefault()
+            dragDepth.current += 1
+            setDragging(true)
+          }}
+          onDragOver={event => event.preventDefault()}
+          onDragLeave={event => {
+            event.preventDefault()
+            leave()
+          }}
+          onDrop={event => {
+            event.preventDefault()
+            dragDepth.current = 0
+            setDragging(false)
+            select(Array.from(event.dataTransfer.files))
+          }}
+        >
+          <span className="drop__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 16V4" />
+              <path d="m7 9 5-5 5 5" />
+              <path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
+            </svg>
+          </span>
+
+          <p className="drop__title">{dragging ? 'Release to upload.' : 'Drop a PDF or DOCX here.'}</p>
+          <p className="drop__help" id="upload-help">
+            {dragging
+              ? 'One document at a time.'
+              : 'Text is read on the analysis server. No model request is made at this step.'}
+          </p>
+
+          <label className="btn btn--primary drop__pick" htmlFor="cv-file">
+            Choose CV file
+          </label>
           <input
+            ref={input}
             id="cv-file"
+            className="sr-only"
             type="file"
             accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             aria-describedby={error ? 'upload-help upload-error' : 'upload-help'}
@@ -82,13 +113,18 @@ export default function UploadStage({ onFile }: { onFile: (file: File) => Promis
               event.currentTarget.value = ''
             }}
           />
-          <p className="help" id="upload-help">PDF or DOCX. Up to 4 MB. One file at a time.</p>
           {error && <p className="drop__error" id="upload-error" role="alert">{error}</p>}
         </div>
+
+        <ul className="card__facts">
+          <li><b>20</b><span>content checks</span></li>
+          <li><b>11</b><span>layout checks</span></li>
+          <li><b>2</b><span>scores per review</span></li>
+        </ul>
       </div>
 
       <section className="notes" aria-labelledby="notes-title">
-        <h2 className="label" id="notes-title">Before you begin</h2>
+        <h2 className="notes__title" id="notes-title">Before you begin</h2>
         <ul>
           <li><b>Selectable text.</b> Scanned pages need OCR, which this demo does not provide.</li>
           <li><b>Editable preview.</b> Remove contact details there before anything leaves this machine.</li>

@@ -1,80 +1,338 @@
 /*
- * Upload stage. A single ruled drop area, left aligned, with the file control
- * as the baseline action and drag and drop as an enhancement.
+ * Upload stage: the landing surface.
+ *
+ * Cluely-style hero on a cool blue field. Big serif headline, one glowing blue
+ * action, then the product surface itself as a floating white card. Motion is
+ * short and physical: the hero rises, the card settles, the dot breathes.
  */
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding-block: var(--s6) var(--s8);
+}
+
+.hero__head {
+  max-width: 820px;
+  animation: hero-in 620ms var(--ease-out) both;
+}
+
+.hero__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink-2);
+  font-size: var(--fs-2);
+  font-weight: 500;
+  letter-spacing: -0.005em;
+}
+
+.hero__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--r-pill);
+  background: var(--sky);
+  animation: dot-pulse 2.6s var(--ease) infinite;
+}
+
+.hero__title {
+  margin-top: var(--s4);
+  font-size: clamp(40px, 6.2vw, 76px);
+  font-weight: 500;
+  line-height: 0.98;
+  letter-spacing: -0.032em;
+  text-wrap: balance;
+}
+
+.hero__lead {
+  margin: var(--s4) auto 0;
+  max-width: 620px;
+  font-size: 18px;
+  line-height: 1.5;
+  letter-spacing: -0.008em;
+  color: var(--ink-2);
+}
+
+/* The product surface. A white card that floats over the page colour. */
+.card {
+  width: 100%;
+  max-width: 760px;
+  margin-top: var(--s6);
+  padding: var(--s3);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow:
+    0 40px 80px -44px rgba(29, 78, 216, 0.5),
+    0 2px 10px rgba(11, 23, 40, 0.06);
+  animation: card-in 720ms 90ms var(--ease-out) both;
+  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+
+@media (hover: hover) {
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 48px 90px -44px rgba(29, 78, 216, 0.55),
+      0 3px 12px rgba(11, 23, 40, 0.07);
+  }
+}
+
+.card__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s2) var(--s4);
+  padding: var(--s1) var(--s3) var(--s3);
+  text-align: left;
+}
+
+.card__meta {
+  font-size: var(--fs-1);
+  font-weight: 500;
+  color: var(--ink-3);
+}
+
+/* Drop zone. The entire area is clickable, so a phone tap works. */
 .drop {
   display: grid;
-  gap: var(--s5);
-  padding: var(--s5);
+  justify-items: center;
+  gap: var(--s2);
+  padding: var(--s6) var(--s5) var(--s5);
   border: 1px solid var(--rule);
-  border-radius: var(--r);
-  background: var(--paper);
-  transition: border-color var(--dur) var(--ease);
+  border-radius: var(--r-card);
+  background: radial-gradient(120% 130% at 50% 0%, #f9fcff 0%, #eaf3ff 100%);
+  cursor: pointer;
+  transition:
+    border-color var(--dur) var(--ease),
+    background var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease),
+    transform var(--dur) var(--ease);
+}
+
+.drop:focus-within {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.16);
+}
+
+@media (hover: hover) {
+  .drop:hover {
+    border-color: rgba(29, 78, 216, 0.45);
+    background: radial-gradient(120% 130% at 50% 0%, #ffffff 0%, #e4efff 100%);
+    box-shadow: 0 14px 30px -22px rgba(29, 78, 216, 0.6);
+  }
 }
 
 .drop.is-dragging {
-  border-color: var(--accent);
-  outline: 1px solid var(--accent);
-  outline-offset: -1px;
+  border-color: var(--brand);
+  background: var(--brand-soft);
+  transform: scale(1.008);
+}
+
+.drop__icon {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  margin-bottom: var(--s1);
+  border-radius: 18px;
+  background: var(--surface);
+  color: var(--brand);
+  box-shadow: inset 0 0 0 1px rgba(29, 78, 216, 0.14), 0 6px 16px -8px rgba(29, 78, 216, 0.5);
+  transition: transform var(--dur) var(--ease-spring), color var(--dur) var(--ease);
+}
+
+.drop.is-dragging .drop__icon {
+  transform: translateY(-3px) scale(1.06);
 }
 
 .drop__title {
-  margin-top: var(--s2);
-  font-family: var(--serif);
+  font-family: var(--sans);
   font-size: var(--fs-4);
-  font-weight: 500;
-  line-height: 1.15;
-  letter-spacing: -0.015em;
-  max-width: 26ch;
+  font-weight: 650;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
 }
 
-.drop__lead .help {
-  margin-top: var(--s2);
-  max-width: 46ch;
+.drop__help {
+  max-width: 44ch;
+  font-size: var(--fs-2);
+  line-height: 1.5;
+  color: var(--ink-2);
 }
 
-.drop__control {
-  padding-top: var(--s4);
-  border-top: 1px solid var(--rule);
-}
-
-.drop__control .help {
-  margin-top: var(--s2);
+.drop__pick {
+  margin-top: var(--s3);
 }
 
 .drop__error {
   margin-top: var(--s2);
+  padding: 8px 14px;
+  border-radius: var(--r-pill);
+  background: #fff1f0;
+  color: var(--danger);
   font-size: var(--fs-2);
   font-weight: 600;
-  color: var(--accent);
 }
 
-.drop__error::before {
-  content: '!';
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  margin-right: var(--s2);
-  border: 1px solid var(--accent);
-  text-align: center;
-  line-height: 14px;
-  font-size: 11px;
+/* Proof strip inside the card. Numbers, not adjectives. */
+.card__facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  margin-top: var(--s3);
+  padding-top: var(--s3);
+  border-top: 1px solid var(--rule);
+  list-style: none;
 }
 
-@media (min-width: 720px) {
-  .drop {
-    padding: var(--s6);
+.card__facts li {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s2);
+  padding: 0 var(--s4);
+  color: var(--ink-3);
+  font-size: var(--fs-1);
+  font-weight: 500;
+}
+
+.card__facts li + li {
+  border-left: 1px solid var(--rule);
+}
+
+.card__facts b {
+  font-family: var(--serif);
+  font-size: var(--fs-4);
+  font-weight: 500;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The rules of the tool. Quiet, below the action, three columns. */
+.notes {
+  display: block;
+  width: 100%;
+  max-width: 760px;
+  margin-top: var(--s7);
+  padding-top: var(--s4);
+  border-top: 1px solid rgba(185, 203, 224, 0.7);
+  text-align: left;
+  animation: card-in 720ms 180ms var(--ease-out) both;
+}
+
+.notes__title {
+  margin-bottom: var(--s3);
+  font-family: var(--sans);
+  font-size: var(--fs-2);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.notes ul {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s4);
+  padding: 0;
+  list-style: none;
+  font-size: var(--fs-1);
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+.notes b {
+  display: block;
+  margin-bottom: 2px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+@keyframes hero-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 
-@media (min-width: 860px) {
-  .drop {
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(26px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes dot-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.22);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(56, 189, 248, 0.04);
+  }
+}
+
+@media (max-width: 860px) {
+  .notes ul {
     grid-template-columns: minmax(0, 1fr);
-    gap: var(--s6);
+    gap: var(--s3);
+  }
+}
+
+@media (max-width: 620px) {
+  .hero {
+    padding-block: var(--s4) var(--s7);
   }
 
-  .notes {
-    grid-template-columns: minmax(0, 3fr) minmax(0, 9fr);
-    gap: var(--s5);
+  .hero__lead {
+    font-size: var(--fs-3);
+  }
+
+  .card {
+    padding: var(--s2);
+    border-radius: var(--r-card);
+  }
+
+  .drop {
+    padding: var(--s5) var(--s3);
+    border-radius: 16px;
+  }
+
+  .card__facts {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--s2);
+  }
+
+  .card__facts li {
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    text-align: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__head,
+  .card,
+  .notes,
+  .hero__dot {
+    animation: none;
+  }
+
+  .card:hover,
+  .drop.is-dragging {
+    transform: none;
   }
 }

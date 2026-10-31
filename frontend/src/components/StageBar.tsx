@@ -16,12 +16,13 @@ export default function StageBar({
         {STEPS.map((label, i) => (
           <li key={label} aria-current={i === current ? 'step' : undefined}>
             <span className="progress__n" aria-hidden="true">{`0${i + 1}`}</span>
-            <span>{label}</span>
+            <span className="progress__label">{label}</span>
             {i === current && <span className="progress__mark" aria-hidden="true" />}
           </li>
         ))}
       </ol>
-      <p className="progress__file">{fileName || 'No document'}</p>
+      {fileName && <p className="progress__file">{fileName}</p>}
+      <p className="progress__now">Step {current + 1} of 3. {STEPS[current]}</p>
     </nav>
   )
 }

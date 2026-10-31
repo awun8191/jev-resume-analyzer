@@ -1,52 +1,75 @@
 /*
  * JEV Resume Analyzer design tokens.
  *
- * Swiss typography with an editorial voice: one serif for display and numerals,
- * one grotesque for controls and data. Seven type steps, hairline rules, square
- * corners, no shadows. Band colour is the only chromatic surface, and every
- * coloured number keeps its band word beside it.
+ * Blue bento: a cool blue-grey page, white tiles with soft edges, one deep blue
+ * for action and one sky blue for accent. The serif carries score numerals only.
+ * Shadows are soft and blue tinted, never black. Band colour still carries the
+ * verdict, so every coloured number keeps its band word beside it.
  */
 :root {
-  /* Ink on paper. Rules are hairlines, never fills. */
-  --paper: #ffffff;
-  --paper-sunk: #f5f5f2;
-  --ink: #121212;
-  --ink-2: #575757;
-  --ink-3: #6e6e6e;
-  --rule: #dededa;
-  --rule-2: #b8b8b3;
-  --focus: #121212;
-  --accent: #b3261e;
+  /* Surfaces. The page is cool, the tiles are white. */
+  --paper: #eef3fa;
+  --paper-sunk: #e6eefa;
+  --surface: #ffffff;
+  --surface-2: #f7faff;
+  --surface-brand: #eaf3ff;
 
-  /* Band colour: the verdict. All pass 4.5:1 on white.
-   * good  #157347  5.87:1
-   * fair  #a15c07  5.19:1
-   * poor  #b3261e  6.54:1
-   * The word beside the number carries the same verdict, so colour is never
-   * the only signal. */
-  --band-good: #157347;
-  --band-fair: #a15c07;
-  --band-poor: #b3261e;
+  /* Ink. Text contrast on white: ink 17.9:1, ink-2 8.6:1, ink-3 5.4:1. */
+  --ink: #0b1728;
+  --ink-2: #41536b;
+  --ink-3: #5b6e86;
 
-  /* Type. Serif for display, numerals and section titles; Inter for controls,
-   * labels, data and body. Steps: 12, 14, 16, 20, 28, 44, 72. */
-  --serif: 'Newsreader Variable', 'Iowan Old Style', Georgia, 'Times New Roman', serif;
+  /* Lines. Decorative rules stay light. Control bounds are darker. */
+  --rule: #dde7f3;
+  --rule-2: #b9cbe0;
+  --focus: #1d4ed8;
+
+  /* Brand. Deep blue for action, sky for accent and glow. */
+  --brand: #1d4ed8;
+  --brand-strong: #1e40af;
+  --brand-ink: #16307a;
+  --sky: #38bdf8;
+  --brand-soft: #e8f2ff;
+
+  /* Error. Not the brand blue and not the poor band. */
+  --danger: #b42318;
+
+  /* Band colour: the verdict. All pass 4.5:1 on white. */
+  --band-good: #067a55;
+  --band-fair: #9a5b00;
+  --band-poor: #b42318;
+
+  /* The old accent name resolves to the brand, so no red state survives. */
+  --accent: var(--brand);
+
+  /* Type. Inter carries every heading, label and body. Newsreader carries the
+   * score numerals only. Steps: 12, 14, 16, 20, 28, 40, 56. */
   --sans: 'Inter Variable', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --serif: 'Newsreader Variable', 'Iowan Old Style', Georgia, 'Times New Roman', serif;
   --fs-1: 12px;
   --fs-2: 14px;
   --fs-3: 16px;
   --fs-4: 20px;
   --fs-5: 28px;
-  --fs-6: 44px;
-  --fs-7: 72px;
+  --fs-6: 40px;
+  --fs-7: 56px;
 
-  --lh-tight: 0.95;
-  --lh-head: 1.05;
+  --lh-tight: 1;
+  --lh-head: 1.1;
   --lh-body: 1.55;
-  --track-label: 0.09em;
+  --track-label: 0.08em;
 
-  /* Geometry. Two pixels at most. Nothing is a card. */
-  --r: 2px;
+  /* Geometry. Soft corners, no sharp boxes. */
+  --r: 12px;
+  --r-sm: 8px;
+  --r-card: 20px;
+  --r-lg: 28px;
+  --r-pill: 999px;
+
+  /* Elevation. Blue tinted, low opacity, never black. */
+  --shadow-1: 0 1px 2px rgba(11, 23, 40, 0.06), 0 2px 6px rgba(11, 23, 40, 0.04);
+  --shadow-2: 0 18px 40px -20px rgba(29, 78, 216, 0.35), 0 2px 8px rgba(11, 23, 40, 0.05);
+  --shadow-brand: 0 10px 24px -10px rgba(29, 78, 216, 0.55);
 
   /* Space. 4px base. */
   --s1: 4px;
@@ -61,16 +84,19 @@
 
   /* Grid and measure. */
   --cols: 12;
-  --gutter: 24px;
-  --page-max: 1400px;
-  --page-pad: 16px;
+  --gutter: 16px;
+  --page-max: 1240px;
+  --page-pad: 20px;
   --tap: 44px;
   --measure: 64ch;
   --safe-b: env(safe-area-inset-bottom, 0px);
 
-  /* Motion. Short, interruptible, never decorative. */
-  --dur: 120ms;
-  --ease: cubic-bezier(0.2, 0, 0, 1);
+  /* Motion. Short, physical, one curve family. */
+  --dur: 180ms;
+  --dur-in: 420ms;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
 }
 
 @media (min-width: 768px) {
@@ -81,6 +107,6 @@
 
 @media (min-width: 1200px) {
   :root {
-    --page-pad: 48px;
+    --page-pad: 40px;
   }
 }
