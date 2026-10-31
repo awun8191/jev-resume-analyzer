@@ -16,6 +16,7 @@ from app.models.documents import WarningItem
 from app.models.questions import ProviderResponse
 from app.rubrics.cv_review_v3 import RatedQuestion
 from app.rubrics.scoring_v3 import ScoreResult
+from app.services.reader_criteria import plain_criteria
 from app.services.structure_review import StructureOutcome
 
 EXPLANATIONS = {
@@ -46,7 +47,10 @@ def build_findings(
                 section=question.section,
                 scope=question.scope,
                 question=question.instructions,
-                criteria=[f"{key}: {value}" for key, value in question.criteria.items()],
+                # The report shows the rule in plain words. The rubric strings
+                # stay with the model, where the thresholds belong.
+                criteria=plain_criteria(question.id)
+                or [f"{key}: {value}" for key, value in question.criteria.items()],
                 answer=answer.choice,
                 probabilities=answer.probabilities,
                 confidence=answer.confidence,

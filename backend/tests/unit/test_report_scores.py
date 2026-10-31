@@ -5,6 +5,7 @@ import pytest
 from app.models.questions import ChoiceAnswer, Distribution, ProviderResponse, Usage
 from app.rubrics import cv_review_v3 as rubric
 from app.rubrics.cv_review_v3 import IDS, QUESTIONS
+from app.services.reader_criteria import plain_criteria
 from app.services.reporting import (
     build_findings,
     build_warnings,
@@ -46,10 +47,23 @@ def test_one_finding_per_v3_question_in_rubric_order():
         assert finding.section == question.section
         assert finding.scope == question.scope
         assert finding.question == question.instructions
-        assert finding.criteria == [f"{k}: {v}" for k, v in question.criteria.items()]
+        # The report carries the plain rule, not the model threshold text.
+        assert finding.criteria == plain_criteria(question.id)
+        assert finding.criteria
         assert finding.assessment_level == "full_document"
         assert finding.source == "provider"
         assert finding.source_text is None
+
+
+def test_every_content_check_carries_a_plain_rule():
+    """A new check cannot ship without reader copy, and the copy stays short."""
+    banned = ("threshold", "prevalence", "interpretable", "applicable", "criteria")
+    for question in QUESTIONS:
+        lines = plain_criteria(question.id)
+        assert lines, f"{question.id} has no reader criteria"
+        for line in lines:
+            assert len(line) <= 90, (question.id, line)
+            assert not any(word in line.lower() for word in banned), (question.id, line)
 
 
 def test_explanations_are_versioned_rubric_text():

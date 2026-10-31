@@ -10,6 +10,7 @@ from app.dependencies import get_gateway, get_settings
 from app.gateways.typesafe import TypeSafeGateway
 from app.main import app
 from app.rubrics.cv_review_v3 import IDS
+from app.services.reader_criteria import plain_criteria
 
 OPTIONS = ["present", "absent", "not_applicable", "unable_to_assess"]
 
@@ -71,7 +72,9 @@ def test_full_document_one_call(harness, with_job):
         assert actual["type"] == "choice"
         assert set(actual["criteria"]) == set(OPTIONS)
         assert finding["question"] == actual["instructions"]
-        assert finding["criteria"] == [f"{k}: {v}" for k, v in actual["criteria"].items()]
+        # The wire carries the model criteria. The report carries the plain rule.
+        assert finding["criteria"] == plain_criteria(finding["question_id"])
+        assert finding["criteria"]
         assert finding["assessment_level"] == "full_document"
         assert finding["source"] == "provider"
         assert finding["probabilities"] == dict(zip(OPTIONS, [0.7, 0.1, 0.1, 0.1]))

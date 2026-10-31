@@ -114,7 +114,7 @@ it('gives every row its own score and its own stake in points', () => {
   expect(rows[2].querySelector('.frow__score')!.getAttribute('data-band')).toBeNull()
 })
 
-it('opens one row in place to its question, criteria, answer and probabilities', async () => {
+it('opens one row in place to its criteria, answer and probabilities', async () => {
   const user = userEvent.setup()
   const { container } = show()
   const first = container.querySelector('.frow') as HTMLElement
@@ -128,14 +128,15 @@ it('opens one row in place to its question, criteria, answer and probabilities',
   await user.click(row)
   expect(row.getAttribute('aria-expanded')).toBe('true')
   expect(detail.hasAttribute('hidden')).toBe(false)
-  expect(detail.textContent).toContain('SYNTHETIC: is the work described clearly?')
+  // The prompt that went to the model never reaches the report. Only the rule.
+  expect(detail.textContent).not.toContain('SYNTHETIC: is the work described clearly?')
   expect(detail.textContent).toContain('SYNTHETIC criterion A.')
   expect(detail.textContent).toContain('SYNTHETIC criterion B.')
   expect(detail.textContent).toContain('Present')
   expect(detail.textContent).toContain('62.0%')
-  // Four facts, nothing else.
+  // Three facts, nothing else.
   expect([...detail.querySelectorAll('.label')].map(node => node.textContent)).toEqual([
-    'Question', 'Criteria', 'Answer', 'Probability per answer',
+    'What counts', 'Answer', 'Probability per answer',
   ])
 
   await user.click(row)

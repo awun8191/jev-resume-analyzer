@@ -5,26 +5,18 @@ import {
   findingStakes, groupFindings, percent, scoreText,
 } from './summary'
 
-/* The four facts behind one row: the question that was asked, what counted as
- * an answer, the answer, and how sure the provider was. */
+/* The three facts behind one row: what counts as an answer, the answer, and
+ * how sure the provider was. The prompt stays out of the report. */
 function Detail({ finding: f, hidden }: { finding: Finding; hidden: boolean }) {
   return (
     <div className="fdetail" id={`finding-detail-${f.question_id}`} hidden={hidden}>
-      <div className="fdetail__question">
-        <p className="label">Question</p>
-        <p className="fdetail__text">{f.question}</p>
-      </div>
-
       <div className="fdetail__criteria">
-        <p className="label">Criteria</p>
-        <ol className="criteria">
+        <p className="label">What counts</p>
+        <ul className="criteria">
           {f.criteria.map((criterion, i) => (
-            <li key={i}>
-              <span className="criteria__n" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
-              <span>{criterion}</span>
-            </li>
+            <li key={i}>{criterion}</li>
           ))}
-        </ol>
+        </ul>
       </div>
 
       <div className="fdetail__answer">
