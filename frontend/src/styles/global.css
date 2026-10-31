@@ -346,9 +346,8 @@ input[type='file']::file-selector-button {
 
 /* Request failure. The accent rule marks it; the words name it. */
 .alert {
-  border-top: 1px solid var(--ink);
-  border-left: 2px solid var(--accent);
-  padding: var(--s3) 0 0 var(--s4);
+  border-top: 2px solid var(--accent);
+  padding: var(--s3) 0 0;
   margin-bottom: var(--s5);
 }
 
@@ -375,7 +374,7 @@ code {
   overflow-wrap: anywhere;
 }
 
-/* Status line with a square marker. */
+/* Status line with a square marker. Ink: the work is moving, nothing failed. */
 .busy {
   display: flex;
   align-items: baseline;
@@ -390,7 +389,7 @@ code {
   content: '';
   width: 6px;
   height: 6px;
-  background: var(--accent);
+  background: var(--ink);
   flex: none;
 }
 

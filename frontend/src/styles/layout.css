@@ -104,7 +104,7 @@
   font-size: var(--fs-1);
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--ink-3);
+  color: var(--ink-2);
 }
 
 .progress__steps {
@@ -126,12 +126,19 @@
 .progress__steps li[aria-current='step'] {
   color: var(--ink);
   font-weight: 600;
+  border-bottom: 1px solid var(--ink);
 }
 
+.progress__steps li:not([aria-current='step']) .progress__mark {
+  visibility: hidden;
+}
+
+/* The current step is bolded text with an ink square. Red is reserved for
+ * failures; a step marker says where you are, not that something is wrong. */
 .progress__mark {
   width: 6px;
   height: 6px;
-  background: var(--accent);
+  background: var(--ink);
 }
 
 .progress__file {
@@ -163,8 +170,11 @@ main:focus {
     padding-block: var(--s7) var(--s9);
   }
 
+  /* Stages own the full measure. The workspace splits its own two panes; a
+   * single stage composes itself (see upload.css). Nothing is left half-width
+   * against a dead right column. */
   .stage {
-    grid-column: 1 / span 8;
+    grid-column: 1 / -1;
   }
 }
 
@@ -239,7 +249,7 @@ main:focus {
 /* Stage furniture */
 .stage__head {
   border-top: 1px solid var(--ink);
-  padding-top: var(--s3);
+  padding-top: var(--s4);
   margin-bottom: var(--s5);
 }
 
@@ -262,10 +272,10 @@ main:focus {
 }
 
 .stage__lead {
-  margin-top: var(--s2);
+  margin-top: var(--s3);
   max-width: 46ch;
   font-size: var(--fs-3);
-  line-height: 1.45;
+  line-height: 1.5;
   letter-spacing: -0.005em;
   color: var(--ink-2);
 }
@@ -335,11 +345,10 @@ main:focus {
 }
 
 .storage {
-  display: flex;
-  gap: var(--s3);
+  display: block;
   margin-block: var(--s4);
-  border-left: 2px solid var(--ink);
-  padding-left: var(--s4);
+  border-top: 1px solid var(--rule);
+  padding-top: var(--s3);
   font-size: var(--fs-2);
   line-height: 1.5;
   color: var(--ink-2);

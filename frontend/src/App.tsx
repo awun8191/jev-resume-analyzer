@@ -211,7 +211,7 @@ export default function App() {
           <div className="page">
             <div className="stage">
               {alert}
-              <UploadStage onFile={upload} />
+              <UploadStage onFile={upload} serverDown={health === 'down'} />
             </div>
           </div>
         )}

@@ -15,9 +15,9 @@ export default function StageBar({
       <ol className="progress__steps">
         {STEPS.map((label, i) => (
           <li key={label} aria-current={i === current ? 'step' : undefined}>
+            <span className="progress__mark" aria-hidden="true" />
             <span className="progress__n" aria-hidden="true">{`0${i + 1}`}</span>
             <span>{label}</span>
-            {i === current && <span className="progress__mark" aria-hidden="true" />}
           </li>
         ))}
       </ol>

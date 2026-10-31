@@ -1,15 +1,87 @@
 /*
- * Upload stage. A single ruled drop area, left aligned, with the file control
- * as the baseline action and drag and drop as an enhancement.
+ * Upload stage. On a wide screen the stage composes itself as an asymmetric
+ * split: the reading column (headline, then "before you begin") left, the drop
+ * area right and full height, so the interactive element carries its own
+ * visual weight instead of floating in a dead right column. The drop area is
+ * clickable throughout; the labelled button is the baseline action and drag
+ * and drop is the enhancement.
  */
-.drop {
+.upload-grid {
   display: grid;
   gap: var(--s5);
+}
+
+.upload__notes {
+  border-top: 1px solid var(--rule);
+  padding-top: var(--s3);
+}
+
+.upload__notes ul {
+  display: grid;
+  gap: var(--s2);
+  margin-top: var(--s2);
+  padding: 0;
+  list-style: none;
+  font-size: var(--fs-2);
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+
+.upload__notes li b {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.upload__notes li {
+  text-wrap: pretty;
+}
+
+/* One strong frame. This is the only filled-outline surface on the empty
+ * page, so the task is unmistakable. Text sits at the two edges: the reading
+ * at the top, the chooser along the bottom, so the height reads as intent. */
+.drop {
+  display: grid;
+  align-content: space-between;
+  gap: var(--s5);
   padding: var(--s5);
-  border: 1px solid var(--rule);
+  min-height: 280px;
+  border: 1px solid var(--ink);
   border-radius: var(--r);
   background: var(--paper);
-  transition: border-color var(--dur) var(--ease);
+  cursor: pointer;
+  transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+
+/* Square plus mark: the system is square and typographic, so the drop cue is
+ * a drawn plus, not a loaded icon. */
+.drop__mark {
+  position: relative;
+  display: grid;
+  width: 22px;
+  height: 22px;
+  margin-bottom: var(--s3);
+  border: 1px solid var(--ink);
+}
+
+.drop__mark::before,
+.drop__mark::after {
+  content: '';
+  position: absolute;
+  background: var(--ink);
+}
+
+.drop__mark::before {
+  top: 10px;
+  left: 5px;
+  width: 12px;
+  height: 1px;
+}
+
+.drop__mark::after {
+  top: 5px;
+  left: 10px;
+  width: 1px;
+  height: 12px;
 }
 
 .drop.is-dragging {
@@ -18,14 +90,25 @@
   outline-offset: -1px;
 }
 
+/* The unreachable server is stated where the action lives, in one line, so
+ * the header status and the panel say the same thing in the same register. */
+.drop__offline {
+  margin-top: var(--s2);
+  max-width: 46ch;
+  font-size: var(--fs-2);
+  line-height: 1.5;
+  color: var(--accent);
+}
+
 .drop__title {
   margin-top: var(--s2);
   font-family: var(--serif);
-  font-size: var(--fs-4);
+  font-size: var(--fs-5);
   font-weight: 500;
   line-height: 1.15;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.02em;
   max-width: 26ch;
+  font-optical-sizing: auto;
 }
 
 .drop__lead .help {
@@ -33,13 +116,42 @@
   max-width: 46ch;
 }
 
+/* Mid hint. The drop void is the target, so it carries one quiet instruction
+ * of its own instead of reading as an empty hole. Left axis: everything in
+ * this panel shares the title's left edge; the void between is worth keeping
+ * as the target itself. */
+.drop__mid {
+  align-self: start;
+  margin-block: var(--s5);
+  max-width: 40ch;
+  font-size: var(--fs-2);
+  color: var(--ink-3);
+}
+
 .drop__control {
-  padding-top: var(--s4);
+  display: grid;
+  justify-content: start;
+  justify-items: start;
+  gap: var(--s3);
+  padding-top: var(--s5);
   border-top: 1px solid var(--rule);
 }
 
 .drop__control .help {
-  margin-top: var(--s2);
+  margin-top: 0;
+}
+
+/* Choose file: a real button label over a visually hidden input. Typing into
+ * the input still lands on the adjacent button as the focus anchor. */
+#cv-file:focus-visible + .drop__btn {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.drop.is-offline .drop__btn {
+  background: var(--paper);
+  color: var(--ink-2);
+  border-color: var(--rule-2);
 }
 
 .drop__error {
@@ -67,14 +179,34 @@
   }
 }
 
-@media (min-width: 860px) {
-  .drop {
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--s6);
+@media (min-width: 960px) {
+  .upload-grid {
+    grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+    grid-template-rows: auto 1fr;
+    column-gap: var(--gutter);
+    row-gap: var(--s5);
   }
 
-  .notes {
-    grid-template-columns: minmax(0, 3fr) minmax(0, 9fr);
-    gap: var(--s5);
+  /* This selector needs the extra hook: layout.css also styles .stage__head
+   * and may load after this file, and the stretched grid track would happily
+   * inflate the head by a row's worth of empty space. */
+  .upload-grid .upload__head {
+    grid-column: 1 / span 5;
+    grid-row: 1;
+    align-self: start;
+    margin-bottom: 0;
+  }
+
+  .upload-grid .upload__notes {
+    grid-column: 1 / span 5;
+    grid-row: 2;
+    align-self: start;
+  }
+
+  .drop {
+    grid-column: 7 / -1;
+    grid-row: 1 / span 2;
+    padding: var(--s7) var(--s7) var(--s6);
+    min-height: 520px;
   }
 }
