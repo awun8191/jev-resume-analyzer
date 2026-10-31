@@ -69,20 +69,15 @@
   align-items: end;
 }
 
-/* The unit and the band word sit on the numeral's baseline: the boxes are
- * aligned to their bottom edge and nudged off it, so the relation does not
- * depend on each font's own descent. */
+/* The unit sits on the numeral's baseline: the boxes are aligned to their
+ * bottom edge and nudged off it, so the relation does not depend on each
+ * font's own descent. */
 .score__figure--total {
   align-items: end;
   gap: 0 var(--s2);
 }
 
-.score__figure--total .score__band {
-  margin-left: 6px;
-}
-
-.score__figure--total .score__unit,
-.score__figure--total .score__band {
+.score__figure--total .score__unit {
   padding-bottom: 2px;
 }
 
@@ -97,19 +92,6 @@
 .score__figure--split .score__unit {
   font-size: var(--fs-1);
   padding-bottom: 2px;
-}
-
-.score__band {
-  font-family: var(--sans);
-  font-size: var(--fs-3);
-  line-height: 1.3;
-  color: var(--ink-2);
-}
-
-.score__figure--split .score__band {
-  flex-basis: 100%;
-  font-size: var(--fs-2);
-  margin-top: 2px;
 }
 
 /* A null score is a word in ink, never a number and never a zero. */
@@ -460,9 +442,5 @@ button.srow__head {
 @media (max-width: 380px) {
   .score__figure--total .score__value {
     font-size: 56px;
-  }
-
-  .score__band {
-    font-size: var(--fs-2);
   }
 }

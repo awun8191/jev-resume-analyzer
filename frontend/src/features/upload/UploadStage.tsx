@@ -111,12 +111,6 @@ export default function UploadStage({ onFile }: { onFile: (file: File) => Promis
           />
           {error && <p className="drop__error" id="upload-error" role="alert">{error}</p>}
         </div>
-
-        <ul className="card__facts">
-          <li><b>20</b><span>content checks</span></li>
-          <li><b>11</b><span>layout checks</span></li>
-          <li><b>2</b><span>scores per review</span></li>
-        </ul>
       </div>
 
       <section className="notes" aria-labelledby="notes-title">

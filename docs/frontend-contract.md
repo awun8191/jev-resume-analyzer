@@ -107,7 +107,7 @@ A null structure score is never zero. Render "Not scored" with the reason, never
 
 `scores.total`: `value` integer or null, `band` text or null, `mode` one of `combined`, `content_only`, `structure_only`, `unavailable`. The rule is `round(0.7 * content + 0.3 * structure)`. A missing structure score renormalises to content only, and the mode says so.
 
-Bands, highest first: `Very strong evidence` at 90, `Strong evidence` at 75, `Adequate evidence` at 60, `Partial evidence` at 40, `Thin evidence` at 0.
+Bands, highest first: `Very strong evidence` at 90, `Strong evidence` at 75, `Adequate evidence` at 60, `Partial evidence` at 40, `Thin evidence` at 0. The band is data. The UI does not print the band word: the numeral and its colour carry the verdict, and a word beside the number repeats it.
 
 ### How the UI renders the scores
 

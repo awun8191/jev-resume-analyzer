@@ -27,10 +27,10 @@ function show(subject: AnalysisReport = multiReport, selectedId: string | null =
 const total = (container: HTMLElement) => container.querySelector('.score__total') as HTMLElement
 const halves = (container: HTMLElement) => [...container.querySelectorAll('.score__half')]
 
-it('shows the total as one numeral, a small unit and the band word', () => {
+it('shows the total as one numeral and a small unit', () => {
   const { container } = show()
   const line = total(container)
-  expect(line.textContent).toBe('65/100Adequate evidence')
+  expect(line.textContent).toBe('65/100')
   expect(line.querySelector('.score__value')!.textContent).toBe('65')
   expect(line.querySelector('.score__value')!.getAttribute('data-band')).toBe('fair')
   expect(line.querySelector('.score__unit')!.textContent).toBe('/100')
@@ -41,10 +41,16 @@ it('puts structure first and content second under the total', () => {
   const cells = halves(container)
   expect(cells.map(cell => cell.getAttribute('data-owner'))).toEqual(['structure', 'content'])
   expect(cells[0].textContent).toContain('81')
-  expect(cells[0].textContent).toContain('Strong evidence')
   expect(cells[0].querySelector('.score__value')!.getAttribute('data-band')).toBe('good')
   expect(cells[1].textContent).toContain('58')
-  expect(cells[1].textContent).toContain('Partial evidence')
+})
+
+it('does not repeat the verdict as a band word', () => {
+  const { container } = show()
+  const block = container.querySelector('.score') as HTMLElement
+  // The numeral carries the verdict. A band word beside it is filler.
+  expect(block.textContent).not.toMatch(/evidence/i)
+  expect(block.querySelectorAll('.score__band')).toHaveLength(0)
 })
 
 it('keeps the score to the numbers alone: no coverage, weight or counts', () => {
@@ -75,10 +81,10 @@ it('shows a null total as the words Not scored, in ink, with no number', () => {
 
 it('keeps a scored half when the other could not be scored', () => {
   const { container } = show(contentOnlyReport)
-  expect(total(container).textContent).toBe('58/100Partial evidence')
+  expect(total(container).textContent).toBe('58/100')
   const cells = halves(container)
   expect(cells[0].textContent).toContain('StructureNot scored')
-  expect(cells[1].textContent).toBe('Content58/100Partial evidence')
+  expect(cells[1].textContent).toBe('Content58/100')
 })
 
 it('lists every content finding, grouped by dimension, with no show all control', () => {

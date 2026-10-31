@@ -159,39 +159,6 @@
   font-weight: 600;
 }
 
-/* Proof strip inside the card. Numbers, not adjectives. */
-.card__facts {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0;
-  margin-top: var(--s3);
-  padding-top: var(--s3);
-  border-top: 1px solid var(--rule);
-  list-style: none;
-}
-
-.card__facts li {
-  display: flex;
-  align-items: baseline;
-  gap: var(--s2);
-  padding: 0 var(--s4);
-  color: var(--ink-3);
-  font-size: var(--fs-1);
-  font-weight: 500;
-}
-
-.card__facts li + li {
-  border-left: 1px solid var(--rule);
-}
-
-.card__facts b {
-  font-family: var(--serif);
-  font-size: var(--fs-4);
-  font-weight: 500;
-  color: var(--ink);
-  font-variant-numeric: tabular-nums;
-}
-
 /* The rules of the tool. Quiet, below the action, three columns. */
 .notes {
   display: block;
@@ -277,18 +244,6 @@
   .drop {
     padding: var(--s5) var(--s3);
     border-radius: 16px;
-  }
-
-  .card__facts {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--s2);
-  }
-
-  .card__facts li {
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    text-align: center;
   }
 }
 
