@@ -14,7 +14,6 @@ const jevKeys = () => Array.from({ length: sessionStorage.length }, (_, i) => se
 test('unavailable backend: keyboard upload, honest error, no report', async ({ page }) => {
   await page.goto('/')
   await expect(page).toHaveTitle('JEV Resume Analyzer')
-  await expect(page.getByText('Backend unavailable')).toBeVisible()
 
   await page.keyboard.press('Tab')
   await expect(page.getByRole('link', { name: 'Skip to content' })).toBeFocused()

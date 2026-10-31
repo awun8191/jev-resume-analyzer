@@ -122,7 +122,6 @@ it('shows an extraction error without a fake preview', async () => {
   fireEvent.change(screen.getByLabelText('Choose CV file'), { target: { files: [new File(['x'], 'fixture.pdf')] } })
   await screen.findByRole('alert')
   expect(screen.queryByLabelText('CV text')).toBeNull()
-  await waitFor(() => expect(screen.getByText('Backend unavailable')).toBeTruthy())
 })
 
 it('drops a stored report from before scores existed and returns to check text', async () => {

@@ -81,24 +81,6 @@
   gap: var(--s3);
 }
 
-.health {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s2);
-  font-size: var(--fs-1);
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  color: var(--ink-2);
-}
-
-.health::before {
-  content: '';
-  width: 6px;
-  height: 6px;
-  border-radius: var(--r-pill);
-  background: var(--danger);
-}
-
 .newreview {
   min-height: var(--tap);
   padding: 0 var(--s4);

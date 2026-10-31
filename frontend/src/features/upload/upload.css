@@ -18,29 +18,8 @@
   animation: hero-in 620ms var(--ease-out) both;
 }
 
-.hero__badge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s2);
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--ink-2);
-  font-size: var(--fs-2);
-  font-weight: 500;
-  letter-spacing: -0.005em;
-}
-
-.hero__dot {
-  width: 6px;
-  height: 6px;
-  border-radius: var(--r-pill);
-  background: var(--sky);
-  animation: dot-pulse 2.6s var(--ease) infinite;
-}
-
 .hero__title {
-  margin-top: var(--s4);
+  margin-top: 0;
   font-size: clamp(40px, 6.2vw, 76px);
   font-weight: 500;
   line-height: 0.98;
@@ -274,16 +253,6 @@
   }
 }
 
-@keyframes dot-pulse {
-  0%,
-  100% {
-    box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.22);
-  }
-  50% {
-    box-shadow: 0 0 0 8px rgba(56, 189, 248, 0.04);
-  }
-}
-
 @media (max-width: 860px) {
   .notes ul {
     grid-template-columns: minmax(0, 1fr);
@@ -326,8 +295,7 @@
 @media (prefers-reduced-motion: reduce) {
   .hero__head,
   .card,
-  .notes,
-  .hero__dot {
+  .notes {
     animation: none;
   }
 

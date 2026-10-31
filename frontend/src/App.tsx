@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { checkHealth, extractDocument, runAnalysis } from './api/client'
+import { extractDocument, runAnalysis } from './api/client'
 import { useAppState } from './appState'
 import { failureFromUnknown } from './failures'
 import StageBar from './components/StageBar'
@@ -13,19 +13,10 @@ import ReportSummary from './features/results/ReportSummary'
 import { boxFindings, structureBoxes } from './features/results/summary'
 import './styles/layout.css'
 
-type Health = 'checking' | 'ok' | 'down'
-
-const HEALTH_TEXT: Record<Health, string> = {
-  checking: 'Checking backend',
-  ok: 'Backend connected',
-  down: 'Backend unavailable',
-}
-
 export default function App() {
   const s = useAppState()
   const pending = useRef(false)
   const main = useRef<HTMLElement>(null)
-  const [health, setHealth] = useState<Health>('checking')
 
   /* Reset is destructive, so it asks once. The question is one line and the
    * confirm button is focused, so it works from the keyboard. */
@@ -36,14 +27,6 @@ export default function App() {
   useEffect(() => {
     if (confirming) confirmRef.current?.focus()
   }, [confirming])
-
-  useEffect(() => {
-    let active = true
-    checkHealth()
-      .then(() => { if (active) setHealth('ok') })
-      .catch(() => { if (active) setHealth('down') })
-    return () => { active = false }
-  }, [])
 
   const lastStage = useRef(s.stage)
   useEffect(() => {
@@ -144,9 +127,6 @@ export default function App() {
         <div className="shell masthead__row">
           <p className="wordmark"><strong>JEV</strong><span>Resume Analyzer</span></p>
           <div className="masthead__tools">
-            {health === 'down' && (
-              <p className="health" role="status">{HEALTH_TEXT.down}</p>
-            )}
             {showNewReview && (
               <button
                 ref={newReviewRef}

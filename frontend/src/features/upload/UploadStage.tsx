@@ -44,16 +44,12 @@ export default function UploadStage({ onFile }: { onFile: (file: File) => Promis
   return (
     <section className="hero" aria-labelledby="upload-title">
       <header className="hero__head">
-        <p className="hero__badge">
-          <span className="hero__dot" aria-hidden="true" />
-          Free demo. No account.
-        </p>
         <h1 className="hero__title" tabIndex={-1} id="upload-title">
-          Check what the document actually says.
+          Review your resume before the recruiter does.
         </h1>
         <p className="hero__lead">
-          Upload a PDF or DOCX, review the extracted text, then read a report built from the exact
-          questions that were asked.
+          Upload a PDF or DOCX. Check the text we extracted, then get a score for the content and
+          the layout, with the reason behind every point.
         </p>
       </header>
 
@@ -95,7 +91,7 @@ export default function UploadStage({ onFile }: { onFile: (file: File) => Promis
           <p className="drop__help" id="upload-help">
             {dragging
               ? 'One document at a time.'
-              : 'Text is read on the analysis server. No model request is made at this step.'}
+              : 'We read the text first. You check it before any analysis.'}
           </p>
 
           <label className="btn btn--primary drop__pick" htmlFor="cv-file">
@@ -126,9 +122,9 @@ export default function UploadStage({ onFile }: { onFile: (file: File) => Promis
       <section className="notes" aria-labelledby="notes-title">
         <h2 className="notes__title" id="notes-title">Before you begin</h2>
         <ul>
-          <li><b>Selectable text.</b> Scanned pages need OCR, which this demo does not provide.</li>
-          <li><b>Editable preview.</b> Remove contact details there before anything leaves this machine.</li>
-          <li><b>One transfer.</b> Only Analyse CV sends text to TypeSafe. A failed request never produces a report.</li>
+          <li><b>Selectable text.</b> A scanned page is a picture of text. This tool cannot read it.</li>
+          <li><b>Editable preview.</b> The extracted text comes back so you can correct it.</li>
+          <li><b>One transfer.</b> The text goes to the model only when you start the analysis.</li>
         </ul>
       </section>
     </section>
