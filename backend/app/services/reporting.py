@@ -1,5 +1,7 @@
 """Assemble provider answers and scores into the report contract."""
 
+from typing import cast
+
 from app.models.analyses import (
     AnalysisReport,
     ContentScore,
@@ -13,7 +15,7 @@ from app.models.analyses import (
     TotalScore,
 )
 from app.models.documents import WarningItem
-from app.models.questions import ProviderResponse
+from app.models.questions import Answer, ProviderResponse
 from app.rubrics.cv_review_v3 import RatedQuestion
 from app.rubrics.scoring_v3 import ScoreResult
 from app.services.reader_criteria import plain_criteria
@@ -52,6 +54,7 @@ def build_findings(
                 criteria=plain_criteria(question.id)
                 or [f"{key}: {value}" for key, value in question.criteria.items()],
                 answer=answer.choice,
+                options=cast(list[Answer], list(question.criteria)),
                 probabilities=answer.probabilities,
                 confidence=answer.confidence,
                 rubric_explanation=RubricExplanation(

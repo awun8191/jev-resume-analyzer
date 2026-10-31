@@ -2,17 +2,29 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-Answer = Literal["present", "absent", "not_applicable", "unable_to_assess"]
+Answer = Literal[
+    "present", "absent", "not_applicable", "unable_to_assess", "few", "some"
+]
 Probability = Annotated[float, Field(strict=True, ge=0, le=1, allow_inf_nan=False)]
 Count = Annotated[int, Field(strict=True, ge=0)]
 
 
 class Distribution(BaseModel):
+    """How sure the provider was, per answer.
+
+    ``few`` and ``some`` carry the two coverage bands below the full band, so a
+    document that states a result in one entry of ten is measured, not treated
+    as a plain absence. Older responses that carry only the four base answers
+    still validate, because the coverage keys default to zero.
+    """
+
     model_config = ConfigDict(extra="forbid", strict=True)
-    present: Probability
-    absent: Probability
-    not_applicable: Probability
-    unable_to_assess: Probability
+    present: Probability = 0
+    absent: Probability = 0
+    not_applicable: Probability = 0
+    unable_to_assess: Probability = 0
+    few: Probability = 0
+    some: Probability = 0
 
     @model_validator(mode="after")
     def sums_to_one(self):

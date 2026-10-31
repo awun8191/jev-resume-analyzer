@@ -77,7 +77,9 @@ def test_full_document_one_call(harness, with_job):
         assert finding["criteria"]
         assert finding["assessment_level"] == "full_document"
         assert finding["source"] == "provider"
-        assert finding["probabilities"] == dict(zip(OPTIONS, [0.7, 0.1, 0.1, 0.1]))
+        assert finding["probabilities"] == {
+            **dict(zip(OPTIONS, [0.7, 0.1, 0.1, 0.1])), "few": 0, "some": 0,
+        }
     assert report["overview"] == {
         "questions_total": len(IDS),
         "questions_answered": len(IDS),

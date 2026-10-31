@@ -50,6 +50,9 @@ class Finding(BaseModel):
     question: Text
     criteria: list[Text] = Field(min_length=1)
     answer: Answer
+    # The answers this check offers, in reading order. A coverage check offers
+    # few and some; a universal check offers only present and absent.
+    options: list[Answer] = Field(default_factory=list)
     probabilities: Distribution | None
     confidence: Probability | None
     rubric_explanation: RubricExplanation | None

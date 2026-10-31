@@ -21,7 +21,13 @@ from app.rubrics.cv_review_v3 import (
     section_for,
 )
 
-ANSWERS = ("present", "absent", "not_applicable", "unable_to_assess")
+ANSWERS = ("present", "absent", "not_applicable", "unable_to_assess", "few", "some")
+
+# Coverage credit, in percent of a check's weight. A check answered at the full
+# band earns all of its weight. The two bands below it earn part of the weight,
+# so a document that states a result in one entry of ten scores above zero and
+# well below a document that states one in two.
+CREDIT = {"present": 100, "some": 70, "few": 35, "absent": 0}
 
 # A content score needs at least half of the 100 available points to be decidable.
 MIN_ASSESSED_WEIGHT = 50
@@ -137,12 +143,12 @@ def score_content(
             raise ValueError(f"Unknown prepared question id: {question_id}")
     _validate_answers(answers, prepared_ids)
 
-    earned = 0
+    earned_bp = 0
     assessed = 0
     applicable = 0
     rows = []
     for dimension in DIMENSIONS:
-        dim_earned = 0
+        dim_earned_bp = 0
         dim_assessed = 0
         dim_weight = 0
         for question in QUESTIONS:
@@ -153,13 +159,14 @@ def score_content(
             if answer == "not_applicable":
                 continue
             applicable += question.weight
-            if answer == "present":
-                dim_earned += question.weight
-                dim_assessed += question.weight
-            elif answer == "absent":
-                dim_assessed += question.weight
-        earned += dim_earned
+            credit = CREDIT.get(answer)
+            if credit is None:
+                continue
+            dim_earned_bp += question.weight * credit
+            dim_assessed += question.weight
+        earned_bp += dim_earned_bp
         assessed += dim_assessed
+        dim_earned = _round_half_up(dim_earned_bp / 100)
         rows.append(
             DimensionScore(
                 dimension=dimension,
@@ -168,13 +175,13 @@ def score_content(
                 assessed_weight=dim_assessed,
                 earned_weight=dim_earned,
                 score=(
-                    _round_half_up(100 * dim_earned / dim_assessed) if dim_assessed else None
+                    _round_half_up(dim_earned_bp / dim_assessed) if dim_assessed else None
                 ),
             )
         )
 
-    score = _round_half_up(100 * earned / assessed) if assessed >= MIN_ASSESSED_WEIGHT else None
-    return score, earned, assessed, applicable, tuple(rows)
+    score = _round_half_up(earned_bp / assessed) if assessed >= MIN_ASSESSED_WEIGHT else None
+    return score, _round_half_up(earned_bp / 100), assessed, applicable, tuple(rows)
 
 
 def _fixes(
@@ -185,14 +192,22 @@ def _fixes(
         if row.score is None or row.score >= 100:
             continue
         lost = row.weight * (1 - row.score / 100)
-        absent = [
+        partial = [
             question
             for question in QUESTIONS
-            if question.dimension == row.dimension and answers.get(question.id) == "absent"
+            if question.dimension == row.dimension
+            and CREDIT.get(answers.get(question.id, "unable_to_assess"), 100) < 100
         ]
-        if not absent:
+        if not partial:
             continue
-        target = max(absent, key=lambda question: (question.weight, -QUESTIONS.index(question)))
+        target = max(
+            partial,
+            key=lambda question: (
+                -CREDIT.get(answers.get(question.id, "unable_to_assess"), 100),
+                question.weight,
+                -QUESTIONS.index(question),
+            ),
+        )
         candidates.append((-lost, -row.weight, index, row.dimension, target))
     candidates.sort(key=lambda item: item[:3])
     return tuple(
