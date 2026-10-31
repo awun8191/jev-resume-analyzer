@@ -2,91 +2,97 @@
 
 The rubric strings are written for the model: they name thresholds, prevalence
 and conditions. A person reading the report needs the same rule in short, plain
-words. Keep one line for what counts and one line for what does not count.
+words. Each check gives two lines: what counts, and what does not count.
+
+The text follows ASD-STE100: one idea per sentence, active voice, approved
+words, no contractions. Run the checker after an edit:
+
+    python3 ~/.hermes/skills/messaging/asd-ste100/scripts/ste_lint.py \
+        --mode descriptive reader_criteria.txt
 """
 
 from __future__ import annotations
 
 READER_CRITERIA: dict[str, tuple[str, ...]] = {
     "impact_outcome": (
-        "One entry links what you did to what changed.",
-        "A list of duties alone does not count.",
+        "One entry shows what you did and what changed.",
+        "A list of duties does not count.",
     ),
     "impact_prevalence": (
-        "Half or more of your entries state a result.",
+        "Half or more of your entries show a result.",
         "An entry with duties only does not count.",
     ),
     "impact_magnitude": (
-        "One result gives a number with a unit or baseline.",
-        "A date or a version number does not count.",
+        "One result gives a number with a unit.",
+        "A date or a version does not count.",
     ),
     "impact_magnitude_prevalence": (
-        "Half or more of your results give a number with a unit.",
-        "A result with no quantity does not count.",
+        "Half or more of your results give a number and a unit.",
+        "A result with no number does not count.",
     ),
     "scope_actors": (
-        "One entry names the people or groups your work served.",
+        "One entry names the people or groups that your work helped.",
         "A team name alone does not count.",
     ),
     "scope_prevalence": (
-        "Half or more of your entries name who the work served.",
-        "An entry with no audience does not count.",
+        "Half or more of your entries name the people that your work helped.",
+        "An entry with no people does not count.",
     ),
     "scope_size": (
-        "One entry gives the size or reach of the setting.",
-        "A number with no setting does not count.",
+        "One entry gives the size of the company or the team.",
+        "A number with no company or team does not count.",
     ),
     "ownership_own_action": (
-        "One entry makes your own action clear.",
-        "Company activity alone does not count.",
+        "One entry shows your own work.",
+        "Company work alone does not count.",
     ),
     "ownership_prevalence": (
-        "Half or more of your entries lead with your action.",
-        "Team wording with no actor does not count.",
+        "Half or more of your entries start with your own work.",
+        "A sentence with no actor does not count.",
     ),
     "ownership_decision": (
-        "One entry describes a decision you made or shaped.",
-        "Work done to instruction does not count.",
+        "One entry shows a decision that you made.",
+        "Work that follows an instruction does not count.",
     ),
     "relevance_responsibility": (
-        "One CV task matches a duty in the job post.",
-        "No job post means this check does not apply.",
+        "One task in the resume agrees with a duty in the job post.",
+        "If there is no job post, this check does not apply.",
     ),
     "relevance_prevalence": (
-        "Half or more of your work descriptions match the post.",
-        "A description with no match does not count.",
+        "Half or more of your tasks agree with the job post.",
+        "A task that does not agree does not count.",
     ),
     "relevance_requirement": (
-        "The CV states one qualification the post asks for.",
-        "A skill the post does not ask for does not count.",
+        "The resume shows one qualification that the job post states.",
+        "A skill that the job post does not list does not count.",
     ),
     "clarity_concrete": (
-        "One description names the thing you worked on.",
-        "Vague words such as things or systems do not count.",
+        "One description names the thing that you worked on.",
+        "General words do not count.",
     ),
     "clarity_prevalence": (
-        "Half or more of your descriptions name a real object.",
-        "Generic wording does not count.",
+        "Half or more of your descriptions name a clear thing.",
+        "A general description does not count.",
     ),
     "clarity_self_contained": (
-        "A reader outside the company can follow each description.",
-        "Insider acronyms and shorthand do not count.",
+        "A reader who does not work at your company can understand each description.",
+        "A short form that only your team knows does not count.",
     ),
     "complete_roles": (
         "Each role gives the employer, the title and the dates.",
-        "A missing title or date does not count.",
+        "A role with no title or no date does not count.",
     ),
     "complete_education": (
-        "Each entry gives the issuer, the credential, the field and the dates.",
-        "A missing field or date does not count.",
+        "Each entry gives the school or the issuer, the award, the field and the dates.",
+        "An entry with no field or no date does not count.",
     ),
     "complete_projects": (
-        "Each project gives its purpose and your part in it.",
+        "Each project gives its purpose and your part.",
         "A project with no purpose does not count.",
     ),
     "skills_evidence": (
-        "Half or more of the listed skills appear in your experience.",
-        "A skill in the list alone does not count.",
+        "Your experience also shows half or more of your listed skills.",
+        "A skill in the list only does not count.",
     ),
 }
 
